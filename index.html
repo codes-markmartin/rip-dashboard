@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>$RIP — The Inevitable Flip</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #06060e;
+      --bg2:       #0d0d1a;
+      --rip-clr:   #ff3355;
+      --pigeon-clr:#a78bfa;
+      --pump-clr:  #f97316;
+      --cyan:      #22d3ee;
+      --text:      #e2e8f0;
+      --muted:     #64748b;
+      --border:    rgba(255,255,255,0.07);
+    }
+
+    html, body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── animated noise / grain overlay ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 999;
+      opacity: 0.4;
+    }
+
+    /* ── ambient glow blobs ── */
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+      z-index: 0;
+      animation: drift 12s ease-in-out infinite alternate;
+    }
+    .blob-1 { width: 600px; height: 600px; background: rgba(255,51,85,0.08); top: -150px; left: -150px; animation-delay: 0s; }
+    .blob-2 { width: 500px; height: 500px; background: rgba(167,139,250,0.07); bottom: -100px; right: -100px; animation-delay: -4s; }
+    .blob-3 { width: 400px; height: 400px; background: rgba(34,211,238,0.05); top: 40%; left: 40%; animation-delay: -8s; }
+
+    @keyframes drift {
+      from { transform: translate(0,0) scale(1); }
+      to   { transform: translate(40px, 40px) scale(1.1); }
+    }
+
+    /* ── layout ── */
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 60px 24px 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+
+    /* ── header ── */
+    .header { text-align: center; }
+    .header-eyebrow {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+    .header-title {
+      font-size: clamp(36px, 8vw, 72px);
+      font-weight: 700;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--rip-clr) 0%, #ff8fa3 50%, var(--pigeon-clr) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 40px rgba(255,51,85,0.4));
+    }
+    .header-sub {
+      margin-top: 14px;
+      font-size: 15px;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+    }
+    .header-sub span { color: var(--pigeon-clr); font-weight: 600; }
+    .header-sub span.pump { color: var(--pump-clr); }
+
+    /* ── refresh pill ── */
+    .refresh-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .pulse-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 8px var(--cyan);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: 0.4; transform: scale(0.7); }
+    }
+
+    /* ── card base ── */
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s;
+    }
+    .card:hover { border-color: rgba(255,255,255,0.13); }
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at top left, rgba(255,255,255,0.03), transparent 60%);
+      pointer-events: none;
+    }
+
+    /* ── $RIP card ── */
+    .rip-card {
+      border-color: rgba(255,51,85,0.2);
+      text-align: center;
+    }
+    .rip-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(255,51,85,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .rip-card-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--rip-clr);
+      margin-bottom: 8px;
+      opacity: 0.8;
+    }
+    .rip-token-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+    .rip-mcap {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(42px, 10vw, 80px);
+      font-weight: 700;
+      color: var(--rip-clr);
+      line-height: 1;
+      text-shadow: 0 0 60px rgba(255,51,85,0.5), 0 0 120px rgba(255,51,85,0.2);
+      letter-spacing: -2px;
+      transition: all 0.5s ease;
+      position: relative;
+      z-index: 1;
+    }
+    .rip-mcap.updating {
+      opacity: 0.5;
+      transform: scale(0.98);
+    }
+    .rip-meta {
+      margin-top: 16px;
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      font-size: 13px;
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+    }
+    .rip-meta-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .rip-meta-item .label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; }
+    .rip-meta-item .value { color: var(--text); font-weight: 700; }
+
+    /* ── flip progress card ── */
+    .flip-card { border-color: rgba(167,139,250,0.2); }
+    .flip-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(167,139,250,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .flip-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .flip-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--muted);
+    }
+    .flip-pct-badge {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 5px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(167,139,250,0.3);
+      color: var(--pigeon-clr);
+      background: rgba(167,139,250,0.08);
+    }
+
+    /* ── token mcap row ── */
+    .token-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 10px;
+    }
+    .token-icon {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .token-icon.pigeon { background: rgba(167,139,250,0.15); border: 1px solid rgba(167,139,250,0.3); }
+    .token-icon.pump   { background: rgba(249,115,22,0.15);  border: 1px solid rgba(249,115,22,0.3); }
+    .token-label-wrap { flex: 1; min-width: 0; }
+    .token-ticker { font-size: 14px; font-weight: 700; }
+    .token-ticker.pigeon { color: var(--pigeon-clr); }
+    .token-ticker.pump   { color: var(--pump-clr); }
+    .token-mcap-val {
+      font-family: 'Space Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      transition: all 0.5s ease;
+    }
+    .token-mcap-val.updating { opacity: 0.4; }
+
+    /* ── progress bar ── */
+    .progress-wrap {
+      margin: 24px 0 8px;
+      position: relative;
+    }
+    .progress-track {
+      height: 18px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 999px;
+      overflow: visible;
+      position: relative;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #6d28d9, var(--pigeon-clr), #c4b5fd);
+      box-shadow: 0 0 20px rgba(167,139,250,0.5), 0 0 40px rgba(167,139,250,0.2);
+      transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+      position: relative;
+      min-width: 8px;
+    }
+    .progress-fill::after {
+      content: '🕊';
+      position: absolute;
+      right: -2px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 20px;
+      filter: drop-shadow(0 0 8px rgba(167,139,250,0.8));
+      animation: pigeon-wobble 2s ease-in-out infinite;
+    }
+    @keyframes pigeon-wobble {
+      0%,100% { transform: translateY(-50%) rotate(-5deg); }
+      50%      { transform: translateY(-55%) rotate(5deg); }
+    }
+
+    /* flip marker */
+    .progress-flip-marker {
+      position: absolute;
+      top: -4px; right: 0;
+      width: 2px;
+      height: calc(100% + 8px);
+      background: var(--pump-clr);
+      opacity: 0.6;
+      border-radius: 999px;
+    }
+    .progress-flip-marker::before {
+      content: '🎯 FLIP';
+      position: absolute;
+      top: -22px; right: 4px;
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      color: var(--pump-clr);
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+
+    .progress-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ── gap callout ── */
+    .gap-callout {
+      margin-top: 24px;
+      padding: 18px 22px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .gap-label {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+    .gap-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      transition: all 0.5s ease;
+    }
+    .gap-value.updating { opacity: 0.4; }
+    .gap-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    /* ── flipped state ── */
+    .flipped-banner {
+      display: none;
+      text-align: center;
+      padding: 24px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(167,139,250,0.15), rgba(34,211,238,0.1));
+      border: 1px solid rgba(167,139,250,0.4);
+      animation: flash-in 0.5s ease;
+    }
+    .flipped-banner.visible { display: block; }
+    @keyframes flash-in {
+      from { opacity: 0; transform: scale(0.95); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    .flipped-banner h2 {
+      font-size: 28px;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--pigeon-clr), var(--cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .flipped-banner p { color: var(--muted); font-size: 14px; margin-top: 8px; }
+
+    /* ── skeleton loader ── */
+    .skeleton {
+      display: inline-block;
+      height: 1em;
+      border-radius: 4px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* ── footer ── */
+    .footer {
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+      opacity: 0.5;
+      line-height: 1.8;
+    }
+    .footer a { color: var(--muted); text-decoration: none; }
+
+    /* ── error banner ── */
+    .error-banner {
+      display: none;
+      text-align: center;
+      padding: 12px;
+      background: rgba(255,51,85,0.08);
+      border: 1px solid rgba(255,51,85,0.2);
+      border-radius: 10px;
+      font-size: 12px;
+      color: var(--rip-clr);
+      font-family: 'Space Mono', monospace;
+    }
+    .error-banner.visible { display: block; }
+
+    @media (max-width: 480px) {
+      .page { padding: 36px 16px 60px; }
+      .card { padding: 24px 20px; }
+      .flip-header { flex-direction: column; align-items: flex-start; }
+      .gap-callout { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+
+<div class="page">
+
+  <!-- Header -->
+  <header class="header">
+    <p class="header-eyebrow">Live Market Data · Solana</p>
+    <h1 class="header-title">THE INEVITABLE FLIP</h1>
+    <p class="header-sub">
+      <span>$Pigeon</span> will overtake <span class="pump">$PUMP</span> —
+      <span>$RIP</span> is the tokenised proof.
+    </p>
+  </header>
+
+  <!-- Refresh status -->
+  <div class="refresh-row">
+    <span class="pulse-dot"></span>
+    <span id="refresh-label">Fetching live data…</span>
+  </div>
+
+  <!-- Error banner -->
+  <div class="error-banner" id="error-banner">
+    ⚠ Could not reach price API — retrying in 30s. Data may be stale.
+  </div>
+
+  <!-- $RIP Market Cap Card -->
+  <div class="card rip-card">
+    <p class="rip-card-label">Market Cap</p>
+    <p class="rip-token-name">$RIP · HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx</p>
+    <div class="rip-mcap" id="rip-mcap">
+      <span class="skeleton" style="width:260px; height:0.9em;">&nbsp;</span>
+    </div>
+    <div class="rip-meta" id="rip-meta" style="opacity:0; transition: opacity 0.5s;">
+      <div class="rip-meta-item">
+        <span class="label">Price</span>
+        <span class="value" id="rip-price">—</span>
+      </div>
+      <div class="rip-meta-item">
+        <span class="label">24h Change</span>
+        <span class="value" id="rip-change">—</span>
+      </div>
+      <div class="rip-meta-item">
+        <span class="label">Volume 24h</span>
+        <span class="value" id="rip-vol">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- The Flip Progress Card -->
+  <div class="card flip-card">
+    <div class="flip-header">
+      <span class="flip-title">🕊 Pigeon → 🎯 Pump Flip Progress</span>
+      <span class="flip-pct-badge" id="flip-pct-badge">…%</span>
+    </div>
+
+    <!-- Pigeon row -->
+    <div class="token-row">
+      <div class="token-icon pigeon">🕊</div>
+      <div class="token-label-wrap">
+        <div class="token-ticker pigeon">$Pigeon</div>
+        <div style="font-size:11px; color: var(--muted); margin-top:2px; font-family:'Space Mono',monospace;">4fSWEw…Gpump</div>
+      </div>
+      <div class="token-mcap-val" id="pigeon-mcap">
+        <span class="skeleton" style="width:90px;">&nbsp;</span>
+      </div>
+    </div>
+
+    <!-- Pump row -->
+    <div class="token-row">
+      <div class="token-icon pump">🔥</div>
+      <div class="token-label-wrap">
+        <div class="token-ticker pump">$PUMP</div>
+        <div style="font-size:11px; color: var(--muted); margin-top:2px; font-family:'Space Mono',monospace;">2uF4Xh…Qeoiud</div>
+      </div>
+      <div class="token-mcap-val" id="pump-mcap">
+        <span class="skeleton" style="width:90px;">&nbsp;</span>
+      </div>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="progress-wrap">
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+        <div class="progress-flip-marker"></div>
+      </div>
+      <div class="progress-labels">
+        <span>0%</span>
+        <span id="progress-pct-label">Loading…</span>
+        <span>100% = FLIP 🏁</span>
+      </div>
+    </div>
+
+    <!-- Gap callout -->
+    <div class="gap-callout">
+      <div>
+        <div class="gap-label">Remaining Gap</div>
+        <div class="gap-value" id="gap-value">—</div>
+        <div class="gap-sub" id="gap-sub">Market cap $Pigeon needs to gain</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="gap-label">Pigeon is</div>
+        <div class="gap-value" id="ratio-value">—</div>
+        <div class="gap-sub">of PUMP's market cap</div>
+      </div>
+    </div>
+
+    <!-- Flipped banner (hidden until flip happens) -->
+    <div class="flipped-banner" id="flipped-banner" style="margin-top: 24px;">
+      <h2>🕊 THE FLIP HAS HAPPENED 🕊</h2>
+      <p>Pigeon has officially overtaken PUMP. $RIP to the narrative.</p>
+    </div>
+  </div>
+
+  <footer class="footer">
+    Data via DexScreener · Auto-refreshes every 30s · Not financial advice<br/>
+    <span style="opacity:0.5;">$RIP · $Pigeon · $PUMP</span>
+  </footer>
+
+</div>
+
+<script>
+  const CAs = {
+    pump:   '2uF4Xh61rDwxnG9woyxsVQP7zuA6kLFpb3NvnRQeoiSd',
+    pigeon: '4fSWEw2wbYEUCcMtitzmeGUfqinoafXxkhqZrA9Gpump',
+    rip:    'HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx'
+  };
+
+  // ── format helpers ──
+  function fmtMcap(n) {
+    if (n == null || isNaN(n)) return '—';
+    if (n >= 1e9) return '$' + (n / 1e9).toFixed(2) + 'B';
+    if (n >= 1e6) return '$' + (n / 1e6).toFixed(2) + 'M';
+    if (n >= 1e3) return '$' + (n / 1e3).toFixed(1) + 'K';
+    return '$' + n.toFixed(2);
+  }
+
+  function fmtPrice(n) {
+    if (n == null || isNaN(n)) return '—';
+    if (n < 0.000001) return '$' + n.toExponential(3);
+    if (n < 0.01)     return '$' + n.toFixed(8);
+    if (n < 1)        return '$' + n.toFixed(6);
+    return '$' + n.toFixed(4);
+  }
+
+  function fmtChange(n) {
+    if (n == null || isNaN(n)) return '—';
+    const sign = n >= 0 ? '+' : '';
+    return sign + n.toFixed(2) + '%';
+  }
+
+  function changeColor(n) {
+    if (n == null || isNaN(n)) return 'var(--muted)';
+    return n >= 0 ? '#4ade80' : '#f87171';
+  }
+
+  // ── fetch best pair for a token ──
+  async function fetchToken(ca) {
+    const url = `https://api.dexscreener.com/latest/dex/tokens/${ca}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('DexScreener ' + res.status);
+    const data = await res.json();
+    const pairs = data.pairs || [];
+    if (!pairs.length) return null;
+    // prefer pair with highest liquidity
+    pairs.sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0));
+    return pairs[0];
+  }
+
+  // ── DOM refs ──
+  const ripMcapEl   = document.getElementById('rip-mcap');
+  const ripPriceEl  = document.getElementById('rip-price');
+  const ripChangeEl = document.getElementById('rip-change');
+  const ripVolEl    = document.getElementById('rip-vol');
+  const ripMetaEl   = document.getElementById('rip-meta');
+
+  const pigeonMcapEl  = document.getElementById('pigeon-mcap');
+  const pumpMcapEl    = document.getElementById('pump-mcap');
+  const progressFill  = document.getElementById('progress-fill');
+  const pctBadge      = document.getElementById('flip-pct-badge');
+  const pctLabel      = document.getElementById('progress-pct-label');
+  const gapValueEl    = document.getElementById('gap-value');
+  const ratioValueEl  = document.getElementById('ratio-value');
+  const refreshLabel  = document.getElementById('refresh-label');
+  const errorBanner   = document.getElementById('error-banner');
+  const flippedBanner = document.getElementById('flipped-banner');
+
+  let lastUpdate = null;
+
+  function setUpdating(on) {
+    [ripMcapEl, pigeonMcapEl, pumpMcapEl, gapValueEl, ratioValueEl].forEach(el => {
+      if (on) el.classList.add('updating');
+      else    el.classList.remove('updating');
+    });
+  }
+
+  async function refresh() {
+    setUpdating(true);
+    errorBanner.classList.remove('visible');
+
+    try {
+      const [ripData, pigeonData, pumpData] = await Promise.all([
+        fetchToken(CAs.rip),
+        fetchToken(CAs.pigeon),
+        fetchToken(CAs.pump)
+      ]);
+
+      // ── $RIP ──
+      const ripMcap   = ripData?.marketCap   ?? ripData?.fdv   ?? null;
+      const ripPrice  = ripData ? parseFloat(ripData.priceUsd) : null;
+      const ripChange = ripData?.priceChange?.h24 ?? null;
+      const ripVol    = ripData?.volume?.h24 ?? null;
+
+      ripMcapEl.innerHTML  = fmtMcap(ripMcap);
+      ripMcapEl.style.textShadow = '0 0 60px rgba(255,51,85,0.5), 0 0 120px rgba(255,51,85,0.2)';
+      ripPriceEl.textContent  = fmtPrice(ripPrice);
+      const ch = ripChange != null ? parseFloat(ripChange) : null;
+      ripChangeEl.textContent  = fmtChange(ch);
+      ripChangeEl.style.color  = changeColor(ch);
+      ripVolEl.textContent     = fmtMcap(ripVol);
+      ripMetaEl.style.opacity  = '1';
+
+      // ── $Pigeon & $PUMP ──
+      const pigeonMcap = pigeonData?.marketCap ?? pigeonData?.fdv ?? null;
+      const pumpMcap   = pumpData?.marketCap   ?? pumpData?.fdv   ?? null;
+
+      pigeonMcapEl.textContent = fmtMcap(pigeonMcap);
+      pumpMcapEl.textContent   = fmtMcap(pumpMcap);
+
+      // ── progress calc ──
+      if (pigeonMcap != null && pumpMcap != null && pumpMcap > 0) {
+        const ratio = pigeonMcap / pumpMcap;
+        const pct   = Math.min(ratio * 100, 100);
+        const gap   = Math.max(pumpMcap - pigeonMcap, 0);
+
+        progressFill.style.width = pct.toFixed(2) + '%';
+        pctBadge.textContent     = pct.toFixed(1) + '%';
+        pctLabel.textContent     = pct.toFixed(1) + '%';
+        gapValueEl.textContent   = fmtMcap(gap);
+        ratioValueEl.textContent = (ratio * 100).toFixed(1) + '%';
+
+        if (ratio >= 1) {
+          flippedBanner.classList.add('visible');
+          document.title = '🕊 THE FLIP HAPPENED — $RIP Dashboard';
+        } else {
+          flippedBanner.classList.remove('visible');
+        }
+      }
+
+      lastUpdate = new Date();
+      refreshLabel.textContent = 'Updated ' + lastUpdate.toLocaleTimeString();
+      setUpdating(false);
+
+    } catch (err) {
+      console.error(err);
+      errorBanner.classList.add('visible');
+      refreshLabel.textContent = 'Error · retrying in 30s';
+      setUpdating(false);
+    }
+  }
+
+  // initial load
+  refresh();
+  // auto-refresh every 30 seconds
+  setInterval(refresh, 30_000);
+</script>
+</body>
+</html>
