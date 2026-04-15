@@ -1,704 +1,1349 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>$RIP — The Inevitable Flip</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>$RIP — Bury The Pump</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+    /* ── TOKENS ─────────────────────────────────────────── */
     :root {
-      --bg:        #06060e;
-      --bg2:       #0d0d1a;
-      --rip-clr:   #ff3355;
-      --pigeon-clr:#a78bfa;
-      --pump-clr:  #f97316;
-      --cyan:      #22d3ee;
-      --text:      #e2e8f0;
-      --muted:     #64748b;
-      --border:    rgba(255,255,255,0.07);
+      --teal:      #00e5c8;
+      --teal-dim:  rgba(0,229,200,0.12);
+      --teal-glow: rgba(0,229,200,0.45);
+      --bg0:       #040408;
+      --bg1:       #070710;
+      --bg2:       #0a0a14;
+      --border:    rgba(0,229,200,0.14);
+      --text:      #dde0e8;
+      --muted:     rgba(255,255,255,0.38);
     }
 
-    html, body {
-      min-height: 100vh;
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Space Grotesk', sans-serif;
-      overflow-x: hidden;
-    }
+```
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
 
-    /* ── animated noise / grain overlay ── */
-    body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 999;
-      opacity: 0.4;
-    }
+body {
+  background: var(--bg0);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+}
 
-    /* ── ambient glow blobs ── */
-    .blob {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(120px);
-      pointer-events: none;
-      z-index: 0;
-      animation: drift 12s ease-in-out infinite alternate;
-    }
-    .blob-1 { width: 600px; height: 600px; background: rgba(255,51,85,0.08); top: -150px; left: -150px; animation-delay: 0s; }
-    .blob-2 { width: 500px; height: 500px; background: rgba(167,139,250,0.07); bottom: -100px; right: -100px; animation-delay: -4s; }
-    .blob-3 { width: 400px; height: 400px; background: rgba(34,211,238,0.05); top: 40%; left: 40%; animation-delay: -8s; }
+/* Atmospheric radial bg */
+body::before {
+  content:'';
+  position:fixed; inset:0; pointer-events:none; z-index:0;
+  background:
+    radial-gradient(ellipse 80% 55% at 15% 95%, rgba(0,110,80,0.07) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 40% at 88% 5%,  rgba(0,229,200,0.05) 0%, transparent 60%);
+}
 
-    @keyframes drift {
-      from { transform: translate(0,0) scale(1); }
-      to   { transform: translate(40px, 40px) scale(1.1); }
-    }
+/* ── PARTICLES ─────────────────────────────────────── */
+#particles { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+.pt {
+  position:absolute; border-radius:50%;
+  background:radial-gradient(circle, rgba(0,229,200,0.55) 0%, transparent 70%);
+  animation:rise linear infinite;
+}
+@keyframes rise {
+  from { transform:translateY(105vh) scale(0.3); opacity:0; }
+  8%   { opacity:1; }
+  92%  { opacity:0.4; }
+  to   { transform:translateY(-8vh) scale(1); opacity:0; }
+}
 
-    /* ── layout ── */
-    .page {
-      position: relative;
-      z-index: 1;
-      max-width: 860px;
-      margin: 0 auto;
-      padding: 60px 24px 80px;
-      display: flex;
-      flex-direction: column;
-      gap: 40px;
-    }
+/* ── NAV ────────────────────────────────────────────── */
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  backdrop-filter:blur(20px);
+  background:rgba(4,4,8,0.82);
+  border-bottom:1px solid var(--border);
+  height:64px;
+  display:flex; align-items:center;
+  padding:0 32px;
+  gap:32px;
+}
+.nav-brand {
+  font-family:'Creepster', cursive;
+  font-size:28px;
+  color:var(--teal);
+  text-decoration:none;
+  text-shadow:0 0 20px var(--teal-glow);
+  letter-spacing:2px;
+  flex-shrink:0;
+}
+.nav-links {
+  display:flex; gap:28px; list-style:none;
+  margin-left:auto;
+}
+.nav-links a {
+  color:var(--muted);
+  text-decoration:none;
+  font-size:14px;
+  font-weight:500;
+  letter-spacing:0.5px;
+  transition:color .2s;
+}
+.nav-links a:hover { color:var(--text); }
+.nav-socials { display:flex; gap:14px; margin-left:24px; }
+.nav-socials a {
+  color:var(--muted);
+  text-decoration:none;
+  font-size:18px;
+  transition:color .2s;
+}
+.nav-socials a:hover { color:var(--teal); }
+.nav-buy {
+  background:var(--teal);
+  color:#040408;
+  font-size:13px;
+  font-weight:800;
+  padding:8px 20px;
+  border-radius:100px;
+  text-decoration:none;
+  letter-spacing:0.5px;
+  transition:opacity .2s, transform .15s;
+  white-space:nowrap;
+}
+.nav-buy:hover { opacity:.85; transform:translateY(-1px); }
 
-    /* ── header ── */
-    .header { text-align: center; }
-    .header-eyebrow {
-      font-family: 'Space Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 16px;
-    }
-    .header-title {
-      font-size: clamp(36px, 8vw, 72px);
-      font-weight: 700;
-      line-height: 1;
-      background: linear-gradient(135deg, var(--rip-clr) 0%, #ff8fa3 50%, var(--pigeon-clr) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      filter: drop-shadow(0 0 40px rgba(255,51,85,0.4));
-    }
-    .header-sub {
-      margin-top: 14px;
-      font-size: 15px;
-      color: var(--muted);
-      letter-spacing: 0.5px;
-    }
-    .header-sub span { color: var(--pigeon-clr); font-weight: 600; }
-    .header-sub span.pump { color: var(--pump-clr); }
+/* ── SECTION WRAPPER ───────────────────────────────── */
+.section { position:relative; z-index:1; }
+.inner {
+  max-width:1100px;
+  margin:0 auto;
+  padding:0 32px;
+}
 
-    /* ── refresh pill ── */
-    .refresh-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      font-family: 'Space Mono', monospace;
-      font-size: 11px;
-      color: var(--muted);
-    }
-    .pulse-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: var(--cyan);
-      box-shadow: 0 0 8px var(--cyan);
-      animation: pulse-dot 2s ease-in-out infinite;
-    }
-    @keyframes pulse-dot {
-      0%,100% { opacity: 1; transform: scale(1); }
-      50%      { opacity: 0.4; transform: scale(0.7); }
-    }
+/* ── HERO ───────────────────────────────────────────── */
+#hero {
+  min-height:100vh;
+  display:flex; align-items:center; justify-content:center;
+  text-align:center;
+  padding:120px 32px 80px;
+  background:var(--bg0);
+}
+.hero-inner { max-width:700px; width:100%; }
 
-    /* ── card base ── */
-    .card {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 36px;
-      position: relative;
-      overflow: hidden;
-      transition: border-color 0.3s;
-    }
-    .card:hover { border-color: rgba(255,255,255,0.13); }
-    .card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(ellipse at top left, rgba(255,255,255,0.03), transparent 60%);
-      pointer-events: none;
-    }
+.logo-wrap {
+  display:inline-block;
+  margin-bottom:28px;
+}
+.logo-wrap svg {
+  width:clamp(160px, 28vw, 240px);
+  height:auto;
+  animation:float 5s ease-in-out infinite, glow-pulse 3.5s ease-in-out infinite;
+}
+@keyframes float {
+  0%,100% { transform:translateY(0); }
+  50%      { transform:translateY(-14px); }
+}
+@keyframes glow-pulse {
+  0%,100% { filter:drop-shadow(0 0 22px rgba(0,229,200,0.38)); }
+  50%      { filter:drop-shadow(0 0 60px rgba(0,229,200,0.75)); }
+}
 
-    /* ── $RIP card ── */
-    .rip-card {
-      border-color: rgba(255,51,85,0.2);
-      text-align: center;
-    }
-    .rip-card::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(ellipse at 50% 0%, rgba(255,51,85,0.08) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    .rip-card-label {
-      font-family: 'Space Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      color: var(--rip-clr);
-      margin-bottom: 8px;
-      opacity: 0.8;
-    }
-    .rip-token-name {
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--muted);
-      margin-bottom: 24px;
-    }
-    .rip-mcap {
-      font-family: 'Space Mono', monospace;
-      font-size: clamp(42px, 10vw, 80px);
-      font-weight: 700;
-      color: var(--rip-clr);
-      line-height: 1;
-      text-shadow: 0 0 60px rgba(255,51,85,0.5), 0 0 120px rgba(255,51,85,0.2);
-      letter-spacing: -2px;
-      transition: all 0.5s ease;
-      position: relative;
-      z-index: 1;
-    }
-    .rip-mcap.updating {
-      opacity: 0.5;
-      transform: scale(0.98);
-    }
-    .rip-meta {
-      margin-top: 16px;
-      display: flex;
-      justify-content: center;
-      gap: 24px;
-      font-size: 13px;
-      color: var(--muted);
-      font-family: 'Space Mono', monospace;
-    }
-    .rip-meta-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-    .rip-meta-item .label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; }
-    .rip-meta-item .value { color: var(--text); font-weight: 700; }
+h1.hero-title {
+  font-family:'Creepster', cursive;
+  font-size:clamp(80px, 18vw, 160px);
+  color:var(--teal);
+  letter-spacing:6px;
+  line-height:1;
+  text-shadow:0 0 50px rgba(0,229,200,0.5), 0 0 120px rgba(0,229,200,0.2);
+  margin-bottom:6px;
+}
+.hero-tagline {
+  font-size:clamp(12px, 2vw, 15px);
+  font-weight:400;
+  color:var(--muted);
+  letter-spacing:6px;
+  text-transform:uppercase;
+  margin-bottom:36px;
+}
 
-    /* ── flip progress card ── */
-    .flip-card { border-color: rgba(167,139,250,0.2); }
-    .flip-card::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(ellipse at 50% 0%, rgba(167,139,250,0.06) 0%, transparent 70%);
-      pointer-events: none;
-    }
+/* Live mcap in hero */
+.hero-mcap-box {
+  display:inline-flex;
+  flex-direction:column;
+  align-items:center;
+  background:rgba(255,255,255,0.035);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:20px 40px;
+  backdrop-filter:blur(12px);
+  margin-bottom:36px;
+  position:relative;
+  overflow:hidden;
+}
+.hero-mcap-box::before {
+  content:'';
+  position:absolute; inset:0;
+  background:radial-gradient(ellipse at 50% 0%, rgba(0,229,200,0.07) 0%, transparent 70%);
+  pointer-events:none;
+}
+.hero-mcap-label {
+  font-size:10px; letter-spacing:3px; text-transform:uppercase;
+  color:var(--muted); margin-bottom:6px;
+}
+.hero-mcap-num {
+  font-size:clamp(36px, 7vw, 64px);
+  font-weight:900; letter-spacing:-2px; line-height:1;
+  color:var(--teal);
+  text-shadow:0 0 30px rgba(0,229,200,0.4);
+}
+.hero-mcap-chg {
+  font-size:13px; font-weight:600; margin-top:6px;
+}
 
-    .flip-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 28px;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-    .flip-title {
-      font-size: 13px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      color: var(--muted);
-    }
-    .flip-pct-badge {
-      font-family: 'Space Mono', monospace;
-      font-size: 13px;
-      font-weight: 700;
-      padding: 5px 14px;
-      border-radius: 999px;
-      border: 1px solid rgba(167,139,250,0.3);
-      color: var(--pigeon-clr);
-      background: rgba(167,139,250,0.08);
-    }
+/* CTA buttons */
+.hero-btns { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+.btn-primary {
+  background:var(--teal);
+  color:#040408;
+  font-size:15px; font-weight:800;
+  padding:14px 36px;
+  border-radius:100px;
+  text-decoration:none;
+  letter-spacing:0.5px;
+  transition:opacity .2s, transform .15s, box-shadow .2s;
+  box-shadow:0 0 24px rgba(0,229,200,0.3);
+}
+.btn-primary:hover { opacity:.85; transform:translateY(-2px); box-shadow:0 0 40px rgba(0,229,200,0.5); }
+.btn-secondary {
+  background:transparent;
+  color:var(--teal);
+  font-size:15px; font-weight:700;
+  padding:13px 36px;
+  border-radius:100px;
+  text-decoration:none;
+  letter-spacing:0.5px;
+  border:2px solid rgba(0,229,200,0.4);
+  transition:border-color .2s, color .2s, transform .15s;
+}
+.btn-secondary:hover { border-color:var(--teal); transform:translateY(-2px); }
 
-    /* ── token mcap row ── */
-    .token-row {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 10px;
-    }
-    .token-icon {
-      width: 38px; height: 38px;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px;
-      flex-shrink: 0;
-    }
-    .token-icon.pigeon { background: rgba(167,139,250,0.15); border: 1px solid rgba(167,139,250,0.3); }
-    .token-icon.pump   { background: rgba(249,115,22,0.15);  border: 1px solid rgba(249,115,22,0.3); }
-    .token-label-wrap { flex: 1; min-width: 0; }
-    .token-ticker { font-size: 14px; font-weight: 700; }
-    .token-ticker.pigeon { color: var(--pigeon-clr); }
-    .token-ticker.pump   { color: var(--pump-clr); }
-    .token-mcap-val {
-      font-family: 'Space Mono', monospace;
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text);
-      transition: all 0.5s ease;
-    }
-    .token-mcap-val.updating { opacity: 0.4; }
+/* ── MARQUEE ────────────────────────────────────────── */
+.marquee-wrap {
+  background:var(--teal);
+  padding:12px 0;
+  overflow:hidden;
+  position:relative; z-index:1;
+}
+.marquee-track {
+  display:flex;
+  width:max-content;
+  animation:marquee 22s linear infinite;
+}
+.marquee-item {
+  color:#040408;
+  font-size:13px;
+  font-weight:800;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  padding:0 40px;
+  white-space:nowrap;
+}
+@keyframes marquee {
+  from { transform:translateX(0); }
+  to   { transform:translateX(-50%); }
+}
 
-    /* ── progress bar ── */
-    .progress-wrap {
-      margin: 24px 0 8px;
-      position: relative;
-    }
-    .progress-track {
-      height: 18px;
-      background: rgba(255,255,255,0.04);
-      border-radius: 999px;
-      overflow: visible;
-      position: relative;
-      border: 1px solid rgba(255,255,255,0.06);
-    }
-    .progress-fill {
-      height: 100%;
-      border-radius: 999px;
-      background: linear-gradient(90deg, #6d28d9, var(--pigeon-clr), #c4b5fd);
-      box-shadow: 0 0 20px rgba(167,139,250,0.5), 0 0 40px rgba(167,139,250,0.2);
-      transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1);
-      position: relative;
-      min-width: 8px;
-    }
-    .progress-fill::after {
-      content: '🕊';
-      position: absolute;
-      right: -2px; top: 50%;
-      transform: translateY(-50%);
-      font-size: 20px;
-      filter: drop-shadow(0 0 8px rgba(167,139,250,0.8));
-      animation: pigeon-wobble 2s ease-in-out infinite;
-    }
-    @keyframes pigeon-wobble {
-      0%,100% { transform: translateY(-50%) rotate(-5deg); }
-      50%      { transform: translateY(-55%) rotate(5deg); }
-    }
+/* ── ABOUT ──────────────────────────────────────────── */
+#about {
+  background:var(--bg1);
+  padding:120px 0;
+}
+.about-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:80px;
+  align-items:center;
+}
+.about-logo {
+  display:flex; justify-content:center;
+}
+.about-logo svg {
+  width:clamp(200px, 35vw, 320px);
+  height:auto;
+  filter:drop-shadow(0 0 40px rgba(0,229,200,0.4));
+  animation:float 6s ease-in-out infinite;
+}
+.about-text {}
+.section-label {
+  font-size:11px;
+  letter-spacing:4px;
+  text-transform:uppercase;
+  color:var(--teal);
+  font-weight:600;
+  margin-bottom:14px;
+}
+.section-heading {
+  font-family:'Creepster', cursive;
+  font-size:clamp(36px, 5vw, 52px);
+  color:var(--text);
+  letter-spacing:2px;
+  line-height:1.1;
+  margin-bottom:24px;
+}
+.about-body {
+  font-size:clamp(15px, 2vw, 18px);
+  line-height:1.9;
+  color:rgba(255,255,255,0.68);
+  font-weight:300;
+}
+.about-body p { margin-bottom:16px; }
+.about-body strong { color:var(--teal); font-weight:700; font-style:normal; }
+.about-body em { font-style:italic; }
 
-    /* flip marker */
-    .progress-flip-marker {
-      position: absolute;
-      top: -4px; right: 0;
-      width: 2px;
-      height: calc(100% + 8px);
-      background: var(--pump-clr);
-      opacity: 0.6;
-      border-radius: 999px;
-    }
-    .progress-flip-marker::before {
-      content: '🎯 FLIP';
-      position: absolute;
-      top: -22px; right: 4px;
-      font-family: 'Space Mono', monospace;
-      font-size: 9px;
-      color: var(--pump-clr);
-      letter-spacing: 1px;
-      white-space: nowrap;
-    }
+/* ── TOKEN INFO ─────────────────────────────────────── */
+#tokeninfo {
+  background:var(--bg0);
+  padding:100px 0;
+}
+.token-center { text-align:center; margin-bottom:56px; }
 
-    .progress-labels {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 10px;
-      font-family: 'Space Mono', monospace;
-      font-size: 11px;
-      color: var(--muted);
-    }
+/* CA bar */
+.ca-bar {
+  background:rgba(255,255,255,0.035);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:18px 24px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin:0 auto 48px;
+  max-width:720px;
+  flex-wrap:wrap;
+}
+.ca-label {
+  font-size:10px; letter-spacing:3px; text-transform:uppercase;
+  color:var(--muted); flex-shrink:0;
+}
+.ca-addr {
+  font-size:13px; font-weight:500;
+  color:var(--text);
+  font-family:'SF Mono', 'Courier New', monospace;
+  flex:1; min-width:0;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.ca-copy {
+  background:var(--teal);
+  color:#040408;
+  border:none; cursor:pointer;
+  font-size:12px; font-weight:800;
+  padding:8px 18px; border-radius:100px;
+  letter-spacing:0.5px;
+  transition:opacity .2s;
+  flex-shrink:0;
+}
+.ca-copy:hover { opacity:.8; }
 
-    /* ── gap callout ── */
-    .gap-callout {
-      margin-top: 24px;
-      padding: 18px 22px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-    .gap-label {
-      font-size: 12px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-    }
-    .gap-value {
-      font-family: 'Space Mono', monospace;
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--text);
-      transition: all 0.5s ease;
-    }
-    .gap-value.updating { opacity: 0.4; }
-    .gap-sub {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 3px;
-    }
+/* On-chain proof card */
+.onchain-wrap {
+  max-width:680px;
+  margin:0 auto;
+}
+.onchain-card {
+  background:#0d0d18;
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:18px;
+  padding:32px 36px;
+}
+.onchain-title {
+  display:flex; align-items:center; gap:10px;
+  font-size:11px; font-weight:700;
+  letter-spacing:3px; text-transform:uppercase;
+  color:#6eb5ff;
+  margin-bottom:28px;
+}
+.onchain-title svg { width:16px; height:16px; }
+.onchain-row {
+  display:flex; align-items:center;
+  justify-content:space-between;
+  padding:16px 0;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+  gap:12px;
+}
+.onchain-row:last-of-type { border-bottom:none; }
+.onchain-left {
+  display:flex; align-items:center; gap:12px;
+}
+.onchain-ico {
+  color:#6eb5ff;
+  display:flex; align-items:center;
+}
+.onchain-ico svg { width:18px; height:18px; }
+.onchain-key {
+  font-size:16px; font-weight:400;
+  color:rgba(255,255,255,0.82);
+}
+.onchain-right {
+  display:flex; align-items:center; gap:10px;
+  flex-shrink:0;
+}
+.onchain-val {
+  font-size:16px; font-weight:400;
+  color:rgba(255,255,255,0.55);
+  font-family:'SF Mono','Courier New',monospace;
+}
+.onchain-dot {
+  width:9px; height:9px; border-radius:50%;
+  background:#3dd68c;
+  box-shadow:0 0 8px rgba(61,214,140,0.6);
+  flex-shrink:0;
+}
+.onchain-sep {
+  border:none;
+  border-top:1px solid rgba(255,255,255,0.07);
+  margin:8px 0 16px;
+}
+.onchain-verify {
+  display:flex; align-items:center; gap:6px;
+  color:#6eb5ff;
+  text-decoration:none;
+  font-size:14px; font-weight:500;
+  transition:opacity .2s;
+}
+.onchain-verify:hover { opacity:.75; }
+.onchain-verify svg { width:14px; height:14px; }
 
-    /* ── flipped state ── */
-    .flipped-banner {
-      display: none;
-      text-align: center;
-      padding: 24px;
-      border-radius: 16px;
-      background: linear-gradient(135deg, rgba(167,139,250,0.15), rgba(34,211,238,0.1));
-      border: 1px solid rgba(167,139,250,0.4);
-      animation: flash-in 0.5s ease;
-    }
-    .flipped-banner.visible { display: block; }
-    @keyframes flash-in {
-      from { opacity: 0; transform: scale(0.95); }
-      to   { opacity: 1; transform: scale(1); }
-    }
-    .flipped-banner h2 {
-      font-size: 28px;
-      font-weight: 700;
-      background: linear-gradient(90deg, var(--pigeon-clr), var(--cyan));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .flipped-banner p { color: var(--muted); font-size: 14px; margin-top: 8px; }
+/* ── BATTLE ─────────────────────────────────────────── */
+#battle {
+  background:var(--bg2);
+  padding:120px 0;
+}
+.battle-center { text-align:center; margin-bottom:56px; }
 
-    /* ── skeleton loader ── */
-    .skeleton {
-      display: inline-block;
-      height: 1em;
-      border-radius: 4px;
-      background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-    }
-    @keyframes shimmer {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
+.battle-card {
+  background:rgba(255,255,255,0.03);
+  border:1px solid var(--border);
+  border-radius:24px;
+  padding:48px 40px 40px;
+  backdrop-filter:blur(12px);
+  max-width:800px; margin:0 auto;
+}
+.battle-pct {
+  font-size:clamp(64px, 14vw, 112px);
+  font-weight:900;
+  color:#93c5fd;
+  letter-spacing:-4px; line-height:1;
+  text-shadow:0 0 40px rgba(147,197,253,0.35);
+  margin-bottom:10px;
+}
+.battle-desc {
+  font-size:15px; color:var(--muted);
+  margin-bottom:40px; min-height:22px;
+}
+.battle-tokens {
+  display:flex; justify-content:space-between;
+  align-items:flex-end; margin-bottom:14px;
+  flex-wrap:wrap; gap:10px;
+}
+.btok { text-align:center; }
+.btok-name { font-size:22px; font-weight:800; letter-spacing:2px; }
+.btok-mc { font-size:13px; color:var(--muted); margin-top:4px; }
+.btok.pigeon .btok-name { color:#93c5fd; }
+.btok.pump   .btok-name { color:#f87171; }
+.btok-arrow { color:rgba(255,255,255,0.18); font-size:26px; align-self:center; }
 
-    /* ── footer ── */
-    .footer {
-      text-align: center;
-      font-size: 11px;
-      color: var(--muted);
-      font-family: 'Space Mono', monospace;
-      opacity: 0.5;
-      line-height: 1.8;
-    }
-    .footer a { color: var(--muted); text-decoration: none; }
+.bar-track {
+  background:rgba(255,255,255,0.06);
+  border-radius:100px; height:28px;
+  overflow:hidden; margin-bottom:12px;
+}
+.bar-fill {
+  height:100%; border-radius:100px;
+  background:linear-gradient(90deg, #3b82f6 0%, #93c5fd 100%);
+  transition:width 1.4s cubic-bezier(.4,0,.2,1);
+  min-width:2%; position:relative;
+}
+.bar-fill::after {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 100%);
+  border-radius:100px;
+}
+.bar-caption {
+  text-align:center; font-size:12px;
+  color:rgba(255,255,255,0.3); letter-spacing:1px;
+}
 
-    /* ── error banner ── */
-    .error-banner {
-      display: none;
-      text-align: center;
-      padding: 12px;
-      background: rgba(255,51,85,0.08);
-      border: 1px solid rgba(255,51,85,0.2);
-      border-radius: 10px;
-      font-size: 12px;
-      color: var(--rip-clr);
-      font-family: 'Space Mono', monospace;
-    }
-    .error-banner.visible { display: block; }
+/* ── HOW TO BUY ─────────────────────────────────────── */
+#howtobuy {
+  background:var(--bg1);
+  padding:120px 0;
+}
+.howtobuy-center { text-align:center; margin-bottom:64px; }
 
-    @media (max-width: 480px) {
-      .page { padding: 36px 16px 60px; }
-      .card { padding: 24px 20px; }
-      .flip-header { flex-direction: column; align-items: flex-start; }
-      .gap-callout { flex-direction: column; }
-    }
+.steps-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+  gap:24px;
+}
+.step-card {
+  background:rgba(255,255,255,0.03);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:32px 24px;
+  text-align:center;
+  transition:border-color .3s, transform .2s;
+}
+.step-card:hover { border-color:rgba(0,229,200,0.3); transform:translateY(-4px); }
+.step-num {
+  font-family:'Creepster', cursive;
+  font-size:56px;
+  color:var(--teal);
+  line-height:1;
+  text-shadow:0 0 20px rgba(0,229,200,0.3);
+  margin-bottom:12px;
+}
+.step-title {
+  font-size:17px; font-weight:700;
+  color:var(--text); margin-bottom:10px;
+}
+.step-body {
+  font-size:14px; line-height:1.7;
+  color:var(--muted);
+}
+.step-body a { color:var(--teal); text-decoration:none; }
+.step-body a:hover { text-decoration:underline; }
+
+/* ── LIVE MARKETS ───────────────────────────────────── */
+#markets {
+  background:var(--bg0);
+  padding:100px 0;
+}
+.markets-center { text-align:center; margin-bottom:52px; }
+
+.markets-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
+  gap:16px;
+}
+.mcard {
+  background:rgba(255,255,255,0.03);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:28px;
+  transition:border-color .3s, transform .2s;
+}
+.mcard:hover { border-color:rgba(0,229,200,0.28); transform:translateY(-3px); }
+.mcard.rip { border-color:rgba(0,229,200,0.2); }
+.mc-label { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+.mc-sym { font-size:24px; font-weight:800; letter-spacing:1px; }
+.rip    .mc-sym { color:var(--teal); }
+.pigeon .mc-sym { color:#93c5fd; }
+.pump   .mc-sym { color:#f87171; }
+.mc-val { font-size:32px; font-weight:700; letter-spacing:-1px; margin:10px 0 6px; }
+.mc-chg { font-size:13px; font-weight:600; }
+
+/* ── SOCIALS ────────────────────────────────────────── */
+#socials {
+  background:var(--bg2);
+  padding:100px 0;
+  text-align:center;
+}
+.socials-center { margin-bottom:52px; }
+.social-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
+  gap:14px;
+  max-width:800px; margin:0 auto;
+}
+.soc-card {
+  background:rgba(255,255,255,0.03);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:28px 20px;
+  text-decoration:none;
+  display:flex; flex-direction:column;
+  align-items:center; gap:12px;
+  transition:border-color .3s, transform .2s, background .2s;
+}
+.soc-card:hover {
+  border-color:rgba(0,229,200,0.3);
+  background:rgba(0,229,200,0.04);
+  transform:translateY(-4px);
+}
+.soc-icon { font-size:32px; }
+.soc-name { font-size:15px; font-weight:700; color:var(--text); }
+.soc-sub  { font-size:12px; color:var(--muted); }
+
+/* ── FOOTER ─────────────────────────────────────────── */
+footer {
+  background:var(--bg0);
+  border-top:1px solid rgba(255,255,255,0.06);
+  padding:40px 32px;
+  text-align:center;
+  position:relative; z-index:1;
+}
+.footer-brand {
+  font-family:'Creepster', cursive;
+  font-size:28px; color:var(--teal);
+  text-shadow:0 0 20px var(--teal-glow);
+  letter-spacing:2px; margin-bottom:8px;
+}
+.footer-ca {
+  font-size:11px; color:rgba(255,255,255,0.18);
+  font-family:'SF Mono','Courier New',monospace;
+  letter-spacing:1px; margin-bottom:12px;
+}
+.footer-note {
+  font-size:12px; color:rgba(255,255,255,0.2);
+}
+
+/* ── SHARED UTILS ───────────────────────────────────── */
+.pos { color:#4ade80; }
+.neg { color:#f87171; }
+.neu { color:var(--muted); }
+.last-upd {
+  text-align:center; font-size:11px;
+  color:rgba(255,255,255,0.18);
+  margin-top:32px; letter-spacing:1px;
+}
+
+/* ── FLYING PIGEON ──────────────────────────────────── */
+#flying-pigeon {
+  position:fixed;
+  z-index:9999;
+  pointer-events:none;
+  font-size:clamp(36px, 6vw, 56px);
+  top:0; left:0;
+  will-change:transform;
+  display:none;
+  filter:drop-shadow(0 2px 8px rgba(0,0,0,0.5));
+  /* flip horizontally when flying left-to-right, handled by JS */
+}
+@keyframes pigeonFly {
+  0%   { transform:translateX(var(--px-start)) translateY(var(--py-start)) scaleX(var(--flip)); }
+  25%  { transform:translateX(calc(var(--px-start) + (var(--px-end) - var(--px-start))*0.25)) translateY(calc(var(--py-start) - 60px)) scaleX(var(--flip)); }
+  50%  { transform:translateX(calc(var(--px-start) + (var(--px-end) - var(--px-start))*0.5))  translateY(calc(var(--py-start) + 20px)) scaleX(var(--flip)); }
+  75%  { transform:translateX(calc(var(--px-start) + (var(--px-end) - var(--px-start))*0.75)) translateY(calc(var(--py-start) - 40px)) scaleX(var(--flip)); }
+  100% { transform:translateX(var(--px-end))   translateY(var(--py-start)) scaleX(var(--flip)); }
+}
+
+/* ── RESPONSIVE ─────────────────────────────────────── */
+@media (max-width:720px) {
+  nav { padding:0 16px; gap:16px; }
+  .nav-links { display:none; }
+  .inner { padding:0 20px; }
+  .about-grid { grid-template-columns:1fr; gap:40px; }
+  .about-logo { order:-1; }
+  .battle-card { padding:32px 20px 28px; }
+  #hero { padding:100px 20px 60px; }
+}
+```
+
   </style>
 </head>
 <body>
 
-<div class="blob blob-1"></div>
-<div class="blob blob-2"></div>
-<div class="blob blob-3"></div>
+<!-- Particles -->
 
-<div class="page">
+<div id="particles"></div>
 
-  <!-- Header -->
-  <header class="header">
-    <p class="header-eyebrow">Live Market Data · Solana</p>
-    <h1 class="header-title">THE INEVITABLE FLIP</h1>
-    <p class="header-sub">
-      <span>$Pigeon</span> will overtake <span class="pump">$PUMP</span> —
-      <span>$RIP</span> is the tokenised proof.
-    </p>
-  </header>
+<!-- Flying pigeon -->
 
-  <!-- Refresh status -->
-  <div class="refresh-row">
-    <span class="pulse-dot"></span>
-    <span id="refresh-label">Fetching live data…</span>
+<div id="flying-pigeon" aria-hidden="true">🐦</div>
+
+<!-- ══ NAV ════════════════════════════════════════════════ -->
+
+<nav>
+  <a class="nav-brand" href="#">$RIP</a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#battle">The Battle</a></li>
+    <li><a href="#howtobuy">How to Buy</a></li>
+    <li><a href="#markets">Markets</a></li>
+  </ul>
+  <div class="nav-socials">
+    <a href="https://x.com/i/communities/2026114124686434659" target="_blank" rel="noopener" title="X Community">𝕏</a>
   </div>
+  <a class="nav-buy" href="https://941pigeon.fun/token/HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx" target="_blank" rel="noopener">Buy $RIP</a>
+</nav>
 
-  <!-- Error banner -->
-  <div class="error-banner" id="error-banner">
-    ⚠ Could not reach price API — retrying in 30s. Data may be stale.
-  </div>
+<!-- ══ HERO ═══════════════════════════════════════════════ -->
 
-  <!-- $RIP Market Cap Card -->
-  <div class="card rip-card">
-    <p class="rip-card-label">Market Cap</p>
-    <p class="rip-token-name">$RIP · HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx</p>
-    <div class="rip-mcap" id="rip-mcap">
-      <span class="skeleton" style="width:260px; height:0.9em;">&nbsp;</span>
-    </div>
-    <div class="rip-meta" id="rip-meta" style="opacity:0; transition: opacity 0.5s;">
-      <div class="rip-meta-item">
-        <span class="label">Price</span>
-        <span class="value" id="rip-price">—</span>
-      </div>
-      <div class="rip-meta-item">
-        <span class="label">24h Change</span>
-        <span class="value" id="rip-change">—</span>
-      </div>
-      <div class="rip-meta-item">
-        <span class="label">Volume 24h</span>
-        <span class="value" id="rip-vol">—</span>
-      </div>
-    </div>
-  </div>
+<section id="hero" class="section">
+  <div class="hero-inner">
 
-  <!-- The Flip Progress Card -->
-  <div class="card flip-card">
-    <div class="flip-header">
-      <span class="flip-title">🕊 Pigeon → 🎯 Pump Flip Progress</span>
-      <span class="flip-pct-badge" id="flip-pct-badge">…%</span>
-    </div>
-
-    <!-- Pigeon row -->
-    <div class="token-row">
-      <div class="token-icon pigeon">🕊</div>
-      <div class="token-label-wrap">
-        <div class="token-ticker pigeon">$Pigeon</div>
-        <div style="font-size:11px; color: var(--muted); margin-top:2px; font-family:'Space Mono',monospace;">4fSWEw…Gpump</div>
-      </div>
-      <div class="token-mcap-val" id="pigeon-mcap">
-        <span class="skeleton" style="width:90px;">&nbsp;</span>
-      </div>
-    </div>
-
-    <!-- Pump row -->
-    <div class="token-row">
-      <div class="token-icon pump">🔥</div>
-      <div class="token-label-wrap">
-        <div class="token-ticker pump">$PUMP</div>
-        <div style="font-size:11px; color: var(--muted); margin-top:2px; font-family:'Space Mono',monospace;">2uF4Xh…Qeoiud</div>
-      </div>
-      <div class="token-mcap-val" id="pump-mcap">
-        <span class="skeleton" style="width:90px;">&nbsp;</span>
-      </div>
-    </div>
-
-    <!-- Progress bar -->
-    <div class="progress-wrap">
-      <div class="progress-track">
-        <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
-        <div class="progress-flip-marker"></div>
-      </div>
-      <div class="progress-labels">
-        <span>0%</span>
-        <span id="progress-pct-label">Loading…</span>
-        <span>100% = FLIP 🏁</span>
-      </div>
-    </div>
-
-    <!-- Gap callout -->
-    <div class="gap-callout">
-      <div>
-        <div class="gap-label">Remaining Gap</div>
-        <div class="gap-value" id="gap-value">—</div>
-        <div class="gap-sub" id="gap-sub">Market cap $Pigeon needs to gain</div>
-      </div>
-      <div style="text-align:right;">
-        <div class="gap-label">Pigeon is</div>
-        <div class="gap-value" id="ratio-value">—</div>
-        <div class="gap-sub">of PUMP's market cap</div>
-      </div>
-    </div>
-
-    <!-- Flipped banner (hidden until flip happens) -->
-    <div class="flipped-banner" id="flipped-banner" style="margin-top: 24px;">
-      <h2>🕊 THE FLIP HAS HAPPENED 🕊</h2>
-      <p>Pigeon has officially overtaken PUMP. $RIP to the narrative.</p>
-    </div>
-  </div>
-
-  <footer class="footer">
-    Data via DexScreener · Auto-refreshes every 30s · Not financial advice<br/>
-    <span style="opacity:0.5;">$RIP · $Pigeon · $PUMP</span>
-  </footer>
-
+```
+<div class="logo-wrap">
+  <!-- ── TOMBSTONE SVG ── -->
+  <svg viewBox="0 0 320 420" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="tombGlow" x="-28%" y="-18%" width="156%" height="136%">
+        <feGaussianBlur stdDeviation="10" result="blur"/>
+        <feColorMatrix type="matrix"
+          values="0 0 0 0 0.0  0 0 0 0 0.88  0 0 0 0 0.78  0 0 0 0.85 0"
+          in="blur" result="tealBlur"/>
+        <feMerge><feMergeNode in="tealBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <linearGradient id="stoneF" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%"   stop-color="#8a9bab"/>
+        <stop offset="55%"  stop-color="#6e7e8e"/>
+        <stop offset="100%" stop-color="#54636f"/>
+      </linearGradient>
+      <linearGradient id="stoneB" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%"   stop-color="#7a8a98"/>
+        <stop offset="100%" stop-color="#4e5e6a"/>
+      </linearGradient>
+      <linearGradient id="pWhite" x1="20%" y1="0%" x2="80%" y2="100%">
+        <stop offset="0%"   stop-color="#eef3f8"/>
+        <stop offset="100%" stop-color="#c8d4de"/>
+      </linearGradient>
+      <linearGradient id="pGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%"   stop-color="#5edcaa"/>
+        <stop offset="100%" stop-color="#2caa76"/>
+      </linearGradient>
+      <clipPath id="pillWin">
+        <ellipse cx="159" cy="168" rx="66" ry="92"/>
+      </clipPath>
+    </defs>
+    <!-- base slab -->
+    <rect x="22" y="348" width="276" height="58" rx="10"
+          fill="url(#stoneB)" stroke="#2e3e4a" stroke-width="3.5"
+          filter="url(#tombGlow)"/>
+    <!-- moss on base -->
+    <ellipse cx="55"  cy="349" rx="28" ry="9" fill="#2d5e35" opacity="0.85"/>
+    <ellipse cx="265" cy="349" rx="28" ry="9" fill="#2d5e35" opacity="0.85"/>
+    <ellipse cx="160" cy="351" rx="22" ry="7" fill="#3a7040" opacity="0.55"/>
+    <path d="M44 350 Q42 340 40 348" stroke="#3a7040" stroke-width="2" fill="none" opacity="0.7"/>
+    <path d="M58 348 Q56 336 54 347" stroke="#3a7040" stroke-width="2" fill="none" opacity="0.7"/>
+    <path d="M268 350 Q270 338 272 349" stroke="#3a7040" stroke-width="2" fill="none" opacity="0.7"/>
+    <!-- tombstone body -->
+    <path d="M 62 358 L 62 175 Q 62 28 160 28 Q 258 28 258 175 L 258 358 Z"
+          fill="url(#stoneF)" stroke="#2c3c48" stroke-width="4.5"
+          filter="url(#tombGlow)"/>
+    <!-- highlight edge -->
+    <path d="M 66 340 L 66 178 Q 66 42 160 42"
+          stroke="rgba(255,255,255,0.12)" stroke-width="2" fill="none"/>
+    <!-- cracks -->
+    <path d="M 90 195 L 95 242 L 89 272" stroke="#4a5868" stroke-width="1.8" fill="none" opacity="0.55"/>
+    <path d="M 216 130 L 224 178 L 218 208" stroke="#4a5868" stroke-width="1.8" fill="none" opacity="0.55"/>
+    <path d="M 155 50 L 153 82"  stroke="#4a5868" stroke-width="1.2" fill="none" opacity="0.4"/>
+    <!-- lichen -->
+    <ellipse cx="100" cy="300" rx="10" ry="6" fill="#3a5c30" opacity="0.4"/>
+    <ellipse cx="225" cy="280" rx="8"  ry="5" fill="#3a5c30" opacity="0.35"/>
+    <!-- pill frame -->
+    <ellipse cx="159" cy="168" rx="70" ry="97"
+             fill="#1a2830" stroke="#0e1c26" stroke-width="4"
+             filter="url(#tombGlow)"/>
+    <!-- pill capsule -->
+    <g clip-path="url(#pillWin)">
+      <g transform="rotate(-30, 159, 168)">
+        <rect x="93" y="76"  width="132" height="92" fill="url(#pWhite)"/>
+        <rect x="93" y="168" width="132" height="92" fill="url(#pGreen)"/>
+        <line x1="93" y1="168" x2="225" y2="168" stroke="rgba(0,0,0,0.25)" stroke-width="2"/>
+      </g>
+      <ellipse cx="172" cy="118" rx="24" ry="14" fill="rgba(255,255,255,0.22)" transform="rotate(-30,172,118)"/>
+      <path d="M164 96 Q175 108 168 130" stroke="rgba(255,255,255,0.3)" stroke-width="3" fill="none" stroke-linecap="round" transform="rotate(-30,166,113)"/>
+      <ellipse cx="143" cy="210" rx="16" ry="9" fill="rgba(255,255,255,0.28)" transform="rotate(-30,143,210)"/>
+    </g>
+    <!-- pill frame ring -->
+    <ellipse cx="159" cy="168" rx="70" ry="97" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="2"/>
+    <!-- thorn spikes -->
+    <g stroke="#0e1c26" stroke-width="1.5" fill="#1a2830">
+      <polygon points="159,68   154,76  164,76"/>
+      <polygon points="159,268  154,260 164,260"/>
+      <polygon points="87,168   95,163  95,173"/>
+      <polygon points="231,168  223,163 223,173"/>
+      <polygon points="102,98   110,102 106,111"/>
+      <polygon points="216,238  208,234 212,225"/>
+    </g>
+    <!-- R.I.P. text -->
+    <text x="159" y="302" text-anchor="middle"
+          font-family="Georgia,'Times New Roman',serif"
+          font-size="32" font-weight="900"
+          fill="#34444f" letter-spacing="7"
+          stroke="#28383f" stroke-width="2"
+          style="paint-order:stroke;">R.I.P.</text>
+    <text x="159" y="300" text-anchor="middle"
+          font-family="Georgia,'Times New Roman',serif"
+          font-size="32" font-weight="900"
+          fill="rgba(255,255,255,0.07)" letter-spacing="7">R.I.P.</text>
+    <line x1="105" y1="312" x2="213" y2="312" stroke="#3a4a55" stroke-width="1.2" opacity="0.5"/>
+    <!-- base moss junction -->
+    <ellipse cx="85"  cy="358" rx="18" ry="5.5" fill="#2d5e35" opacity="0.65"/>
+    <ellipse cx="235" cy="358" rx="18" ry="5.5" fill="#2d5e35" opacity="0.65"/>
+  </svg>
 </div>
 
+<h1 class="hero-title">$RIP</h1>
+<p class="hero-tagline">Rest In PumpFun</p>
+
+<div class="hero-mcap-box">
+  <div class="hero-mcap-label">🪦 &nbsp;$RIP Market Cap</div>
+  <div class="hero-mcap-num" id="rip-mcap">—</div>
+  <div class="hero-mcap-chg neu" id="rip-chg">—</div>
+</div>
+
+<div class="hero-btns">
+  <a class="btn-primary" href="https://941pigeon.fun/token/HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx" target="_blank" rel="noopener">🪦 Buy $RIP</a>
+  <a class="btn-secondary" href="https://dexscreener.com/solana/HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx" target="_blank" rel="noopener">View Chart</a>
+</div>
+```
+
+  </div>
+</section>
+
+<!-- ══ MARQUEE ════════════════════════════════════════════ -->
+
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <!-- doubled for seamless loop -->
+    <span class="marquee-item">🪦 $RIP</span><span class="marquee-item">·</span>
+    <span class="marquee-item">REST IN PUMPFUN</span><span class="marquee-item">·</span>
+    <span class="marquee-item">🪦 THEY PUMPED</span><span class="marquee-item">·</span>
+    <span class="marquee-item">THEY DUMPED</span><span class="marquee-item">·</span>
+    <span class="marquee-item">THEY EXTRACTED</span><span class="marquee-item">·</span>
+    <span class="marquee-item">🪦 NOW WE BURY THEM</span><span class="marquee-item">·</span>
+    <span class="marquee-item">$RIP 🪦</span><span class="marquee-item">·</span>
+    <span class="marquee-item">🪦 $RIP</span><span class="marquee-item">·</span>
+    <span class="marquee-item">REST IN PUMPFUN</span><span class="marquee-item">·</span>
+    <span class="marquee-item">🪦 THEY PUMPED</span><span class="marquee-item">·</span>
+    <span class="marquee-item">THEY DUMPED</span><span class="marquee-item">·</span>
+    <span class="marquee-item">THEY EXTRACTED</span><span class="marquee-item">·</span>
+    <span class="marquee-item">🪦 NOW WE BURY THEM</span><span class="marquee-item">·</span>
+    <span class="marquee-item">$RIP 🪦</span><span class="marquee-item">·</span>
+  </div>
+</div>
+
+<!-- ══ ABOUT ══════════════════════════════════════════════ -->
+
+<section id="about" class="section">
+  <div style="background:var(--bg1); padding:120px 0;">
+    <div class="inner">
+      <div class="about-grid">
+
+```
+    <div class="about-logo">
+      <!-- Same tombstone SVG, reused -->
+      <svg viewBox="0 0 320 420" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="tombGlow2" x="-28%" y="-18%" width="156%" height="136%">
+            <feGaussianBlur stdDeviation="10" result="blur"/>
+            <feColorMatrix type="matrix"
+              values="0 0 0 0 0.0  0 0 0 0 0.88  0 0 0 0 0.78  0 0 0 0.85 0"
+              in="blur" result="tealBlur"/>
+            <feMerge><feMergeNode in="tealBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <linearGradient id="stoneF2" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%"   stop-color="#8a9bab"/>
+            <stop offset="55%"  stop-color="#6e7e8e"/>
+            <stop offset="100%" stop-color="#54636f"/>
+          </linearGradient>
+          <linearGradient id="stoneB2" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%"   stop-color="#7a8a98"/>
+            <stop offset="100%" stop-color="#4e5e6a"/>
+          </linearGradient>
+          <linearGradient id="pWhite2" x1="20%" y1="0%" x2="80%" y2="100%">
+            <stop offset="0%"   stop-color="#eef3f8"/>
+            <stop offset="100%" stop-color="#c8d4de"/>
+          </linearGradient>
+          <linearGradient id="pGreen2" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%"   stop-color="#5edcaa"/>
+            <stop offset="100%" stop-color="#2caa76"/>
+          </linearGradient>
+          <clipPath id="pillWin2"><ellipse cx="159" cy="168" rx="66" ry="92"/></clipPath>
+        </defs>
+        <rect x="22" y="348" width="276" height="58" rx="10" fill="url(#stoneB2)" stroke="#2e3e4a" stroke-width="3.5" filter="url(#tombGlow2)"/>
+        <ellipse cx="55"  cy="349" rx="28" ry="9" fill="#2d5e35" opacity="0.85"/>
+        <ellipse cx="265" cy="349" rx="28" ry="9" fill="#2d5e35" opacity="0.85"/>
+        <ellipse cx="160" cy="351" rx="22" ry="7" fill="#3a7040" opacity="0.55"/>
+        <path d="M44 350 Q42 340 40 348" stroke="#3a7040" stroke-width="2" fill="none" opacity="0.7"/>
+        <path d="M58 348 Q56 336 54 347" stroke="#3a7040" stroke-width="2" fill="none" opacity="0.7"/>
+        <path d="M268 350 Q270 338 272 349" stroke="#3a7040" stroke-width="2" fill="none" opacity="0.7"/>
+        <path d="M 62 358 L 62 175 Q 62 28 160 28 Q 258 28 258 175 L 258 358 Z" fill="url(#stoneF2)" stroke="#2c3c48" stroke-width="4.5" filter="url(#tombGlow2)"/>
+        <path d="M 66 340 L 66 178 Q 66 42 160 42" stroke="rgba(255,255,255,0.12)" stroke-width="2" fill="none"/>
+        <path d="M 90 195 L 95 242 L 89 272" stroke="#4a5868" stroke-width="1.8" fill="none" opacity="0.55"/>
+        <path d="M 216 130 L 224 178 L 218 208" stroke="#4a5868" stroke-width="1.8" fill="none" opacity="0.55"/>
+        <path d="M 155 50 L 153 82" stroke="#4a5868" stroke-width="1.2" fill="none" opacity="0.4"/>
+        <ellipse cx="100" cy="300" rx="10" ry="6" fill="#3a5c30" opacity="0.4"/>
+        <ellipse cx="225" cy="280" rx="8"  ry="5" fill="#3a5c30" opacity="0.35"/>
+        <ellipse cx="159" cy="168" rx="70" ry="97" fill="#1a2830" stroke="#0e1c26" stroke-width="4" filter="url(#tombGlow2)"/>
+        <g clip-path="url(#pillWin2)">
+          <g transform="rotate(-30, 159, 168)">
+            <rect x="93" y="76"  width="132" height="92" fill="url(#pWhite2)"/>
+            <rect x="93" y="168" width="132" height="92" fill="url(#pGreen2)"/>
+            <line x1="93" y1="168" x2="225" y2="168" stroke="rgba(0,0,0,0.25)" stroke-width="2"/>
+          </g>
+          <ellipse cx="172" cy="118" rx="24" ry="14" fill="rgba(255,255,255,0.22)" transform="rotate(-30,172,118)"/>
+          <ellipse cx="143" cy="210" rx="16" ry="9" fill="rgba(255,255,255,0.28)" transform="rotate(-30,143,210)"/>
+        </g>
+        <ellipse cx="159" cy="168" rx="70" ry="97" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="2"/>
+        <g stroke="#0e1c26" stroke-width="1.5" fill="#1a2830">
+          <polygon points="159,68   154,76  164,76"/>
+          <polygon points="159,268  154,260 164,260"/>
+          <polygon points="87,168   95,163  95,173"/>
+          <polygon points="231,168  223,163 223,173"/>
+          <polygon points="102,98   110,102 106,111"/>
+          <polygon points="216,238  208,234 212,225"/>
+        </g>
+        <text x="159" y="302" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-size="32" font-weight="900" fill="#34444f" letter-spacing="7" stroke="#28383f" stroke-width="2" style="paint-order:stroke;">R.I.P.</text>
+        <text x="159" y="300" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-size="32" font-weight="900" fill="rgba(255,255,255,0.07)" letter-spacing="7">R.I.P.</text>
+        <line x1="105" y1="312" x2="213" y2="312" stroke="#3a4a55" stroke-width="1.2" opacity="0.5"/>
+        <ellipse cx="85"  cy="358" rx="18" ry="5.5" fill="#2d5e35" opacity="0.65"/>
+        <ellipse cx="235" cy="358" rx="18" ry="5.5" fill="#2d5e35" opacity="0.65"/>
+      </svg>
+    </div>
+
+    <div class="about-text">
+      <div class="section-label">The Eulogy</div>
+      <h2 class="section-heading">A Protest.<br>A Movement.<br>A Burial.</h2>
+      <div class="about-body">
+        <p>This is a eulogy for every bag they buried. A protest for every wallet they drained. A movement for everyone they left holding.</p>
+        <p><strong>They pumped. They dumped. They extracted.</strong></p>
+        <p>PumpFun built a machine that printed exit liquidity out of retail degens. The model was simple: hype the launch, dump on the believers, rinse and repeat.</p>
+        <p><em>Now we bury them.</em> &nbsp;🪦</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+```
+
+  </div>
+</section>
+
+<!-- ══ TOKEN INFO ═════════════════════════════════════════ -->
+
+<section id="tokeninfo" class="section">
+  <div style="background:var(--bg0); padding:100px 0;">
+    <div class="inner">
+      <div class="token-center">
+        <div class="section-label">On-chain</div>
+        <h2 class="section-heading" style="text-align:center;">Token Info</h2>
+      </div>
+
+```
+  <div class="ca-bar">
+    <span class="ca-label">CA</span>
+    <span class="ca-addr" id="ca-text">HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx</span>
+    <button class="ca-copy" id="ca-btn" onclick="copyCa()">Copy</button>
+  </div>
+
+  <div class="onchain-wrap">
+    <div class="onchain-card">
+      <div class="onchain-title">
+        <!-- eye icon -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        On-Chain Proof
+      </div>
+
+      <!-- Burn mechanism -->
+      <div class="onchain-row">
+        <div class="onchain-left">
+          <span class="onchain-ico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c0 0-5 4.5-5 9a5 5 0 0010 0c0-4.5-5-9-5-9z"/><path d="M12 12c0 0-2 1.5-2 3a2 2 0 004 0c0-1.5-2-3-2-3z"/></svg>
+          </span>
+          <span class="onchain-key">Burn mechanism</span>
+        </div>
+        <div class="onchain-right">
+          <span class="onchain-val">Active</span>
+          <span class="onchain-dot"></span>
+        </div>
+      </div>
+
+      <!-- Fee -->
+      <div class="onchain-row">
+        <div class="onchain-left">
+          <span class="onchain-ico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </span>
+          <span class="onchain-key">Fee</span>
+        </div>
+        <div class="onchain-right">
+          <span class="onchain-val">2% per trade</span>
+          <span class="onchain-dot"></span>
+        </div>
+      </div>
+
+      <!-- Sweep lane -->
+      <div class="onchain-row">
+        <div class="onchain-left">
+          <span class="onchain-ico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </span>
+          <span class="onchain-key">Sweep lane</span>
+        </div>
+        <div class="onchain-right">
+          <span class="onchain-val">Permissionless</span>
+          <span class="onchain-dot"></span>
+        </div>
+      </div>
+
+      <!-- LP lock -->
+      <div class="onchain-row">
+        <div class="onchain-left">
+          <span class="onchain-ico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="22"/><line x1="2" y1="12" x2="8" y2="12"/><line x1="16" y1="12" x2="22" y2="12"/></svg>
+          </span>
+          <span class="onchain-key">LP lock</span>
+        </div>
+        <div class="onchain-right">
+          <span class="onchain-val">Permanent (dead wallet)</span>
+          <span class="onchain-dot"></span>
+        </div>
+      </div>
+
+      <hr class="onchain-sep">
+      <a class="onchain-verify" href="https://solscan.io/token/HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx" target="_blank" rel="noopener">
+        Verify on-chain
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </a>
+    </div>
+  </div>
+</div>
+```
+
+  </div>
+</section>
+
+<!-- ══ BATTLE ═════════════════════════════════════════════ -->
+
+<section id="battle" class="section">
+  <div style="background:var(--bg2); padding:120px 0;">
+    <div class="inner">
+      <div class="battle-center">
+        <div class="section-label">The Reckoning</div>
+        <h2 class="section-heading" style="text-align:center;">🐦 Pigeon vs Pump 💀</h2>
+        <p style="color:var(--muted); font-size:15px; max-width:540px; margin:0 auto; line-height:1.7;">
+          Pigeon is the rightful heir. Pump is the incumbent. Watch in real time as the new order overtakes the old.
+        </p>
+      </div>
+
+```
+  <div class="battle-card">
+    <div style="text-align:center;">
+      <div class="battle-pct" id="battle-pct">—</div>
+      <div class="battle-desc" id="battle-desc">Loading market data…</div>
+    </div>
+
+    <div class="battle-tokens">
+      <div class="btok pigeon">
+        <div class="btok-name">$PIGEON</div>
+        <div class="btok-mc" id="pigeon-sm">—</div>
+      </div>
+      <div class="btok-arrow">→</div>
+      <div class="btok pump">
+        <div class="btok-name">$PUMP</div>
+        <div class="btok-mc" id="pump-sm">—</div>
+      </div>
+    </div>
+
+    <div class="bar-track">
+      <div class="bar-fill" id="battle-bar" style="width:0%"></div>
+    </div>
+    <div class="bar-caption" id="battle-cap">Fetching live data…</div>
+  </div>
+</div>
+```
+
+  </div>
+</section>
+
+<!-- ══ HOW TO BUY ══════════════════════════════════════════ -->
+
+<section id="howtobuy" class="section">
+  <div style="background:var(--bg1); padding:120px 0;">
+    <div class="inner">
+      <div class="howtobuy-center">
+        <div class="section-label">Join The Movement</div>
+        <h2 class="section-heading" style="text-align:center;">How To Buy</h2>
+        <p style="color:var(--muted); font-size:15px; max-width:480px; margin:16px auto 0; line-height:1.7;">
+          Four steps to join the burial party.
+        </p>
+      </div>
+
+```
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <div class="step-title">Get a Wallet</div>
+      <div class="step-body">
+        Download <a href="https://phantom.app" target="_blank" rel="noopener">Phantom</a> or <a href="https://solflare.com" target="_blank" rel="noopener">Solflare</a>. Create a new wallet and save your seed phrase somewhere safe. Never share it.
+      </div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <div class="step-title">Get Some SOL</div>
+      <div class="step-body">
+        Buy SOL on any exchange (Coinbase, Binance, Kraken) and send it to your wallet address. SOL is your fuel for the swap.
+      </div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <div class="step-title">Go to PigeonHouse</div>
+      <div class="step-body">
+        Head to <a href="https://941pigeon.fun/token/HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx" target="_blank" rel="noopener">PigeonHouse</a> and connect your wallet. $RIP is already loaded and ready to swap.
+      </div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">4</div>
+      <div class="step-title">Swap for $RIP</div>
+      <div class="step-body">
+        Enter the amount of SOL you want to swap, confirm the transaction. Welcome to the burial ground. 🪦
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+  </div>
+</section>
+
+<!-- ══ LIVE MARKETS ════════════════════════════════════════ -->
+
+<section id="markets" class="section">
+  <div style="background:var(--bg0); padding:100px 0;">
+    <div class="inner">
+      <div class="markets-center">
+        <div class="section-label">Live Data</div>
+        <h2 class="section-heading" style="text-align:center;">Market Caps</h2>
+      </div>
+
+```
+  <div class="markets-grid">
+    <div class="mcard rip">
+      <div class="mc-label">Market Cap</div>
+      <div class="mc-sym">$RIP</div>
+      <div class="mc-val" id="rip-mc-card" style="color:var(--teal)">—</div>
+      <div class="mc-chg neu" id="rip-chg-card">—</div>
+    </div>
+    <div class="mcard pigeon">
+      <div class="mc-label">Market Cap</div>
+      <div class="mc-sym">$PIGEON</div>
+      <div class="mc-val" id="pigeon-mc-card" style="color:#93c5fd">—</div>
+      <div class="mc-chg neu" id="pigeon-chg-card">—</div>
+    </div>
+    <div class="mcard pump">
+      <div class="mc-label">Market Cap</div>
+      <div class="mc-sym">$PUMP</div>
+      <div class="mc-val" id="pump-mc-card" style="color:#f87171">—</div>
+      <div class="mc-chg neu" id="pump-chg-card">—</div>
+    </div>
+  </div>
+
+  <div class="last-upd" id="last-upd">Fetching live data from DexScreener…</div>
+</div>
+```
+
+  </div>
+</section>
+
+<!-- ══ SOCIALS ════════════════════════════════════════════ -->
+
+<section id="socials" class="section">
+  <div style="background:var(--bg2); padding:100px 0; text-align:center;">
+    <div class="inner">
+      <div class="socials-center">
+        <div class="section-label">Community</div>
+        <h2 class="section-heading" style="text-align:center;">Join The Burial Party</h2>
+      </div>
+      <div class="social-grid">
+        <a class="soc-card" href="https://x.com/i/communities/2026114124686434659" target="_blank" rel="noopener">
+          <span class="soc-icon">𝕏</span>
+          <span class="soc-name">X Community</span>
+          <span class="soc-sub">Join the movement</span>
+        </a>
+        <a class="soc-card" href="https://dexscreener.com/solana/HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx" target="_blank" rel="noopener">
+          <span class="soc-icon">📊</span>
+          <span class="soc-name">DexScreener</span>
+          <span class="soc-sub">Live chart &amp; trades</span>
+        </a>
+        <a class="soc-card" href="https://941pigeon.fun/token/HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx" target="_blank" rel="noopener">
+          <span class="soc-icon">🐦</span>
+          <span class="soc-name">PigeonHouse</span>
+          <span class="soc-sub">Buy $RIP now</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FOOTER ═════════════════════════════════════════════ -->
+
+<footer>
+  <div class="footer-brand">$RIP</div>
+  <div class="footer-ca">HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx</div>
+  <div class="footer-note">Not financial advice. Just vibes and justice. 🪦</div>
+</footer>
+
+<!-- ══ SCRIPTS ════════════════════════════════════════════ -->
+
 <script>
-  const CAs = {
-    pump:   '2uF4Xh61rDwxnG9woyxsVQP7zuA6kLFpb3NvnRQeoiSd',
-    pigeon: '4fSWEw2wbYEUCcMtitzmeGUfqinoafXxkhqZrA9Gpump',
-    rip:    'HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx'
-  };
+// ── Flying Pigeon ──────────────────────────────────────────
+(function () {
+  const bird = document.getElementById('flying-pigeon');
+  let running = false;
 
-  // ── format helpers ──
-  function fmtMcap(n) {
-    if (n == null || isNaN(n)) return '—';
-    if (n >= 1e9) return '$' + (n / 1e9).toFixed(2) + 'B';
-    if (n >= 1e6) return '$' + (n / 1e6).toFixed(2) + 'M';
-    if (n >= 1e3) return '$' + (n / 1e3).toFixed(1) + 'K';
-    return '$' + n.toFixed(2);
+  function launchPigeon() {
+    if (running) return;
+    running = true;
+
+    const goRight = Math.random() > 0.5;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const yPos = 80 + Math.random() * (vh * 0.6); // random vertical position
+    const duration = 4000 + Math.random() * 3000;  // 4–7s
+
+    const startX = goRight ? -80 : vw + 80;
+    const endX   = goRight ? vw + 80 : -80;
+    const flip   = goRight ? 1 : -1;
+
+    bird.style.setProperty('--px-start', startX + 'px');
+    bird.style.setProperty('--px-end',   endX   + 'px');
+    bird.style.setProperty('--py-start', yPos   + 'px');
+    bird.style.setProperty('--flip', flip);
+
+    bird.style.display = 'block';
+    bird.style.animation = 'none';
+    // force reflow
+    void bird.offsetWidth;
+    bird.style.animation = `pigeonFly ${duration}ms ease-in-out forwards`;
+
+    setTimeout(() => {
+      bird.style.display = 'none';
+      bird.style.animation = 'none';
+      running = false;
+      scheduleNext();
+    }, duration + 100);
   }
 
-  function fmtPrice(n) {
-    if (n == null || isNaN(n)) return '—';
-    if (n < 0.000001) return '$' + n.toExponential(3);
-    if (n < 0.01)     return '$' + n.toFixed(8);
-    if (n < 1)        return '$' + n.toFixed(6);
-    return '$' + n.toFixed(4);
+  function scheduleNext() {
+    // random interval 8–25 seconds
+    const delay = 8000 + Math.random() * 17000;
+    setTimeout(launchPigeon, delay);
   }
 
-  function fmtChange(n) {
-    if (n == null || isNaN(n)) return '—';
-    const sign = n >= 0 ? '+' : '';
-    return sign + n.toFixed(2) + '%';
+  // First launch after 3–8s on load
+  setTimeout(launchPigeon, 3000 + Math.random() * 5000);
+})();
+
+// ── Particles ──────────────────────────────────────────────
+(function () {
+  const c = document.getElementById('particles');
+  for (let i = 0; i < 22; i++) {
+    const el = document.createElement('div');
+    el.className = 'pt';
+    const sz = 2 + Math.random() * 4;
+    el.style.cssText =
+      `left:${Math.random()*100}vw;` +
+      `width:${sz}px;height:${sz}px;` +
+      `animation-duration:${9+Math.random()*16}s;` +
+      `animation-delay:${Math.random()*12}s;`;
+    c.appendChild(el);
+  }
+})();
+
+// ── CA copy ────────────────────────────────────────────────
+function copyCa() {
+  navigator.clipboard.writeText('HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx').then(() => {
+    const btn = document.getElementById('ca-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+
+// ── Helpers ────────────────────────────────────────────────
+function fmtMcap(v) {
+  if (!v || isNaN(v)) return '—';
+  if (v >= 1e9) return '$' + (v / 1e9).toFixed(2) + 'B';
+  if (v >= 1e6) return '$' + (v / 1e6).toFixed(2) + 'M';
+  if (v >= 1e3) return '$' + (v / 1e3).toFixed(0) + 'K';
+  return '$' + v.toFixed(0);
+}
+function fmtChg(v) {
+  if (v === null || v === undefined || isNaN(v)) return null;
+  return (v >= 0 ? '+' : '') + v.toFixed(2) + '%  (24h)';
+}
+function applyChg(elId, v) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  const txt = fmtChg(v);
+  if (!txt) { el.textContent = '—'; el.className = 'mc-chg neu'; return; }
+  el.textContent = txt;
+  el.className = 'mc-chg ' + (v >= 0 ? 'pos' : 'neg');
+}
+
+// ── DexScreener ────────────────────────────────────────────
+async function fetchToken(addr) {
+  try {
+    const r = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${addr}`);
+    const d = await r.json();
+    if (!d.pairs || !d.pairs.length) return null;
+    return d.pairs.sort((a, b) => (b.volume?.h24 || 0) - (a.volume?.h24 || 0))[0];
+  } catch (e) { return null; }
+}
+
+async function update() {
+  const [rip, pigeon, pump] = await Promise.all([
+    fetchToken('HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx'),
+    fetchToken('4fSWEw2wbYEUCcMtitzmeGUfqinoafXxkhqZrA9Gpump'),
+    fetchToken('pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn'),
+  ]);
+
+  // RIP
+  if (rip) {
+    const mc = rip.marketCap || rip.fdv || 0;
+    const ch = rip.priceChange?.h24;
+    document.getElementById('rip-mcap').textContent = fmtMcap(mc);
+    document.getElementById('rip-mc-card').textContent = fmtMcap(mc);
+    const heroChg = document.getElementById('rip-chg');
+    const t = fmtChg(ch);
+    if (t) { heroChg.textContent = t; heroChg.className = 'hero-mcap-chg ' + (ch >= 0 ? 'pos' : 'neg'); }
+    applyChg('rip-chg-card', ch);
   }
 
-  function changeColor(n) {
-    if (n == null || isNaN(n)) return 'var(--muted)';
-    return n >= 0 ? '#4ade80' : '#f87171';
+  // PIGEON
+  let pigMc = 0;
+  if (pigeon) {
+    pigMc = pigeon.marketCap || pigeon.fdv || 0;
+    document.getElementById('pigeon-sm').textContent = fmtMcap(pigMc);
+    document.getElementById('pigeon-mc-card').textContent = fmtMcap(pigMc);
+    applyChg('pigeon-chg-card', pigeon.priceChange?.h24);
   }
 
-  // ── fetch best pair for a token ──
-  async function fetchToken(ca) {
-    const url = `https://api.dexscreener.com/latest/dex/tokens/${ca}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('DexScreener ' + res.status);
-    const data = await res.json();
-    const pairs = data.pairs || [];
-    if (!pairs.length) return null;
-    // prefer pair with highest liquidity
-    pairs.sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0));
-    return pairs[0];
+  // PUMP
+  let pmpMc = 0;
+  if (pump) {
+    pmpMc = pump.marketCap || pump.fdv || 0;
+    document.getElementById('pump-sm').textContent = fmtMcap(pmpMc);
+    document.getElementById('pump-mc-card').textContent = fmtMcap(pmpMc);
+    applyChg('pump-chg-card', pump.priceChange?.h24);
   }
 
-  // ── DOM refs ──
-  const ripMcapEl   = document.getElementById('rip-mcap');
-  const ripPriceEl  = document.getElementById('rip-price');
-  const ripChangeEl = document.getElementById('rip-change');
-  const ripVolEl    = document.getElementById('rip-vol');
-  const ripMetaEl   = document.getElementById('rip-meta');
-
-  const pigeonMcapEl  = document.getElementById('pigeon-mcap');
-  const pumpMcapEl    = document.getElementById('pump-mcap');
-  const progressFill  = document.getElementById('progress-fill');
-  const pctBadge      = document.getElementById('flip-pct-badge');
-  const pctLabel      = document.getElementById('progress-pct-label');
-  const gapValueEl    = document.getElementById('gap-value');
-  const ratioValueEl  = document.getElementById('ratio-value');
-  const refreshLabel  = document.getElementById('refresh-label');
-  const errorBanner   = document.getElementById('error-banner');
-  const flippedBanner = document.getElementById('flipped-banner');
-
-  let lastUpdate = null;
-
-  function setUpdating(on) {
-    [ripMcapEl, pigeonMcapEl, pumpMcapEl, gapValueEl, ratioValueEl].forEach(el => {
-      if (on) el.classList.add('updating');
-      else    el.classList.remove('updating');
-    });
-  }
-
-  async function refresh() {
-    setUpdating(true);
-    errorBanner.classList.remove('visible');
-
-    try {
-      const [ripData, pigeonData, pumpData] = await Promise.all([
-        fetchToken(CAs.rip),
-        fetchToken(CAs.pigeon),
-        fetchToken(CAs.pump)
-      ]);
-
-      // ── $RIP ──
-      const ripMcap   = ripData?.marketCap   ?? ripData?.fdv   ?? null;
-      const ripPrice  = ripData ? parseFloat(ripData.priceUsd) : null;
-      const ripChange = ripData?.priceChange?.h24 ?? null;
-      const ripVol    = ripData?.volume?.h24 ?? null;
-
-      ripMcapEl.innerHTML  = fmtMcap(ripMcap);
-      ripMcapEl.style.textShadow = '0 0 60px rgba(255,51,85,0.5), 0 0 120px rgba(255,51,85,0.2)';
-      ripPriceEl.textContent  = fmtPrice(ripPrice);
-      const ch = ripChange != null ? parseFloat(ripChange) : null;
-      ripChangeEl.textContent  = fmtChange(ch);
-      ripChangeEl.style.color  = changeColor(ch);
-      ripVolEl.textContent     = fmtMcap(ripVol);
-      ripMetaEl.style.opacity  = '1';
-
-      // ── $Pigeon & $PUMP ──
-      const pigeonMcap = pigeonData?.marketCap ?? pigeonData?.fdv ?? null;
-      const pumpMcap   = pumpData?.marketCap   ?? pumpData?.fdv   ?? null;
-
-      pigeonMcapEl.textContent = fmtMcap(pigeonMcap);
-      pumpMcapEl.textContent   = fmtMcap(pumpMcap);
-
-      // ── progress calc ──
-      if (pigeonMcap != null && pumpMcap != null && pumpMcap > 0) {
-        const ratio = pigeonMcap / pumpMcap;
-        const pct   = Math.min(ratio * 100, 100);
-        const gap   = Math.max(pumpMcap - pigeonMcap, 0);
-
-        progressFill.style.width = pct.toFixed(2) + '%';
-        pctBadge.textContent     = pct.toFixed(1) + '%';
-        pctLabel.textContent     = pct.toFixed(1) + '%';
-        gapValueEl.textContent   = fmtMcap(gap);
-        ratioValueEl.textContent = (ratio * 100).toFixed(1) + '%';
-
-        if (ratio >= 1) {
-          flippedBanner.classList.add('visible');
-          document.title = '🕊 THE FLIP HAPPENED — $RIP Dashboard';
-        } else {
-          flippedBanner.classList.remove('visible');
-        }
-      }
-
-      lastUpdate = new Date();
-      refreshLabel.textContent = 'Updated ' + lastUpdate.toLocaleTimeString();
-      setUpdating(false);
-
-    } catch (err) {
-      console.error(err);
-      errorBanner.classList.add('visible');
-      refreshLabel.textContent = 'Error · retrying in 30s';
-      setUpdating(false);
+  // Battle
+  if (pigMc > 0 && pmpMc > 0) {
+    const raw = (pigMc / pmpMc) * 100;
+    const pct = Math.min(raw, 100);
+    document.getElementById('battle-pct').textContent = raw.toFixed(1) + '%';
+    document.getElementById('battle-bar').style.width = pct + '%';
+    if (raw >= 100) {
+      document.getElementById('battle-desc').textContent = '🐦 PIGEON HAS OVERTAKEN PUMP — THE FUNERAL PROCEEDS 🪦';
+      document.getElementById('battle-desc').style.color = '#93c5fd';
+      document.getElementById('battle-cap').textContent = 'The coup is complete. RIP $PUMP.';
+    } else {
+      const gap = pmpMc - pigMc;
+      document.getElementById('battle-desc').textContent =
+        `$PIGEON needs ${fmtMcap(gap)} more to dethrone $PUMP`;
+      document.getElementById('battle-cap').textContent =
+        `$PIGEON is ${raw.toFixed(1)}% of the way to overtaking $PUMP`;
     }
   }
 
-  // initial load
-  refresh();
-  // auto-refresh every 30 seconds
-  setInterval(refresh, 30_000);
+  document.getElementById('last-upd').textContent =
+    'Last updated: ' + new Date().toLocaleTimeString() +
+    ' · Auto-refreshes every 60s · Data: DexScreener';
+}
+
+update();
+setInterval(update, 60_000);
 </script>
+
 </body>
 </html>
