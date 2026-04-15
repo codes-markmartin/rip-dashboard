@@ -6,746 +6,283 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>$RIP — Rest In PumpFun</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <style>
     :root {
-      --teal:       #00e5c8;
-      --teal-dim:   rgba(0,229,200,0.10);
-      --teal-glow:  rgba(0,229,200,0.50);
-      --teal-mid:   rgba(0,229,200,0.25);
-      --green:      #3dd68c;
-      --bg0:        #020308;
-      --bg1:        #050910;
-      --bg2:        #070c15;
-      --stone:      #8a9bab;
-      --stone-dark: #4a5868;
-      --moss:       #2d5e35;
-      --border:     rgba(0,229,200,0.12);
-      --border-dim: rgba(255,255,255,0.06);
-      --text:       #cdd5e0;
-      --text-bright:#eef2f8;
-      --muted:      rgba(200,215,230,0.42);
+      --teal:      #00e5c8;
+      --teal-glow: rgba(0,229,200,0.45);
+      --teal-dim:  rgba(0,229,200,0.10);
+      --teal-mid:  rgba(0,229,200,0.22);
+      --bg:        #030508;
+      --text:      #dde4ee;
+      --muted:     rgba(200,215,230,0.38);
+      --border:    rgba(0,229,200,0.13);
     }
 
 ```
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-html { scroll-behavior:smooth; }
-
-body {
-  background: var(--bg0);
+html, body {
+  height: 100%;
+  background: var(--bg);
   color: var(--text);
-  font-family: 'Crimson Text', Georgia, serif;
-  overflow-x: hidden;
-  cursor: default;
+  font-family: 'Cinzel', serif;
+  overflow: hidden;
 }
 
-/* ── ATMOSPHERIC BACKGROUND ── */
 body::before {
   content:'';
   position:fixed; inset:0; pointer-events:none; z-index:0;
   background:
-    radial-gradient(ellipse 70% 50% at 50% 100%, rgba(0,80,60,0.12) 0%, transparent 70%),
-    radial-gradient(ellipse 40% 30% at 20% 20%, rgba(0,229,200,0.04) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 40% at 80% 10%, rgba(0,100,80,0.05) 0%, transparent 60%);
+    radial-gradient(ellipse 80% 60% at 50% 110%, rgba(0,90,65,0.14) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 35% at 15% 10%,  rgba(0,229,200,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 85% 5%,   rgba(0,120,90,0.05) 0%, transparent 55%);
 }
 
-/* ── MIST LAYER ── */
-.mist {
-  position:fixed; bottom:0; left:0; right:0;
-  height:220px; pointer-events:none; z-index:0;
-  background: linear-gradient(to top, rgba(0,30,20,0.35) 0%, transparent 100%);
-}
-
-/* ── PARTICLES ── */
-#particles { position:fixed; inset:0; pointer-events:none; z-index:1; overflow:hidden; }
+#particles { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
 .pt {
   position:absolute; border-radius:50%;
-  background: radial-gradient(circle, rgba(0,229,200,0.6) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(0,229,200,0.55) 0%, transparent 70%);
   animation: rise linear infinite;
 }
 @keyframes rise {
   from { transform:translateY(105vh) scale(0.2); opacity:0; }
-  8%   { opacity:0.8; }
-  90%  { opacity:0.2; }
-  to   { transform:translateY(-5vh) scale(1.1); opacity:0; }
+  8%   { opacity:0.7; }
+  90%  { opacity:0.15; }
+  to   { transform:translateY(-5vh) scale(1); opacity:0; }
 }
 
-/* ── NAV ── */
+#bird {
+  position:fixed; z-index:999; pointer-events:none;
+  font-size:36px; top:0; left:0; display:none;
+  filter: drop-shadow(0 0 12px rgba(0,229,200,0.7));
+  will-change:transform;
+}
+@keyframes birdFly {
+  0%   { transform:translateX(var(--x0)) translateY(var(--y0)) scaleX(var(--flip)); }
+  50%  { transform:translateX(calc((var(--x0) + var(--x1)) / 2)) translateY(calc(var(--y0) - 50px)) scaleX(var(--flip)); }
+  100% { transform:translateX(var(--x1)) translateY(var(--y0)) scaleX(var(--flip)); }
+}
+
+/* Full viewport layout */
+.page {
+  position: relative; z-index:1;
+  width: 100vw; height: 100vh;
+  display: flex; flex-direction: column;
+}
+
+/* NAV */
 nav {
-  position:fixed; top:0; left:0; right:0; z-index:200;
-  backdrop-filter: blur(24px) saturate(1.4);
-  background: rgba(2,3,8,0.88);
+  flex-shrink: 0;
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 0 36px;
+  height: 64px;
   border-bottom: 1px solid var(--border);
-  height:68px;
-  display:flex; align-items:center;
-  padding:0 40px;
+  backdrop-filter: blur(20px);
+  background: rgba(3,5,8,0.7);
 }
 .nav-brand {
-  font-family:'Cinzel', serif;
-  font-size:22px; font-weight:900;
-  color:var(--teal);
+  font-size: 18px; font-weight:900;
+  letter-spacing: 5px; color: var(--teal);
   text-decoration:none;
-  letter-spacing:4px;
-  text-shadow: 0 0 30px var(--teal-glow);
-  flex-shrink:0;
+  text-shadow: 0 0 28px var(--teal-glow);
 }
-.nav-links {
-  display:flex; gap:32px; list-style:none;
-  margin-left:auto; margin-right:32px;
-}
-.nav-links a {
-  color:var(--muted);
-  text-decoration:none;
-  font-family:'Cinzel', serif;
-  font-size:12px; font-weight:600;
-  letter-spacing:2px;
-  text-transform:uppercase;
-  transition:color .2s;
-}
-.nav-links a:hover { color:var(--teal); }
 .nav-buy {
-  background: transparent;
-  color: var(--teal);
   font-family:'Cinzel', serif;
-  font-size:12px; font-weight:700;
-  letter-spacing:2px;
-  padding:9px 24px;
-  border-radius:2px;
-  text-decoration:none;
-  border: 1px solid var(--teal);
-  transition: background .2s, color .2s, box-shadow .2s;
-  white-space:nowrap;
+  font-size: 12px; font-weight:700;
+  letter-spacing: 2px;
+  color: #030508;
+  background: var(--teal);
+  padding: 10px 26px;
+  border-radius: 2px;
+  text-decoration: none;
+  transition: box-shadow .2s, transform .15s, opacity .2s;
+  box-shadow: 0 0 24px rgba(0,229,200,0.3);
 }
 .nav-buy:hover {
-  background: var(--teal);
-  color: #020308;
-  box-shadow: 0 0 30px var(--teal-glow);
+  box-shadow: 0 0 48px rgba(0,229,200,0.55);
+  transform: translateY(-1px);
+  opacity: .9;
 }
 
-/* ── LAYOUT ── */
-.section { position:relative; z-index:2; }
-.inner { max-width:1080px; margin:0 auto; padding:0 40px; }
-
-/* ── HERO ── */
-#hero {
-  min-height:100vh;
-  display:flex; align-items:center; justify-content:center;
-  text-align:center;
-  padding:100px 32px 80px;
-  position:relative; overflow:hidden;
+/* MAIN */
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
 }
 
-/* Graveyard ground line */
-#hero::after {
-  content:'';
-  position:absolute; bottom:0; left:0; right:0;
-  height:1px;
-  background: linear-gradient(90deg, transparent, var(--teal-mid), transparent);
+/* TOMBSTONE */
+.tomb-wrap {
+  margin-bottom: 24px;
+}
+.tomb-wrap svg {
+  width: clamp(90px, 12vw, 148px);
+  height: auto;
+  animation: float 6s ease-in-out infinite, glow-anim 4s ease-in-out infinite;
+}
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-12px); }
+}
+@keyframes glow-anim {
+  0%,100% { filter: drop-shadow(0 0 22px rgba(0,229,200,0.35)); }
+  50%      { filter: drop-shadow(0 0 60px rgba(0,229,200,0.7)); }
 }
 
-.hero-inner { max-width:760px; width:100%; position:relative; z-index:2; }
-
-/* Tombstone SVG */
-.tombstone-wrap {
-  display:inline-block;
-  margin-bottom:32px;
-  position:relative;
-}
-.tombstone-wrap svg {
-  width: clamp(160px, 26vw, 260px);
-  height:auto;
-  animation: tomb-float 6s ease-in-out infinite, tomb-glow 4s ease-in-out infinite;
-  filter: drop-shadow(0 0 30px rgba(0,229,200,0.45));
-}
-@keyframes tomb-float {
-  0%,100% { transform:translateY(0px); }
-  50%      { transform:translateY(-16px); }
-}
-@keyframes tomb-glow {
-  0%,100% { filter: drop-shadow(0 0 25px rgba(0,229,200,0.4)); }
-  50%      { filter: drop-shadow(0 0 70px rgba(0,229,200,0.75)); }
-}
-
-/* Pigeon silhouettes around tombstone */
-.pigeon-flock {
-  position:absolute;
-  bottom:-10px; left:50%;
-  transform:translateX(-50%);
-  width:340px; height:60px;
-  pointer-events:none;
-}
-.pigeon-flock .p {
-  position:absolute;
-  font-size:20px;
-  animation: pigeon-bob 3s ease-in-out infinite;
-  filter: drop-shadow(0 0 6px rgba(0,229,200,0.5));
-}
-.pigeon-flock .p:nth-child(1) { left:10px;  bottom:0;  animation-delay:0s;    font-size:16px; }
-.pigeon-flock .p:nth-child(2) { left:60px;  bottom:4px; animation-delay:0.4s; }
-.pigeon-flock .p:nth-child(3) { left:130px; bottom:2px; animation-delay:0.8s; font-size:22px; }
-.pigeon-flock .p:nth-child(4) { right:130px;bottom:2px; animation-delay:1.2s; font-size:22px; }
-.pigeon-flock .p:nth-child(5) { right:60px; bottom:4px; animation-delay:0.6s; }
-.pigeon-flock .p:nth-child(6) { right:10px; bottom:0;  animation-delay:1s;    font-size:16px; }
-@keyframes pigeon-bob {
-  0%,100% { transform:translateY(0); }
-  50%      { transform:translateY(-5px); }
-}
-
-.hero-eyebrow {
-  font-family:'Share Tech Mono', monospace;
-  font-size:11px; letter-spacing:5px;
-  text-transform:uppercase;
-  color:var(--teal);
-  margin-bottom:12px;
-  opacity:0.7;
-}
-h1.hero-title {
-  font-family:'Cinzel', serif;
-  font-size:clamp(72px, 18vw, 160px);
-  font-weight:900;
-  color:var(--text-bright);
-  letter-spacing:8px;
-  line-height:0.9;
+/* TITLE */
+.rip-title {
+  font-size: clamp(48px, 11vw, 108px);
+  font-weight: 900;
+  letter-spacing: 10px;
+  color: var(--text);
+  line-height: 1;
   text-shadow:
-    0 0 60px rgba(0,229,200,0.4),
-    0 0 120px rgba(0,229,200,0.15),
-    0 2px 0 rgba(0,0,0,0.8);
-  margin-bottom:4px;
+    0 0 60px rgba(0,229,200,0.35),
+    0 0 120px rgba(0,229,200,0.12);
+  margin-bottom: 6px;
 }
-.hero-sub {
-  font-family:'Cinzel', serif;
-  font-size:clamp(11px, 2vw, 14px);
-  letter-spacing:6px;
-  text-transform:uppercase;
-  color:var(--muted);
-  margin-bottom:40px;
-}
-
-/* Live mcap */
-.hero-mcap-box {
-  display:inline-flex; flex-direction:column; align-items:center;
-  background: rgba(0,229,200,0.04);
-  border:1px solid var(--border);
-  border-radius:4px;
-  padding:24px 52px;
-  margin-bottom:40px;
-  position:relative;
-  backdrop-filter:blur(10px);
-}
-.hero-mcap-box::before, .hero-mcap-box::after {
-  content:'';
-  position:absolute;
-  width:12px; height:12px;
-  border-color:var(--teal);
-  border-style:solid;
-  opacity:0.5;
-}
-.hero-mcap-box::before { top:-1px; left:-1px; border-width:1px 0 0 1px; }
-.hero-mcap-box::after  { bottom:-1px; right:-1px; border-width:0 1px 1px 0; }
-.hero-mcap-label {
-  font-family:'Share Tech Mono', monospace;
-  font-size:10px; letter-spacing:4px;
-  text-transform:uppercase; color:var(--muted); margin-bottom:8px;
-}
-.hero-mcap-num {
-  font-family:'Cinzel', serif;
-  font-size:clamp(40px, 8vw, 72px);
-  font-weight:900; letter-spacing:-1px; line-height:1;
-  color:var(--teal);
-  text-shadow: 0 0 40px rgba(0,229,200,0.5);
-}
-.hero-mcap-chg {
-  font-family:'Share Tech Mono', monospace;
-  font-size:13px; font-weight:600; margin-top:8px;
+.rip-tagline {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: clamp(9px, 1.4vw, 11px);
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 32px;
 }
 
-/* Buttons */
-.hero-btns { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; }
-.btn-primary {
-  background: var(--teal);
-  color:#020308;
-  font-family:'Cinzel', serif;
-  font-size:13px; font-weight:700;
-  letter-spacing:2px;
-  padding:15px 40px;
-  border-radius:2px;
-  text-decoration:none;
-  transition: box-shadow .25s, transform .15s, opacity .2s;
-  box-shadow: 0 0 30px rgba(0,229,200,0.35);
+/* MCAP */
+.mcap-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
 }
-.btn-primary:hover {
-  box-shadow: 0 0 60px rgba(0,229,200,0.6);
-  transform:translateY(-2px);
-  opacity:0.9;
-}
-.btn-secondary {
-  background:transparent;
-  color:var(--teal);
-  font-family:'Cinzel', serif;
-  font-size:13px; font-weight:600;
-  letter-spacing:2px;
-  padding:14px 40px;
-  border-radius:2px;
-  text-decoration:none;
-  border:1px solid rgba(0,229,200,0.35);
-  transition: border-color .2s, box-shadow .2s, transform .15s;
-}
-.btn-secondary:hover {
-  border-color:var(--teal);
-  box-shadow: 0 0 30px rgba(0,229,200,0.2);
-  transform:translateY(-2px);
-}
-
-/* ── MARQUEE ── */
-.marquee-wrap {
-  border-top:1px solid var(--border);
-  border-bottom:1px solid var(--border);
-  background: rgba(0,229,200,0.03);
-  padding:14px 0; overflow:hidden;
-  position:relative; z-index:2;
-}
-.marquee-track {
-  display:flex; width:max-content;
-  animation:marquee 28s linear infinite;
-}
-.marquee-item {
-  font-family:'Cinzel', serif;
+.mcap-num {
+  font-size: clamp(40px, 8.5vw, 76px);
+  font-weight: 900;
+  letter-spacing: -1px;
   color: var(--teal);
-  font-size:11px; font-weight:700;
-  letter-spacing:4px; text-transform:uppercase;
-  padding:0 36px; white-space:nowrap; opacity:0.7;
+  line-height: 1;
+  text-shadow: 0 0 50px rgba(0,229,200,0.5);
+  margin-bottom: 8px;
 }
-.marquee-dot { color:var(--teal); opacity:0.3; padding:0 4px; }
-@keyframes marquee {
-  from { transform:translateX(0); }
-  to   { transform:translateX(-50%); }
+.mcap-chg {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px; letter-spacing: 1px;
+  margin-bottom: 40px;
+  min-height: 18px;
 }
+.pos { color: #4ade80; }
+.neg { color: #f87171; }
+.neu { color: var(--muted); }
 
-/* ── SECTION LABELS ── */
-.section-label {
-  font-family:'Share Tech Mono', monospace;
-  font-size:10px; letter-spacing:5px;
-  text-transform:uppercase; color:var(--teal);
-  margin-bottom:16px; opacity:0.7;
-  display:flex; align-items:center; gap:12px;
-}
-.section-label::after {
-  content:'';
-  flex:1; height:1px;
-  background:linear-gradient(90deg, var(--teal-mid), transparent);
-}
-.section-heading {
-  font-family:'Cinzel', serif;
-  font-size:clamp(28px, 4.5vw, 46px);
-  font-weight:900;
-  color:var(--text-bright);
-  letter-spacing:3px;
-  line-height:1.1;
-  margin-bottom:20px;
-}
-
-/* ── DIVIDER ── */
-.divider {
-  width:100%; height:1px;
+/* SEPARATOR */
+.sep {
+  width: min(520px, 86vw);
+  height: 1px;
   background: linear-gradient(90deg, transparent, var(--teal-mid), transparent);
-  position:relative; z-index:2;
+  margin-bottom: 32px;
 }
 
-/* ── ABOUT ── */
-#about { background:var(--bg1); padding:120px 0; }
-.about-grid {
-  display:grid;
-  grid-template-columns:1fr 1.3fr;
-  gap:80px; align-items:center;
-}
-.about-img-wrap {
-  display:flex; justify-content:center; align-items:center;
-  position:relative;
-}
-.about-img-wrap svg {
-  width:clamp(180px, 32vw, 300px);
-  height:auto;
-  filter: drop-shadow(0 0 50px rgba(0,229,200,0.4));
-  animation:tomb-float 7s ease-in-out infinite;
-}
-/* Ambient glow behind tombstone */
-.about-img-wrap::before {
-  content:'';
-  position:absolute;
-  width:280px; height:280px;
-  background:radial-gradient(circle, rgba(0,229,200,0.08) 0%, transparent 70%);
-  border-radius:50%;
-  pointer-events:none;
-}
-.about-body {
-  font-size:clamp(17px, 2vw, 20px);
-  line-height:2;
-  color:rgba(200,215,230,0.72);
-  font-weight:400;
-}
-.about-body p { margin-bottom:20px; }
-.about-body strong { color:var(--teal); font-weight:600; font-style:normal; }
-.about-body em { font-style:italic; color:rgba(200,215,230,0.55); }
+/* BATTLE */
+.battle-wrap { width: min(520px, 86vw); }
 
-/* ── TOKEN INFO ── */
-#tokeninfo { background:var(--bg0); padding:100px 0; }
-.token-center { text-align:center; margin-bottom:52px; }
-
-.ca-bar {
-  background:rgba(255,255,255,0.02);
-  border:1px solid var(--border);
-  border-radius:4px;
-  padding:20px 28px;
-  display:flex; align-items:center;
-  justify-content:space-between; gap:20px;
-  margin:0 auto 52px; max-width:740px;
-  flex-wrap:wrap;
-}
-.ca-label {
-  font-family:'Share Tech Mono', monospace;
-  font-size:10px; letter-spacing:4px;
-  text-transform:uppercase; color:var(--teal);
-  flex-shrink:0; opacity:0.7;
-}
-.ca-addr {
-  font-family:'Share Tech Mono', monospace;
-  font-size:12px; color:var(--text);
-  flex:1; min-width:0;
-  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-  letter-spacing:0.5px;
-}
-.ca-copy {
-  background:transparent;
-  color:var(--teal);
-  border:1px solid rgba(0,229,200,0.35);
-  cursor:pointer;
-  font-family:'Cinzel', serif;
-  font-size:11px; font-weight:700;
-  letter-spacing:2px;
-  padding:8px 20px; border-radius:2px;
-  transition:background .2s, color .2s, box-shadow .2s;
-  flex-shrink:0;
-}
-.ca-copy:hover {
-  background:var(--teal); color:#020308;
-  box-shadow: 0 0 20px rgba(0,229,200,0.3);
-}
-
-.onchain-wrap { max-width:660px; margin:0 auto; }
-.onchain-card {
-  background:rgba(255,255,255,0.02);
-  border:1px solid var(--border-dim);
-  border-radius:4px; padding:36px 40px;
-}
-.onchain-title {
-  font-family:'Share Tech Mono', monospace;
-  font-size:10px; letter-spacing:5px;
-  text-transform:uppercase; color:var(--teal);
-  margin-bottom:32px; opacity:0.7;
-  display:flex; align-items:center; gap:10px;
-}
-.onchain-row {
-  display:flex; align-items:center;
-  justify-content:space-between;
-  padding:18px 0;
-  border-bottom:1px solid var(--border-dim);
-  gap:16px;
-}
-.onchain-row:last-of-type { border-bottom:none; }
-.onchain-key {
-  font-family:'Crimson Text', serif;
-  font-size:18px; color:rgba(200,215,230,0.8);
-}
-.onchain-val {
-  font-family:'Share Tech Mono', monospace;
-  font-size:13px; color:rgba(200,215,230,0.45);
-  letter-spacing:0.5px;
-}
-.onchain-dot {
-  width:8px; height:8px; border-radius:50%;
-  background:var(--green);
-  box-shadow:0 0 10px rgba(61,214,140,0.7);
-  flex-shrink:0; margin-left:10px;
-}
-.onchain-right { display:flex; align-items:center; gap:0; }
-.onchain-sep { border:none; border-top:1px solid var(--border-dim); margin:8px 0 20px; }
-.onchain-verify {
-  display:inline-flex; align-items:center; gap:8px;
-  color:var(--teal); text-decoration:none;
-  font-family:'Cinzel', serif;
-  font-size:12px; font-weight:600; letter-spacing:2px;
-  opacity:0.7; transition:opacity .2s;
-}
-.onchain-verify:hover { opacity:1; }
-
-/* ── BATTLE ── */
-#battle { background:var(--bg2); padding:120px 0; }
-.battle-center { text-align:center; margin-bottom:56px; }
-
-.battle-card {
-  background:rgba(0,229,200,0.02);
-  border:1px solid var(--border);
-  border-radius:4px;
-  padding:56px 48px 44px;
-  max-width:820px; margin:0 auto;
-  position:relative;
-}
-/* Corner accents */
-.battle-card::before, .battle-card::after {
-  content:''; position:absolute;
-  width:20px; height:20px;
-  border-color:var(--teal); border-style:solid;
-  opacity:0.4;
-}
-.battle-card::before { top:-1px; left:-1px; border-width:1px 0 0 1px; }
-.battle-card::after  { bottom:-1px; right:-1px; border-width:0 1px 1px 0; }
-
-.battle-pct {
-  font-family:'Cinzel', serif;
-  font-size:clamp(72px, 16vw, 128px);
-  font-weight:900;
-  color:var(--teal);
-  letter-spacing:-2px; line-height:1;
-  text-shadow: 0 0 50px rgba(0,229,200,0.4);
-  margin-bottom:12px;
-}
-.battle-desc {
-  font-family:'Crimson Text', serif;
-  font-size:18px; color:var(--muted);
-  margin-bottom:48px; min-height:26px;
-  font-style:italic; letter-spacing:0.5px;
-}
 .battle-tokens {
-  display:flex; justify-content:space-between;
-  align-items:flex-end; margin-bottom:16px;
-  flex-wrap:wrap; gap:10px;
+  display:flex; justify-content:space-between; margin-bottom:14px;
 }
-.btok { text-align:center; }
 .btok-name {
-  font-family:'Cinzel', serif;
-  font-size:20px; font-weight:700; letter-spacing:3px;
+  font-size: clamp(12px, 2vw, 15px);
+  font-weight: 700; letter-spacing: 2px;
 }
 .btok-mc {
-  font-family:'Share Tech Mono', monospace;
-  font-size:13px; color:var(--muted); margin-top:6px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: clamp(9px, 1.4vw, 11px);
+  margin-top: 4px;
+  color: var(--muted);
 }
-.btok.pigeon .btok-name { color:#93c5fd; }
-.btok.pump   .btok-name { color:#f87171; }
-.btok-arrow {
-  color:rgba(255,255,255,0.15);
-  font-size:28px; align-self:center;
-  font-family:'Cinzel', serif;
-}
+.pigeon-side { text-align:left; }
+.pump-side   { text-align:right; }
+.pigeon-side .btok-name { color: #93c5fd; }
+.pump-side   .btok-name { color: #f87171; }
 
 .bar-track {
-  background:rgba(255,255,255,0.04);
-  border-radius:2px; height:20px;
-  overflow:hidden; margin-bottom:10px;
-  border:1px solid rgba(255,255,255,0.06);
-  position:relative;
+  width: 100%; height: 12px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 2px; overflow:hidden;
+  border: 1px solid rgba(255,255,255,0.07);
+  margin-bottom: 10px;
 }
 .bar-fill {
-  height:100%;
-  background:linear-gradient(90deg, rgba(0,150,120,0.8) 0%, var(--teal) 100%);
-  transition:width 1.6s cubic-bezier(.4,0,.2,1);
-  min-width:1%;
-  box-shadow: 4px 0 20px rgba(0,229,200,0.5);
+  height: 100%; border-radius: 2px;
+  background: linear-gradient(90deg, rgba(0,140,110,0.9), var(--teal));
+  transition: width 1.6s cubic-bezier(.4,0,.2,1);
+  min-width: 1%;
+  box-shadow: 4px 0 18px rgba(0,229,200,0.45);
+  position:relative;
+}
+.bar-fill::after {
+  content:''; position:absolute; inset:0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2.5s linear infinite;
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
 }
 .bar-caption {
-  font-family:'Share Tech Mono', monospace;
-  text-align:center; font-size:11px;
-  color:rgba(255,255,255,0.25); letter-spacing:2px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; letter-spacing: 2px;
+  color: var(--muted); text-align:center;
+  min-height: 16px;
 }
 
-/* ── HOW TO BUY ── */
-#howtobuy { background:var(--bg1); padding:120px 0; }
-.howtobuy-center { text-align:center; margin-bottom:64px; }
-
-.steps-grid {
-  display:grid;
-  grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
-  gap:20px;
-}
-.step-card {
-  background:rgba(255,255,255,0.02);
-  border:1px solid var(--border-dim);
-  border-radius:4px; padding:36px 28px;
-  text-align:center;
-  transition:border-color .3s, transform .25s;
-  position:relative;
-}
-.step-card::before {
-  content:'';
-  position:absolute; top:0; left:0; right:0;
-  height:1px;
-  background:linear-gradient(90deg, transparent, var(--teal-mid), transparent);
-  opacity:0;
-  transition:opacity .3s;
-}
-.step-card:hover {
-  border-color:rgba(0,229,200,0.2);
-  transform:translateY(-6px);
-}
-.step-card:hover::before { opacity:1; }
-.step-num {
-  font-family:'Cinzel', serif;
-  font-size:52px; font-weight:900;
-  color:rgba(0,229,200,0.15);
-  line-height:1; margin-bottom:16px;
-  text-shadow:0 0 20px rgba(0,229,200,0.1);
-}
-.step-title {
-  font-family:'Cinzel', serif;
-  font-size:15px; font-weight:700;
-  letter-spacing:2px;
-  color:var(--text-bright); margin-bottom:12px;
-}
-.step-body {
-  font-family:'Crimson Text', serif;
-  font-size:17px; line-height:1.8;
-  color:var(--muted);
-}
-.step-body a { color:var(--teal); text-decoration:none; }
-.step-body a:hover { text-decoration:underline; }
-
-/* ── LIVE MARKETS ── */
-#markets { background:var(--bg0); padding:100px 0; }
-.markets-center { text-align:center; margin-bottom:52px; }
-.markets-grid {
-  display:grid;
-  grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
-  gap:16px;
-}
-.mcard {
-  background:rgba(255,255,255,0.02);
-  border:1px solid var(--border-dim);
-  border-radius:4px; padding:32px;
-  transition:border-color .3s, transform .2s;
-  position:relative;
-}
-.mcard:hover { border-color:rgba(0,229,200,0.2); transform:translateY(-4px); }
-.mcard.rip { border-color:rgba(0,229,200,0.15); }
-.mc-label {
-  font-family:'Share Tech Mono', monospace;
-  font-size:9px; letter-spacing:4px;
-  text-transform:uppercase; color:var(--muted); margin-bottom:8px;
-}
-.mc-sym {
-  font-family:'Cinzel', serif;
-  font-size:22px; font-weight:700; letter-spacing:2px;
-}
-.rip    .mc-sym { color:var(--teal); }
-.pigeon .mc-sym { color:#93c5fd; }
-.pump   .mc-sym { color:#f87171; }
-.mc-val {
-  font-family:'Cinzel', serif;
-  font-size:36px; font-weight:900;
-  letter-spacing:-1px; margin:12px 0 8px;
-}
-.mc-chg {
-  font-family:'Share Tech Mono', monospace;
-  font-size:12px; letter-spacing:1px;
-}
-
-/* ── SOCIALS ── */
-#socials { background:var(--bg2); padding:100px 0; }
-.socials-center { text-align:center; margin-bottom:52px; }
-.social-grid {
-  display:grid;
-  grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
-  gap:14px; max-width:820px; margin:0 auto;
-}
-.soc-card {
-  background:rgba(255,255,255,0.02);
-  border:1px solid var(--border-dim);
-  border-radius:4px; padding:32px 20px;
-  text-decoration:none;
-  display:flex; flex-direction:column;
-  align-items:center; gap:14px;
-  transition:border-color .3s, transform .25s, background .2s;
-}
-.soc-card:hover {
-  border-color:rgba(0,229,200,0.25);
-  background:rgba(0,229,200,0.03);
-  transform:translateY(-5px);
-}
-.soc-icon { font-size:28px; }
-.soc-name {
-  font-family:'Cinzel', serif;
-  font-size:13px; font-weight:700;
-  letter-spacing:2px; color:var(--text-bright);
-}
-.soc-sub {
-  font-family:'Share Tech Mono', monospace;
-  font-size:10px; color:var(--muted); letter-spacing:1px;
-}
-
-/* ── FOOTER ── */
+/* FOOTER */
 footer {
-  background:var(--bg0);
-  border-top:1px solid var(--border-dim);
-  padding:48px 32px;
-  text-align:center; position:relative; z-index:2;
+  flex-shrink: 0;
+  display:flex; flex-direction:column; align-items:center;
+  padding: 14px 24px 16px;
+  border-top: 1px solid var(--border);
+  gap: 6px;
 }
-.footer-brand {
-  font-family:'Cinzel', serif;
-  font-size:24px; font-weight:900;
-  color:var(--teal); letter-spacing:6px;
-  text-shadow:0 0 30px var(--teal-glow);
-  margin-bottom:12px;
+.footer-ca-row {
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:center;
+}
+.footer-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px; letter-spacing:4px;
+  text-transform:uppercase; color:var(--teal); opacity:.6;
 }
 .footer-ca {
-  font-family:'Share Tech Mono', monospace;
-  font-size:10px; color:rgba(255,255,255,0.15);
-  letter-spacing:1.5px; margin-bottom:14px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: clamp(8px, 1.7vw, 11px);
+  color: rgba(200,215,230,0.28);
+  letter-spacing: 0.5px;
+  cursor:pointer; transition: color .2s;
 }
+.footer-ca:hover { color: var(--teal); }
+.footer-copy-btn {
+  font-family: 'Cinzel', serif;
+  font-size: 9px; letter-spacing:2px;
+  color: var(--teal); background: transparent;
+  border: 1px solid var(--teal-mid);
+  padding: 4px 12px; border-radius: 2px;
+  cursor:pointer; transition: background .2s, color .2s;
+}
+.footer-copy-btn:hover { background:var(--teal); color:#030508; }
 .footer-note {
-  font-family:'Crimson Text', serif;
-  font-size:14px; color:rgba(255,255,255,0.18);
-  font-style:italic;
-}
-.footer-line {
-  width:80px; height:1px;
-  background:var(--teal-mid);
-  margin:20px auto;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px; letter-spacing:2px;
+  color: rgba(255,255,255,0.12); text-align:center;
 }
 
-/* ── UTILS ── */
-.pos { color:#4ade80; }
-.neg { color:#f87171; }
-.neu { color:var(--muted); }
-.last-upd {
-  font-family:'Share Tech Mono', monospace;
-  text-align:center; font-size:10px;
-  color:rgba(255,255,255,0.15);
-  margin-top:36px; letter-spacing:2px;
-}
-
-/* ── FLYING PIGEON ── */
-#flying-pigeon {
-  position:fixed; z-index:9999;
-  pointer-events:none;
-  font-size:clamp(32px, 5vw, 48px);
-  top:0; left:0; will-change:transform; display:none;
-  filter:drop-shadow(0 2px 12px rgba(0,229,200,0.6));
-}
-@keyframes pigeonFly {
-  0%   { transform:translateX(var(--px-start)) translateY(var(--py-start)) scaleX(var(--flip)); }
-  50%  { transform:translateX(calc((var(--px-start) + var(--px-end)) / 2)) translateY(calc(var(--py-start) - 60px)) scaleX(var(--flip)); }
-  100% { transform:translateX(var(--px-end)) translateY(var(--py-start)) scaleX(var(--flip)); }
-}
-
-/* ── RESPONSIVE ── */
-@media (max-width:768px) {
-  nav { padding:0 20px; }
-  .nav-links { display:none; }
-  .inner { padding:0 20px; }
-  .about-grid { grid-template-columns:1fr; gap:48px; text-align:center; }
-  .about-img-wrap { justify-content:center; }
-  .battle-card { padding:36px 24px 32px; }
-  .hero-mcap-box { padding:20px 32px; }
-  .ca-bar { flex-direction:column; align-items:flex-start; }
-  .onchain-card { padding:28px 24px; }
+@media (max-width: 480px) {
+  nav { padding: 0 18px; }
+  .nav-buy { font-size:10px; padding:8px 16px; letter-spacing:1px; }
 }
 ```
 
@@ -753,48 +290,34 @@ footer {
 </head>
 <body>
 
-<div id="flying-pigeon">🕊️</div>
+<div id="bird">🕊️</div>
 <div id="particles"></div>
-<div class="mist"></div>
 
-<!-- ══ NAV ══════════════════════════════════════════════════ -->
+<div class="page">
 
-<nav>
-  <a class="nav-brand" href="#hero">$RIP</a>
-  <ul class="nav-links">
-    <li><a href="#about">About</a></li>
-    <li><a href="#tokeninfo">Token</a></li>
-    <li><a href="#battle">The Flip</a></li>
-    <li><a href="#howtobuy">Buy</a></li>
-    <li><a href="#socials">Community</a></li>
-  </ul>
-  <a class="nav-buy" href="https://jup.ag/swap/SOL-HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx" target="_blank" rel="noopener">BUY $RIP</a>
-</nav>
+  <nav>
+    <a class="nav-brand" href="#">$RIP</a>
+    <a class="nav-buy" href="https://jup.ag/swap/SOL-HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx" target="_blank" rel="noopener">BUY ON JUPITER</a>
+  </nav>
 
-<!-- ══ HERO ══════════════════════════════════════════════════ -->
-
-<section id="hero" class="section">
-  <div class="hero-inner">
+  <main>
 
 ```
-<div class="tombstone-wrap">
-  <!-- Tombstone SVG -->
+<div class="tomb-wrap">
   <svg viewBox="0 0 320 420" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <filter id="glow" x="-30%" y="-20%" width="160%" height="140%">
-        <feGaussianBlur stdDeviation="12" result="blur"/>
-        <feColorMatrix type="matrix"
-          values="0 0 0 0 0  0 0 0 0 0.9  0 0 0 0 0.78  0 0 0 0.9 0"
-          in="blur" result="tealBlur"/>
-        <feMerge><feMergeNode in="tealBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      <filter id="g" x="-30%" y="-20%" width="160%" height="140%">
+        <feGaussianBlur stdDeviation="11" result="b"/>
+        <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0.9  0 0 0 0 0.78  0 0 0 0.9 0" in="b" result="c"/>
+        <feMerge><feMergeNode in="c"/><feMergeNode in="SourceGraphic"/></feMerge>
       </filter>
-      <linearGradient id="stF" x1="0%" y1="0%" x2="100%" y2="100%">
+      <linearGradient id="sF" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%"   stop-color="#8a9bab"/>
         <stop offset="55%"  stop-color="#6e7e8e"/>
         <stop offset="100%" stop-color="#54636f"/>
       </linearGradient>
-      <linearGradient id="stB" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%"   stop-color="#7a8a98"/>
+      <linearGradient id="sB" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#7a8a98"/>
         <stop offset="100%" stop-color="#4e5e6a"/>
       </linearGradient>
       <linearGradient id="pW" x1="20%" y1="0%" x2="80%" y2="100%">
@@ -805,41 +328,29 @@ footer {
         <stop offset="0%"   stop-color="#5edcaa"/>
         <stop offset="100%" stop-color="#2caa76"/>
       </linearGradient>
-      <clipPath id="pW1"><ellipse cx="159" cy="168" rx="66" ry="92"/></clipPath>
+      <clipPath id="pc"><ellipse cx="159" cy="168" rx="66" ry="92"/></clipPath>
     </defs>
-    <!-- Base -->
-    <rect x="22" y="348" width="276" height="58" rx="10" fill="url(#stB)" stroke="#2e3e4a" stroke-width="3.5" filter="url(#glow)"/>
+    <rect x="22" y="348" width="276" height="58" rx="10" fill="url(#sB)" stroke="#2e3e4a" stroke-width="3" filter="url(#g)"/>
     <ellipse cx="55"  cy="349" rx="28" ry="9" fill="#2d5e35" opacity="0.9"/>
     <ellipse cx="265" cy="349" rx="28" ry="9" fill="#2d5e35" opacity="0.9"/>
     <ellipse cx="160" cy="351" rx="22" ry="7" fill="#3a7040" opacity="0.6"/>
-    <path d="M44 350 Q42 340 40 348" stroke="#3a7040" stroke-width="2" fill="none" opacity="0.8"/>
-    <path d="M58 348 Q56 336 54 347" stroke="#3a7040" stroke-width="2" fill="none" opacity="0.8"/>
-    <path d="M268 350 Q270 338 272 349" stroke="#3a7040" stroke-width="2" fill="none" opacity="0.8"/>
-    <!-- Stone body -->
-    <path d="M 62 358 L 62 175 Q 62 28 160 28 Q 258 28 258 175 L 258 358 Z" fill="url(#stF)" stroke="#2c3c48" stroke-width="4.5" filter="url(#glow)"/>
-    <path d="M 66 340 L 66 178 Q 66 42 160 42" stroke="rgba(255,255,255,0.14)" stroke-width="2" fill="none"/>
-    <!-- Cracks -->
-    <path d="M 90 195 L 95 242 L 89 272" stroke="#4a5868" stroke-width="1.8" fill="none" opacity="0.6"/>
-    <path d="M 216 130 L 224 178 L 218 208" stroke="#4a5868" stroke-width="1.8" fill="none" opacity="0.6"/>
-    <path d="M 155 50 L 153 82"  stroke="#4a5868" stroke-width="1.2" fill="none" opacity="0.4"/>
-    <!-- Lichen -->
-    <ellipse cx="100" cy="300" rx="10" ry="6" fill="#3a5c30" opacity="0.45"/>
-    <ellipse cx="225" cy="280" rx="8"  ry="5" fill="#3a5c30" opacity="0.38"/>
-    <!-- Pill frame -->
-    <ellipse cx="159" cy="168" rx="70" ry="97" fill="#1a2830" stroke="#0e1c26" stroke-width="4" filter="url(#glow)"/>
-    <!-- Pill -->
-    <g clip-path="url(#pW1)">
+    <path d="M 62 358 L 62 175 Q 62 28 160 28 Q 258 28 258 175 L 258 358 Z" fill="url(#sF)" stroke="#2c3c48" stroke-width="4" filter="url(#g)"/>
+    <path d="M 66 340 L 66 178 Q 66 42 160 42" stroke="rgba(255,255,255,0.12)" stroke-width="2" fill="none"/>
+    <path d="M 90 195 L 95 242 L 89 272" stroke="#4a5868" stroke-width="1.8" fill="none" opacity="0.55"/>
+    <path d="M 216 130 L 224 178 L 218 208" stroke="#4a5868" stroke-width="1.8" fill="none" opacity="0.55"/>
+    <ellipse cx="100" cy="300" rx="10" ry="6" fill="#3a5c30" opacity="0.4"/>
+    <ellipse cx="225" cy="280" rx="8"  ry="5" fill="#3a5c30" opacity="0.35"/>
+    <ellipse cx="159" cy="168" rx="70" ry="97" fill="#1a2830" stroke="#0e1c26" stroke-width="4" filter="url(#g)"/>
+    <g clip-path="url(#pc)">
       <g transform="rotate(-30, 159, 168)">
         <rect x="93" y="76"  width="132" height="92" fill="url(#pW)"/>
         <rect x="93" y="168" width="132" height="92" fill="url(#pG)"/>
-        <line x1="93" y1="168" x2="225" y2="168" stroke="rgba(0,0,0,0.2)" stroke-width="2"/>
       </g>
-      <ellipse cx="172" cy="118" rx="24" ry="14" fill="rgba(255,255,255,0.25)" transform="rotate(-30,172,118)"/>
+      <ellipse cx="172" cy="118" rx="24" ry="14" fill="rgba(255,255,255,0.24)" transform="rotate(-30,172,118)"/>
       <path d="M164 96 Q175 108 168 130" stroke="rgba(255,255,255,0.35)" stroke-width="3" fill="none" stroke-linecap="round" transform="rotate(-30,166,113)"/>
-      <ellipse cx="143" cy="210" rx="16" ry="9" fill="rgba(255,255,255,0.3)" transform="rotate(-30,143,210)"/>
+      <ellipse cx="143" cy="210" rx="16" ry="9" fill="rgba(255,255,255,0.28)" transform="rotate(-30,143,210)"/>
     </g>
-    <ellipse cx="159" cy="168" rx="70" ry="97" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="2"/>
-    <!-- Thorns -->
+    <ellipse cx="159" cy="168" rx="70" ry="97" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="2"/>
     <g stroke="#0e1c26" stroke-width="1.5" fill="#1a2830">
       <polygon points="159,68  154,76 164,76"/>
       <polygon points="159,268 154,260 164,260"/>
@@ -848,535 +359,144 @@ footer {
       <polygon points="102,98  110,102 106,111"/>
       <polygon points="216,238 208,234 212,225"/>
     </g>
-    <!-- R.I.P. -->
     <text x="159" y="310" text-anchor="middle" font-family="Georgia,serif" font-size="28" font-weight="900" fill="#34444f" letter-spacing="7" stroke="#28383f" stroke-width="2" style="paint-order:stroke;">R.I.P.</text>
     <text x="159" y="308" text-anchor="middle" font-family="Georgia,serif" font-size="28" font-weight="900" fill="rgba(255,255,255,0.06)" letter-spacing="7">R.I.P.</text>
     <line x1="105" y1="320" x2="213" y2="320" stroke="#3a4a55" stroke-width="1.2" opacity="0.5"/>
     <ellipse cx="85"  cy="358" rx="18" ry="5.5" fill="#2d5e35" opacity="0.7"/>
     <ellipse cx="235" cy="358" rx="18" ry="5.5" fill="#2d5e35" opacity="0.7"/>
   </svg>
-
-  <!-- Pigeon flock below tombstone -->
-  <div class="pigeon-flock">
-    <span class="p">🕊️</span>
-    <span class="p">🕊️</span>
-    <span class="p">🕊️</span>
-    <span class="p">🕊️</span>
-    <span class="p">🕊️</span>
-    <span class="p">🕊️</span>
-  </div>
 </div>
 
-<p class="hero-eyebrow">Solana · Rest In PumpFun</p>
-<h1 class="hero-title">$RIP</h1>
-<p class="hero-sub">The Inevitable Burial</p>
+<div class="rip-title">$RIP</div>
+<div class="rip-tagline">Rest In PumpFun · Solana</div>
 
-<div class="hero-mcap-box">
-  <div class="hero-mcap-label">🪦 &nbsp; $RIP Market Cap</div>
-  <div class="hero-mcap-num" id="rip-mcap">—</div>
-  <div class="hero-mcap-chg neu" id="rip-chg">—</div>
-</div>
+<div class="mcap-label">🪦 &nbsp;Market Cap</div>
+<div class="mcap-num" id="rip-mcap">—</div>
+<div class="mcap-chg neu" id="rip-chg">—</div>
 
-<div class="hero-btns">
-  <a class="btn-primary" href="https://jup.ag/swap/SOL-HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx" target="_blank" rel="noopener">🪦 &nbsp;Buy $RIP on Jupiter</a>
-  <a class="btn-secondary" href="https://dexscreener.com/solana/HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx" target="_blank" rel="noopener">View Chart</a>
-</div>
-```
+<div class="sep"></div>
 
-  </div>
-</section>
-
-<!-- ══ MARQUEE ════════════════════════════════════════════════ -->
-
-<div class="marquee-wrap">
-  <div class="marquee-track">
-    <span class="marquee-item">🪦 $RIP</span><span class="marquee-dot">·</span>
-    <span class="marquee-item">REST IN PUMPFUN</span><span class="marquee-dot">·</span>
-    <span class="marquee-item">🕊️ PIGEON TAKES THE THRONE</span><span class="marquee-dot">·</span>
-    <span class="marquee-item">THE BURIAL HAS BEGUN</span><span class="marquee-dot">·</span>
-    <span class="marquee-item">🪦 THEY PUMPED · THEY DUMPED</span><span class="marquee-dot">·</span>
-    <span class="marquee-item">NOW WE BURY THEM</span><span class="marquee-dot">·</span>
-    <span class="marquee-item">🪦 $RIP</span><span class="marquee-dot">·</span>
-    <span class="marquee-item">REST IN PUMPFUN</span><span class="marquee-dot">·</span>
-    <span class="marquee-item">🕊️ PIGEON TAKES THE THRONE</span><span class="marquee-dot">·</span>
-    <span class="marquee-item">THE BURIAL HAS BEGUN</span><span class="marquee-dot">·</span>
-    <span class="marquee-item">🪦 THEY PUMPED · THEY DUMPED</span><span class="marquee-dot">·</span>
-    <span class="marquee-item">NOW WE BURY THEM</span><span class="marquee-dot">·</span>
-  </div>
-</div>
-
-<div class="divider"></div>
-
-<!-- ══ ABOUT ══════════════════════════════════════════════════ -->
-
-<section id="about" class="section">
-  <div style="background:var(--bg1); padding:120px 0;">
-    <div class="inner">
-      <div class="about-grid">
-
-```
-    <div class="about-img-wrap">
-      <svg viewBox="0 0 320 420" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <filter id="glow2" x="-30%" y="-20%" width="160%" height="140%">
-            <feGaussianBlur stdDeviation="12" result="blur"/>
-            <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0.9  0 0 0 0 0.78  0 0 0 0.9 0" in="blur" result="tb"/>
-            <feMerge><feMergeNode in="tb"/><feMergeNode in="SourceGraphic"/></feMerge>
-          </filter>
-          <linearGradient id="stF2" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%"   stop-color="#8a9bab"/>
-            <stop offset="55%"  stop-color="#6e7e8e"/>
-            <stop offset="100%" stop-color="#54636f"/>
-          </linearGradient>
-          <linearGradient id="stB2" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#7a8a98"/>
-            <stop offset="100%" stop-color="#4e5e6a"/>
-          </linearGradient>
-          <linearGradient id="pW2" x1="20%" y1="0%" x2="80%" y2="100%">
-            <stop offset="0%"   stop-color="#eef3f8"/>
-            <stop offset="100%" stop-color="#c8d4de"/>
-          </linearGradient>
-          <linearGradient id="pG2" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%"   stop-color="#5edcaa"/>
-            <stop offset="100%" stop-color="#2caa76"/>
-          </linearGradient>
-          <clipPath id="pW2c"><ellipse cx="159" cy="168" rx="66" ry="92"/></clipPath>
-        </defs>
-        <rect x="22" y="348" width="276" height="58" rx="10" fill="url(#stB2)" stroke="#2e3e4a" stroke-width="3.5" filter="url(#glow2)"/>
-        <ellipse cx="55"  cy="349" rx="28" ry="9" fill="#2d5e35" opacity="0.9"/>
-        <ellipse cx="265" cy="349" rx="28" ry="9" fill="#2d5e35" opacity="0.9"/>
-        <path d="M 62 358 L 62 175 Q 62 28 160 28 Q 258 28 258 175 L 258 358 Z" fill="url(#stF2)" stroke="#2c3c48" stroke-width="4.5" filter="url(#glow2)"/>
-        <path d="M 90 195 L 95 242 L 89 272" stroke="#4a5868" stroke-width="1.8" fill="none" opacity="0.6"/>
-        <path d="M 216 130 L 224 178 L 218 208" stroke="#4a5868" stroke-width="1.8" fill="none" opacity="0.6"/>
-        <ellipse cx="159" cy="168" rx="70" ry="97" fill="#1a2830" stroke="#0e1c26" stroke-width="4" filter="url(#glow2)"/>
-        <g clip-path="url(#pW2c)">
-          <g transform="rotate(-30, 159, 168)">
-            <rect x="93" y="76"  width="132" height="92" fill="url(#pW2)"/>
-            <rect x="93" y="168" width="132" height="92" fill="url(#pG2)"/>
-          </g>
-          <ellipse cx="172" cy="118" rx="24" ry="14" fill="rgba(255,255,255,0.22)" transform="rotate(-30,172,118)"/>
-          <ellipse cx="143" cy="210" rx="16" ry="9" fill="rgba(255,255,255,0.28)" transform="rotate(-30,143,210)"/>
-        </g>
-        <ellipse cx="159" cy="168" rx="70" ry="97" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="2"/>
-        <g stroke="#0e1c26" stroke-width="1.5" fill="#1a2830">
-          <polygon points="159,68  154,76 164,76"/>
-          <polygon points="159,268 154,260 164,260"/>
-          <polygon points="87,168  95,163 95,173"/>
-          <polygon points="231,168 223,163 223,173"/>
-        </g>
-        <text x="159" y="310" text-anchor="middle" font-family="Georgia,serif" font-size="28" font-weight="900" fill="#34444f" letter-spacing="7" stroke="#28383f" stroke-width="2" style="paint-order:stroke;">R.I.P.</text>
-        <ellipse cx="85"  cy="358" rx="18" ry="5.5" fill="#2d5e35" opacity="0.7"/>
-        <ellipse cx="235" cy="358" rx="18" ry="5.5" fill="#2d5e35" opacity="0.7"/>
-      </svg>
+<div class="battle-wrap">
+  <div class="battle-tokens">
+    <div class="pigeon-side">
+      <div class="btok-name">$PIGEON</div>
+      <div class="btok-mc" id="pigeon-mc">—</div>
     </div>
-
-    <div class="about-text">
-      <div class="section-label">The Eulogy</div>
-      <h2 class="section-heading">A Protest.<br>A Movement.<br>A Burial.</h2>
-      <div class="about-body">
-        <p>This is a eulogy for every bag they buried. A protest for every wallet they drained. A movement for everyone they left holding.</p>
-        <p><strong>They pumped. They dumped. They extracted.</strong></p>
-        <p>PumpFun built a machine that printed exit liquidity out of retail. The model was simple: hype the launch, dump on believers, rinse and repeat. <em>The pigeons watched. They remembered.</em></p>
-        <p>Now we bury them. 🪦</p>
-      </div>
+    <div class="pump-side">
+      <div class="btok-name">$PUMP</div>
+      <div class="btok-mc" id="pump-mc">—</div>
     </div>
-
   </div>
+  <div class="bar-track">
+    <div class="bar-fill" id="battle-bar" style="width:0%"></div>
+  </div>
+  <div class="bar-caption" id="battle-cap">Loading…</div>
 </div>
 ```
 
-  </div>
-</section>
+  </main>
 
-<div class="divider"></div>
-
-<!-- ══ TOKEN INFO ═════════════════════════════════════════════ -->
-
-<section id="tokeninfo" class="section">
-  <div style="background:var(--bg0); padding:100px 0;">
-    <div class="inner">
-      <div class="token-center">
-        <div class="section-label" style="justify-content:center; max-width:300px; margin:0 auto 16px;">On-Chain</div>
-        <h2 class="section-heading" style="text-align:center;">Token Info</h2>
-      </div>
-
-```
-  <div class="ca-bar">
-    <span class="ca-label">CA</span>
-    <span class="ca-addr" id="ca-text">HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx</span>
-    <button class="ca-copy" id="ca-btn" onclick="copyCa()">Copy</button>
-  </div>
-
-  <div class="onchain-wrap">
-    <div class="onchain-card">
-      <div class="onchain-title">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-        On-Chain Proof
-      </div>
-      <div class="onchain-row">
-        <span class="onchain-key">Burn Mechanism</span>
-        <div class="onchain-right"><span class="onchain-val">Active</span><span class="onchain-dot"></span></div>
-      </div>
-      <div class="onchain-row">
-        <span class="onchain-key">Trading Fee</span>
-        <div class="onchain-right"><span class="onchain-val">2% per trade</span><span class="onchain-dot"></span></div>
-      </div>
-      <div class="onchain-row">
-        <span class="onchain-key">Sweep Lane</span>
-        <div class="onchain-right"><span class="onchain-val">Permissionless</span><span class="onchain-dot"></span></div>
-      </div>
-      <div class="onchain-row">
-        <span class="onchain-key">LP Lock</span>
-        <div class="onchain-right"><span class="onchain-val">Permanent (dead wallet)</span><span class="onchain-dot"></span></div>
-      </div>
-      <div class="onchain-row">
-        <span class="onchain-key">Network</span>
-        <div class="onchain-right"><span class="onchain-val">Solana</span><span class="onchain-dot"></span></div>
-      </div>
-      <hr class="onchain-sep">
-      <a class="onchain-verify" href="https://solscan.io/token/HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx" target="_blank" rel="noopener">
-        Verify On-Chain &nbsp;↗
-      </a>
+  <footer>
+    <div class="footer-ca-row">
+      <span class="footer-label">CA</span>
+      <span class="footer-ca" onclick="copyCa()">HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx</span>
+      <button class="footer-copy-btn" id="ca-btn" onclick="copyCa()">Copy</button>
     </div>
-  </div>
+    <div class="footer-note">Not financial advice &nbsp;·&nbsp; Data: DexScreener &nbsp;·&nbsp; <span id="last-upd">fetching…</span></div>
+  </footer>
+
 </div>
-```
-
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<!-- ══ BATTLE ═════════════════════════════════════════════════ -->
-
-<section id="battle" class="section">
-  <div style="background:var(--bg2); padding:120px 0;">
-    <div class="inner">
-      <div class="battle-center">
-        <div class="section-label" style="justify-content:center; max-width:320px; margin:0 auto 16px;">The Reckoning</div>
-        <h2 class="section-heading" style="text-align:center;">🕊️ Pigeon vs Pump 💀</h2>
-        <p style="color:var(--muted); font-family:'Crimson Text',serif; font-size:18px; max-width:520px; margin:0 auto; line-height:1.8; font-style:italic;">
-          Pigeon is the rightful heir. Watch in real time as the new order overtakes the old.
-        </p>
-      </div>
-
-```
-  <div class="battle-card">
-    <div style="text-align:center;">
-      <div class="battle-pct" id="battle-pct">—</div>
-      <div class="battle-desc" id="battle-desc">Loading market data…</div>
-    </div>
-
-    <div class="battle-tokens">
-      <div class="btok pigeon">
-        <div class="btok-name">$PIGEON</div>
-        <div class="btok-mc" id="pigeon-sm">—</div>
-      </div>
-      <div class="btok-arrow">→</div>
-      <div class="btok pump">
-        <div class="btok-name">$PUMP</div>
-        <div class="btok-mc" id="pump-sm">—</div>
-      </div>
-    </div>
-
-    <div class="bar-track">
-      <div class="bar-fill" id="battle-bar" style="width:0%"></div>
-    </div>
-    <div class="bar-caption" id="battle-cap">Fetching live data…</div>
-  </div>
-</div>
-```
-
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<!-- ══ HOW TO BUY ══════════════════════════════════════════════ -->
-
-<section id="howtobuy" class="section">
-  <div style="background:var(--bg1); padding:120px 0;">
-    <div class="inner">
-      <div class="howtobuy-center">
-        <div class="section-label" style="justify-content:center; max-width:320px; margin:0 auto 16px;">Join The Movement</div>
-        <h2 class="section-heading" style="text-align:center;">How To Buy</h2>
-        <p style="color:var(--muted); font-family:'Crimson Text',serif; font-size:18px; max-width:460px; margin:12px auto 0; line-height:1.8; font-style:italic;">
-          Four steps to join the burial party.
-        </p>
-      </div>
-
-```
-  <div class="steps-grid">
-    <div class="step-card">
-      <div class="step-num">01</div>
-      <div class="step-title">Get a Wallet</div>
-      <div class="step-body">
-        Download <a href="https://phantom.app" target="_blank" rel="noopener">Phantom</a> or <a href="https://solflare.com" target="_blank" rel="noopener">Solflare</a>. Create a new wallet and save your seed phrase somewhere safe.
-      </div>
-    </div>
-    <div class="step-card">
-      <div class="step-num">02</div>
-      <div class="step-title">Get Some SOL</div>
-      <div class="step-body">
-        Buy SOL on any exchange — Coinbase, Binance, Kraken — and send it to your wallet. SOL is your fuel.
-      </div>
-    </div>
-    <div class="step-card">
-      <div class="step-num">03</div>
-      <div class="step-title">Open Jupiter</div>
-      <div class="step-body">
-        Head to <a href="https://jup.ag/swap/SOL-HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx" target="_blank" rel="noopener">Jupiter</a> and connect your wallet. $RIP is already loaded and ready to swap.
-      </div>
-    </div>
-    <div class="step-card">
-      <div class="step-num">04</div>
-      <div class="step-title">Swap for $RIP</div>
-      <div class="step-body">
-        Enter the amount of SOL, confirm the transaction. Welcome to the burial ground. 🪦
-      </div>
-    </div>
-  </div>
-</div>
-```
-
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<!-- ══ LIVE MARKETS ════════════════════════════════════════════ -->
-
-<section id="markets" class="section">
-  <div style="background:var(--bg0); padding:100px 0;">
-    <div class="inner">
-      <div class="markets-center">
-        <div class="section-label" style="justify-content:center; max-width:260px; margin:0 auto 16px;">Live Data</div>
-        <h2 class="section-heading" style="text-align:center;">Market Caps</h2>
-      </div>
-
-```
-  <div class="markets-grid">
-    <div class="mcard rip">
-      <div class="mc-label">Market Cap</div>
-      <div class="mc-sym">$RIP</div>
-      <div class="mc-val" id="rip-mc-card" style="color:var(--teal)">—</div>
-      <div class="mc-chg neu" id="rip-chg-card">—</div>
-    </div>
-    <div class="mcard pigeon">
-      <div class="mc-label">Market Cap</div>
-      <div class="mc-sym">$PIGEON</div>
-      <div class="mc-val" id="pigeon-mc-card" style="color:#93c5fd">—</div>
-      <div class="mc-chg neu" id="pigeon-chg-card">—</div>
-    </div>
-    <div class="mcard pump">
-      <div class="mc-label">Market Cap</div>
-      <div class="mc-sym">$PUMP</div>
-      <div class="mc-val" id="pump-mc-card" style="color:#f87171">—</div>
-      <div class="mc-chg neu" id="pump-chg-card">—</div>
-    </div>
-  </div>
-
-  <div class="last-upd" id="last-upd">Fetching live data from DexScreener…</div>
-</div>
-```
-
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<!-- ══ SOCIALS ════════════════════════════════════════════════ -->
-
-<section id="socials" class="section">
-  <div style="background:var(--bg2); padding:100px 0; text-align:center;">
-    <div class="inner">
-      <div class="socials-center">
-        <div class="section-label" style="justify-content:center; max-width:260px; margin:0 auto 16px;">Community</div>
-        <h2 class="section-heading" style="text-align:center;">Join The Burial Party</h2>
-      </div>
-      <div class="social-grid">
-        <a class="soc-card" href="https://x.com/i/communities/2026114124686434659" target="_blank" rel="noopener">
-          <span class="soc-icon">𝕏</span>
-          <span class="soc-name">X Community</span>
-          <span class="soc-sub">Join the movement</span>
-        </a>
-        <a class="soc-card" href="https://dexscreener.com/solana/HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx" target="_blank" rel="noopener">
-          <span class="soc-icon">📊</span>
-          <span class="soc-name">DexScreener</span>
-          <span class="soc-sub">Live chart & trades</span>
-        </a>
-        <a class="soc-card" href="https://jup.ag/swap/SOL-HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx" target="_blank" rel="noopener">
-          <span class="soc-icon">⚡</span>
-          <span class="soc-name">Jupiter</span>
-          <span class="soc-sub">Buy $RIP now</span>
-        </a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ══ FOOTER ════════════════════════════════════════════════ -->
-
-<footer>
-  <div class="footer-brand">$RIP</div>
-  <div class="footer-line"></div>
-  <div class="footer-ca">HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx</div>
-  <div class="footer-note">Not financial advice. Just vibes and justice. 🪦</div>
-</footer>
-
-<!-- ══ SCRIPTS ════════════════════════════════════════════════ -->
 
 <script>
-// ── Flying Pigeon ─────────────────────────────────────────────
-(function () {
-  const bird = document.getElementById('flying-pigeon');
-  let running = false;
-  function launchPigeon() {
-    if (running) return;
-    running = true;
-    const goRight = Math.random() > 0.5;
-    const vw = window.innerWidth, vh = window.innerHeight;
-    const yPos = 100 + Math.random() * (vh * 0.55);
-    const duration = 5000 + Math.random() * 3000;
-    const startX = goRight ? -80 : vw + 80;
-    const endX   = goRight ? vw + 80 : -80;
-    const flip   = goRight ? 1 : -1;
-    bird.style.setProperty('--px-start', startX + 'px');
-    bird.style.setProperty('--px-end',   endX   + 'px');
-    bird.style.setProperty('--py-start', yPos   + 'px');
-    bird.style.setProperty('--flip', flip);
-    bird.style.display = 'block';
-    bird.style.animation = 'none';
-    void bird.offsetWidth;
-    bird.style.animation = `pigeonFly ${duration}ms ease-in-out forwards`;
-    setTimeout(() => {
-      bird.style.display = 'none';
-      bird.style.animation = 'none';
-      running = false;
-      scheduleNext();
-    }, duration + 100);
-  }
-  function scheduleNext() {
-    setTimeout(launchPigeon, 10000 + Math.random() * 20000);
-  }
-  setTimeout(launchPigeon, 4000 + Math.random() * 4000);
-})();
-
-// ── Particles ─────────────────────────────────────────────────
-(function () {
-  const c = document.getElementById('particles');
-  for (let i = 0; i < 18; i++) {
-    const el = document.createElement('div');
-    el.className = 'pt';
-    const sz = 1.5 + Math.random() * 3.5;
-    el.style.cssText =
-      `left:${Math.random()*100}vw;` +
-      `width:${sz}px;height:${sz}px;` +
-      `animation-duration:${10+Math.random()*18}s;` +
-      `animation-delay:${Math.random()*14}s;`;
+(function(){
+  const c=document.getElementById('particles');
+  for(let i=0;i<16;i++){
+    const el=document.createElement('div'); el.className='pt';
+    const sz=1.5+Math.random()*3;
+    el.style.cssText=`left:${Math.random()*100}vw;width:${sz}px;height:${sz}px;animation-duration:${10+Math.random()*18}s;animation-delay:${Math.random()*14}s;`;
     c.appendChild(el);
   }
 })();
 
-// ── CA copy ───────────────────────────────────────────────────
-function copyCa() {
-  navigator.clipboard.writeText('HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx').then(() => {
-    const btn = document.getElementById('ca-btn');
-    btn.textContent = 'Copied!';
-    setTimeout(() => btn.textContent = 'Copy', 2000);
+(function(){
+  const b=document.getElementById('bird'); let running=false;
+  function launch(){
+    if(running)return; running=true;
+    const goR=Math.random()>.5,vw=window.innerWidth,vh=window.innerHeight;
+    const y=80+Math.random()*(vh*.55), dur=5000+Math.random()*3000;
+    b.style.setProperty('--x0',(goR?-70:vw+70)+'px');
+    b.style.setProperty('--x1',(goR?vw+70:-70)+'px');
+    b.style.setProperty('--y0',y+'px');
+    b.style.setProperty('--flip',goR?1:-1);
+    b.style.display='block'; b.style.animation='none';
+    void b.offsetWidth;
+    b.style.animation=`birdFly ${dur}ms ease-in-out forwards`;
+    setTimeout(()=>{b.style.display='none';b.style.animation='none';running=false;schedule();},dur+100);
+  }
+  function schedule(){setTimeout(launch,10000+Math.random()*20000);}
+  setTimeout(launch,3000+Math.random()*4000);
+})();
+
+function copyCa(){
+  navigator.clipboard.writeText('HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx').then(()=>{
+    const btn=document.getElementById('ca-btn');
+    btn.textContent='Copied!';
+    setTimeout(()=>btn.textContent='Copy',2000);
   });
 }
 
-// ── Helpers ───────────────────────────────────────────────────
-function fmtMcap(v) {
-  if (!v || isNaN(v)) return '—';
-  if (v >= 1e9) return '$' + (v / 1e9).toFixed(2) + 'B';
-  if (v >= 1e6) return '$' + (v / 1e6).toFixed(2) + 'M';
-  if (v >= 1e3) return '$' + (v / 1e3).toFixed(0) + 'K';
-  return '$' + v.toFixed(0);
-}
-function fmtChg(v) {
-  if (v === null || v === undefined || isNaN(v)) return null;
-  return (v >= 0 ? '+' : '') + v.toFixed(2) + '%  (24h)';
-}
-function applyChg(elId, v) {
-  const el = document.getElementById(elId);
-  if (!el) return;
-  const txt = fmtChg(v);
-  if (!txt) { el.textContent = '—'; el.className = 'mc-chg neu'; return; }
-  el.textContent = txt;
-  el.className = 'mc-chg ' + (v >= 0 ? 'pos' : 'neg');
+function fmt(v){
+  if(!v||isNaN(v))return'—';
+  if(v>=1e9)return'$'+(v/1e9).toFixed(2)+'B';
+  if(v>=1e6)return'$'+(v/1e6).toFixed(2)+'M';
+  if(v>=1e3)return'$'+(v/1e3).toFixed(0)+'K';
+  return'$'+v.toFixed(0);
 }
 
-// ── DexScreener ───────────────────────────────────────────────
-async function fetchToken(addr) {
-  try {
-    const r = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${addr}`);
-    const d = await r.json();
-    if (!d.pairs || !d.pairs.length) return null;
-    return d.pairs.sort((a, b) => (b.volume?.h24 || 0) - (a.volume?.h24 || 0))[0];
-  } catch (e) { return null; }
+async function fetchToken(addr){
+  try{
+    const r=await fetch(`https://api.dexscreener.com/latest/dex/tokens/${addr}`);
+    const d=await r.json();
+    if(!d.pairs||!d.pairs.length)return null;
+    return d.pairs.sort((a,b)=>(b.volume?.h24||0)-(a.volume?.h24||0))[0];
+  }catch(e){return null;}
 }
 
-async function update() {
-  const [rip, pigeon, pump] = await Promise.all([
+async function update(){
+  const[rip,pigeon,pump]=await Promise.all([
     fetchToken('HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx'),
     fetchToken('4fSWEw2wbYEUCcMtitzmeGUfqinoafXxkhqZrA9Gpump'),
     fetchToken('pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn'),
   ]);
 
-  if (rip) {
-    const mc = rip.marketCap || rip.fdv || 0;
-    const ch = rip.priceChange?.h24;
-    document.getElementById('rip-mcap').textContent = fmtMcap(mc);
-    document.getElementById('rip-mc-card').textContent = fmtMcap(mc);
-    const heroChg = document.getElementById('rip-chg');
-    const t = fmtChg(ch);
-    if (t) { heroChg.textContent = t; heroChg.className = 'hero-mcap-chg ' + (ch >= 0 ? 'pos' : 'neg'); }
-    applyChg('rip-chg-card', ch);
-  }
-
-  let pigMc = 0;
-  if (pigeon) {
-    pigMc = pigeon.marketCap || pigeon.fdv || 0;
-    document.getElementById('pigeon-sm').textContent = fmtMcap(pigMc);
-    document.getElementById('pigeon-mc-card').textContent = fmtMcap(pigMc);
-    applyChg('pigeon-chg-card', pigeon.priceChange?.h24);
-  }
-
-  let pmpMc = 0;
-  if (pump) {
-    pmpMc = pump.marketCap || pump.fdv || 0;
-    document.getElementById('pump-sm').textContent = fmtMcap(pmpMc);
-    document.getElementById('pump-mc-card').textContent = fmtMcap(pmpMc);
-    applyChg('pump-chg-card', pump.priceChange?.h24);
-  }
-
-  if (pigMc > 0 && pmpMc > 0) {
-    const raw = (pigMc / pmpMc) * 100;
-    const pct = Math.min(raw, 100);
-    document.getElementById('battle-pct').textContent = raw.toFixed(1) + '%';
-    document.getElementById('battle-bar').style.width = pct + '%';
-    if (raw >= 100) {
-      document.getElementById('battle-desc').textContent = '🕊️ Pigeon has overtaken Pump — the funeral proceeds 🪦';
-      document.getElementById('battle-desc').style.color = '#93c5fd';
-      document.getElementById('battle-cap').textContent = 'The coup is complete. RIP $PUMP.';
-    } else {
-      const gap = pmpMc - pigMc;
-      document.getElementById('battle-desc').textContent =
-        `$PIGEON needs ${fmtMcap(gap)} more to dethrone $PUMP`;
-      document.getElementById('battle-cap').textContent =
-        `$PIGEON is ${raw.toFixed(1)}% of the way there`;
+  if(rip){
+    const mc=rip.marketCap||rip.fdv||0;
+    const ch=parseFloat(rip.priceChange?.h24);
+    document.getElementById('rip-mcap').textContent=fmt(mc);
+    const el=document.getElementById('rip-chg');
+    if(!isNaN(ch)){
+      el.textContent=(ch>=0?'+':'')+ch.toFixed(2)+'%  (24h)';
+      el.className='mcap-chg '+(ch>=0?'pos':'neg');
     }
   }
 
-  document.getElementById('last-upd').textContent =
-    'Last updated: ' + new Date().toLocaleTimeString() +
-    ' · Auto-refreshes every 60s · Data: DexScreener';
+  let pigMc=0,pmpMc=0;
+  if(pigeon){pigMc=pigeon.marketCap||pigeon.fdv||0; document.getElementById('pigeon-mc').textContent=fmt(pigMc);}
+  if(pump)  {pmpMc=pump.marketCap||pump.fdv||0;     document.getElementById('pump-mc').textContent=fmt(pmpMc);}
+
+  if(pigMc>0&&pmpMc>0){
+    const raw=(pigMc/pmpMc)*100;
+    document.getElementById('battle-bar').style.width=Math.min(raw,100)+'%';
+    document.getElementById('battle-cap').textContent=raw>=100
+      ?'🕊️ PIGEON HAS OVERTAKEN PUMP — THE FUNERAL IS COMPLETE 🪦'
+      :`$PIGEON is ${raw.toFixed(1)}% of $PUMP — ${fmt(pmpMc-pigMc)} to go`;
+  }
+
+  document.getElementById('last-upd').textContent='updated '+new Date().toLocaleTimeString();
 }
 
 update();
-setInterval(update, 60_000);
+setInterval(update,60_000);
 </script>
 
 </body>
