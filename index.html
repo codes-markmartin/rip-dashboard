@@ -1,503 +1,99 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>$RIP — Rest In PumpFun</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Goodness Gracious</title>
   <style>
     :root {
-      --teal:      #00e5c8;
-      --teal-glow: rgba(0,229,200,0.45);
-      --teal-dim:  rgba(0,229,200,0.10);
-      --teal-mid:  rgba(0,229,200,0.22);
-      --bg:        #030508;
-      --text:      #dde4ee;
-      --muted:     rgba(200,215,230,0.38);
-      --border:    rgba(0,229,200,0.13);
+      --bg: #0b0b0f;
+      --fg: #f7f5ef;
+      --accent: #e8c547;
+      --muted: #9a9a9a;
     }
 
-```
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-html, body {
-  height: 100%;
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Cinzel', serif;
-  overflow: hidden;
-}
+    * { box-sizing: border-box; }
 
-body::before {
-  content:'';
-  position:fixed; inset:0; pointer-events:none; z-index:0;
-  background:
-    radial-gradient(ellipse 80% 60% at 50% 110%, rgba(0,90,65,0.14) 0%, transparent 65%),
-    radial-gradient(ellipse 50% 35% at 15% 10%,  rgba(0,229,200,0.04) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 30% at 85% 5%,   rgba(0,120,90,0.05) 0%, transparent 55%);
-}
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+    }
 
-#particles { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
-.pt {
-  position:absolute; border-radius:50%;
-  background: radial-gradient(circle, rgba(0,229,200,0.55) 0%, transparent 70%);
-  animation: rise linear infinite;
-}
-@keyframes rise {
-  from { transform:translateY(105vh) scale(0.2); opacity:0; }
-  8%   { opacity:0.7; }
-  90%  { opacity:0.15; }
-  to   { transform:translateY(-5vh) scale(1); opacity:0; }
-}
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 4rem 1.5rem;
+    }
 
-#bird {
-  position:fixed; z-index:999; pointer-events:none;
-  font-size:36px; top:0; left:0; display:none;
-  filter: drop-shadow(0 0 12px rgba(0,229,200,0.7));
-  will-change:transform;
-}
-@keyframes birdFly {
-  0%   { transform:translateX(var(--x0)) translateY(var(--y0)) scaleX(var(--flip)); }
-  50%  { transform:translateX(calc((var(--x0) + var(--x1)) / 2)) translateY(calc(var(--y0) - 50px)) scaleX(var(--flip)); }
-  100% { transform:translateX(var(--x1)) translateY(var(--y0)) scaleX(var(--flip)); }
-}
+    header {
+      text-align: center;
+      margin-bottom: 4rem;
+    }
 
-/* Full viewport layout */
-.page {
-  position: relative; z-index:1;
-  width: 100vw; height: 100vh;
-  display: flex; flex-direction: column;
-}
+    h1 {
+      font-size: clamp(3rem, 10vw, 7rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 0.95;
+      margin: 0 0 0.5rem;
+      text-transform: uppercase;
+    }
 
-/* NAV */
-nav {
-  flex-shrink: 0;
-  display:flex; align-items:center; justify-content:space-between;
-  padding: 0 36px;
-  height: 64px;
-  border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(20px);
-  background: rgba(3,5,8,0.7);
-}
-.nav-brand {
-  font-size: 18px; font-weight:900;
-  letter-spacing: 5px; color: var(--teal);
-  text-decoration:none;
-  text-shadow: 0 0 28px var(--teal-glow);
-}
-.nav-buy {
-  font-family:'Cinzel', serif;
-  font-size: 12px; font-weight:700;
-  letter-spacing: 2px;
-  color: #030508;
-  background: var(--teal);
-  padding: 10px 26px;
-  border-radius: 2px;
-  text-decoration: none;
-  transition: box-shadow .2s, transform .15s, opacity .2s;
-  box-shadow: 0 0 24px rgba(0,229,200,0.3);
-}
-.nav-buy:hover {
-  box-shadow: 0 0 48px rgba(0,229,200,0.55);
-  transform: translateY(-1px);
-  opacity: .9;
-}
+    .subtitle {
+      color: var(--muted);
+      font-size: 1.1rem;
+      font-style: italic;
+      margin: 0;
+    }
 
-/* MAIN */
-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 0 24px;
-}
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 2rem;
+      justify-items: center;
+    }
 
-/* TOMBSTONE */
-.tomb-wrap {
-  margin-bottom: 24px;
-}
-.tomb-wrap svg {
-  width: clamp(90px, 12vw, 148px);
-  height: auto;
-  animation: float 6s ease-in-out infinite, glow-anim 4s ease-in-out infinite;
-}
-@keyframes float {
-  0%,100% { transform: translateY(0); }
-  50%      { transform: translateY(-12px); }
-}
-@keyframes glow-anim {
-  0%,100% { filter: drop-shadow(0 0 22px rgba(0,229,200,0.35)); }
-  50%      { filter: drop-shadow(0 0 60px rgba(0,229,200,0.7)); }
-}
+    .video-card {
+      width: 100%;
+      max-width: 400px;
+    }
 
-/* TITLE */
-.rip-title {
-  font-size: clamp(48px, 11vw, 108px);
-  font-weight: 900;
-  letter-spacing: 10px;
-  color: var(--text);
-  line-height: 1;
-  text-shadow:
-    0 0 60px rgba(0,229,200,0.35),
-    0 0 120px rgba(0,229,200,0.12);
-  margin-bottom: 6px;
-}
-.rip-tagline {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: clamp(9px, 1.4vw, 11px);
-  letter-spacing: 5px;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 32px;
-}
+    .video-card iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+      border-radius: 8px;
+      background: #1a1a1f;
+      display: block;
+    }
 
-/* MCAP */
-.mcap-label {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 10px; letter-spacing: 4px;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 8px;
-}
-.mcap-num {
-  font-size: clamp(40px, 8.5vw, 76px);
-  font-weight: 900;
-  letter-spacing: -1px;
-  color: var(--teal);
-  line-height: 1;
-  text-shadow: 0 0 50px rgba(0,229,200,0.5);
-  margin-bottom: 8px;
-}
-.mcap-chg {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 12px; letter-spacing: 1px;
-  margin-bottom: 40px;
-  min-height: 18px;
-}
-.pos { color: #4ade80; }
-.neg { color: #f87171; }
-.neu { color: var(--muted); }
-
-/* SEPARATOR */
-.sep {
-  width: min(520px, 86vw);
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--teal-mid), transparent);
-  margin-bottom: 32px;
-}
-
-/* BATTLE */
-.battle-wrap { width: min(520px, 86vw); }
-
-.battle-tokens {
-  display:flex; justify-content:space-between; margin-bottom:14px;
-}
-.btok-name {
-  font-size: clamp(12px, 2vw, 15px);
-  font-weight: 700; letter-spacing: 2px;
-}
-.btok-mc {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: clamp(9px, 1.4vw, 11px);
-  margin-top: 4px;
-  color: var(--muted);
-}
-.pigeon-side { text-align:left; }
-.pump-side   { text-align:right; }
-.pigeon-side .btok-name { color: #93c5fd; }
-.pump-side   .btok-name { color: #f87171; }
-
-.bar-track {
-  width: 100%; height: 12px;
-  background: rgba(255,255,255,0.05);
-  border-radius: 2px; overflow:hidden;
-  border: 1px solid rgba(255,255,255,0.07);
-  margin-bottom: 10px;
-}
-.bar-fill {
-  height: 100%; border-radius: 2px;
-  background: linear-gradient(90deg, rgba(0,140,110,0.9), var(--teal));
-  transition: width 1.6s cubic-bezier(.4,0,.2,1);
-  min-width: 1%;
-  box-shadow: 4px 0 18px rgba(0,229,200,0.45);
-  position:relative;
-}
-.bar-fill::after {
-  content:''; position:absolute; inset:0;
-  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%);
-  background-size: 200% 100%;
-  animation: shimmer 2.5s linear infinite;
-}
-@keyframes shimmer {
-  0%   { background-position: -200% 0; }
-  100% { background-position:  200% 0; }
-}
-.bar-caption {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 10px; letter-spacing: 2px;
-  color: var(--muted); text-align:center;
-  min-height: 16px;
-}
-
-/* FOOTER */
-footer {
-  flex-shrink: 0;
-  display:flex; flex-direction:column; align-items:center;
-  padding: 14px 24px 16px;
-  border-top: 1px solid var(--border);
-  gap: 6px;
-}
-.footer-ca-row {
-  display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:center;
-}
-.footer-label {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 9px; letter-spacing:4px;
-  text-transform:uppercase; color:var(--teal); opacity:.6;
-}
-.footer-ca {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: clamp(8px, 1.7vw, 11px);
-  color: rgba(200,215,230,0.28);
-  letter-spacing: 0.5px;
-  cursor:pointer; transition: color .2s;
-}
-.footer-ca:hover { color: var(--teal); }
-.footer-copy-btn {
-  font-family: 'Cinzel', serif;
-  font-size: 9px; letter-spacing:2px;
-  color: var(--teal); background: transparent;
-  border: 1px solid var(--teal-mid);
-  padding: 4px 12px; border-radius: 2px;
-  cursor:pointer; transition: background .2s, color .2s;
-}
-.footer-copy-btn:hover { background:var(--teal); color:#030508; }
-.footer-note {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 9px; letter-spacing:2px;
-  color: rgba(255,255,255,0.12); text-align:center;
-}
-
-@media (max-width: 480px) {
-  nav { padding: 0 18px; }
-  .nav-buy { font-size:10px; padding:8px 16px; letter-spacing:1px; }
-}
-```
-
+    @media (max-width: 600px) {
+      .video-card iframe { height: 540px; }
+    }
   </style>
 </head>
 <body>
+  <div class="container">
+    <header>
+      <h1>Goodness<br />Gracious</h1>
+      <p class="subtitle">Conversations on Jesus, truth, and the hope within us.</p>
+    </header>
 
-<div id="bird">🕊️</div>
-<div id="particles"></div>
-
-<div class="page">
-
-  <nav>
-    <a class="nav-brand" href="#">$RIP</a>
-    <a class="nav-buy" href="https://jup.ag/swap/SOL-HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx" target="_blank" rel="noopener">BUY ON JUPITER</a>
-  </nav>
-
-  <main>
-
-```
-<div class="tomb-wrap">
-  <svg viewBox="0 0 320 420" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <filter id="g" x="-30%" y="-20%" width="160%" height="140%">
-        <feGaussianBlur stdDeviation="11" result="b"/>
-        <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0.9  0 0 0 0 0.78  0 0 0 0.9 0" in="b" result="c"/>
-        <feMerge><feMergeNode in="c"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-      <linearGradient id="sF" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%"   stop-color="#8a9bab"/>
-        <stop offset="55%"  stop-color="#6e7e8e"/>
-        <stop offset="100%" stop-color="#54636f"/>
-      </linearGradient>
-      <linearGradient id="sB" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#7a8a98"/>
-        <stop offset="100%" stop-color="#4e5e6a"/>
-      </linearGradient>
-      <linearGradient id="pW" x1="20%" y1="0%" x2="80%" y2="100%">
-        <stop offset="0%"   stop-color="#eef3f8"/>
-        <stop offset="100%" stop-color="#c8d4de"/>
-      </linearGradient>
-      <linearGradient id="pG" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%"   stop-color="#5edcaa"/>
-        <stop offset="100%" stop-color="#2caa76"/>
-      </linearGradient>
-      <clipPath id="pc"><ellipse cx="159" cy="168" rx="66" ry="92"/></clipPath>
-    </defs>
-    <rect x="22" y="348" width="276" height="58" rx="10" fill="url(#sB)" stroke="#2e3e4a" stroke-width="3" filter="url(#g)"/>
-    <ellipse cx="55"  cy="349" rx="28" ry="9" fill="#2d5e35" opacity="0.9"/>
-    <ellipse cx="265" cy="349" rx="28" ry="9" fill="#2d5e35" opacity="0.9"/>
-    <ellipse cx="160" cy="351" rx="22" ry="7" fill="#3a7040" opacity="0.6"/>
-    <path d="M 62 358 L 62 175 Q 62 28 160 28 Q 258 28 258 175 L 258 358 Z" fill="url(#sF)" stroke="#2c3c48" stroke-width="4" filter="url(#g)"/>
-    <path d="M 66 340 L 66 178 Q 66 42 160 42" stroke="rgba(255,255,255,0.12)" stroke-width="2" fill="none"/>
-    <path d="M 90 195 L 95 242 L 89 272" stroke="#4a5868" stroke-width="1.8" fill="none" opacity="0.55"/>
-    <path d="M 216 130 L 224 178 L 218 208" stroke="#4a5868" stroke-width="1.8" fill="none" opacity="0.55"/>
-    <ellipse cx="100" cy="300" rx="10" ry="6" fill="#3a5c30" opacity="0.4"/>
-    <ellipse cx="225" cy="280" rx="8"  ry="5" fill="#3a5c30" opacity="0.35"/>
-    <ellipse cx="159" cy="168" rx="70" ry="97" fill="#1a2830" stroke="#0e1c26" stroke-width="4" filter="url(#g)"/>
-    <g clip-path="url(#pc)">
-      <g transform="rotate(-30, 159, 168)">
-        <rect x="93" y="76"  width="132" height="92" fill="url(#pW)"/>
-        <rect x="93" y="168" width="132" height="92" fill="url(#pG)"/>
-      </g>
-      <ellipse cx="172" cy="118" rx="24" ry="14" fill="rgba(255,255,255,0.24)" transform="rotate(-30,172,118)"/>
-      <path d="M164 96 Q175 108 168 130" stroke="rgba(255,255,255,0.35)" stroke-width="3" fill="none" stroke-linecap="round" transform="rotate(-30,166,113)"/>
-      <ellipse cx="143" cy="210" rx="16" ry="9" fill="rgba(255,255,255,0.28)" transform="rotate(-30,143,210)"/>
-    </g>
-    <ellipse cx="159" cy="168" rx="70" ry="97" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="2"/>
-    <g stroke="#0e1c26" stroke-width="1.5" fill="#1a2830">
-      <polygon points="159,68  154,76 164,76"/>
-      <polygon points="159,268 154,260 164,260"/>
-      <polygon points="87,168  95,163 95,173"/>
-      <polygon points="231,168 223,163 223,173"/>
-      <polygon points="102,98  110,102 106,111"/>
-      <polygon points="216,238 208,234 212,225"/>
-    </g>
-    <text x="159" y="310" text-anchor="middle" font-family="Georgia,serif" font-size="28" font-weight="900" fill="#34444f" letter-spacing="7" stroke="#28383f" stroke-width="2" style="paint-order:stroke;">R.I.P.</text>
-    <text x="159" y="308" text-anchor="middle" font-family="Georgia,serif" font-size="28" font-weight="900" fill="rgba(255,255,255,0.06)" letter-spacing="7">R.I.P.</text>
-    <line x1="105" y1="320" x2="213" y2="320" stroke="#3a4a55" stroke-width="1.2" opacity="0.5"/>
-    <ellipse cx="85"  cy="358" rx="18" ry="5.5" fill="#2d5e35" opacity="0.7"/>
-    <ellipse cx="235" cy="358" rx="18" ry="5.5" fill="#2d5e35" opacity="0.7"/>
-  </svg>
-</div>
-
-<div class="rip-title">$RIP</div>
-<div class="rip-tagline">Rest In PumpFun · Solana</div>
-
-<div class="mcap-label">🪦 &nbsp;Market Cap</div>
-<div class="mcap-num" id="rip-mcap">—</div>
-<div class="mcap-chg neu" id="rip-chg">—</div>
-
-<div class="sep"></div>
-
-<div class="battle-wrap">
-  <div class="battle-tokens">
-    <div class="pigeon-side">
-      <div class="btok-name">$PIGEON</div>
-      <div class="btok-mc" id="pigeon-mc">—</div>
-    </div>
-    <div class="pump-side">
-      <div class="btok-name">$PUMP</div>
-      <div class="btok-mc" id="pump-mc">—</div>
+    <div class="video-grid">
+      <div class="video-card">
+        <iframe src="https://www.instagram.com/reel/DKtkfRwzyo6/embed/" allowfullscreen scrolling="no" allowtransparency="true"></iframe>
+      </div>
+      <div class="video-card">
+        <iframe src="https://www.instagram.com/reel/DKlGODYzwd6/embed/" allowfullscreen scrolling="no" allowtransparency="true"></iframe>
+      </div>
+      <div class="video-card">
+        <iframe src="https://www.instagram.com/reel/DK1fmjxTP-_/embed/" allowfullscreen scrolling="no" allowtransparency="true"></iframe>
+      </div>
     </div>
   </div>
-  <div class="bar-track">
-    <div class="bar-fill" id="battle-bar" style="width:0%"></div>
-  </div>
-  <div class="bar-caption" id="battle-cap">Loading…</div>
-</div>
-```
-
-  </main>
-
-  <footer>
-    <div class="footer-ca-row">
-      <span class="footer-label">CA</span>
-      <span class="footer-ca" onclick="copyCa()">HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx</span>
-      <button class="footer-copy-btn" id="ca-btn" onclick="copyCa()">Copy</button>
-    </div>
-    <div class="footer-note">Not financial advice &nbsp;·&nbsp; Data: DexScreener &nbsp;·&nbsp; <span id="last-upd">fetching…</span></div>
-  </footer>
-
-</div>
-
-<script>
-(function(){
-  const c=document.getElementById('particles');
-  for(let i=0;i<16;i++){
-    const el=document.createElement('div'); el.className='pt';
-    const sz=1.5+Math.random()*3;
-    el.style.cssText=`left:${Math.random()*100}vw;width:${sz}px;height:${sz}px;animation-duration:${10+Math.random()*18}s;animation-delay:${Math.random()*14}s;`;
-    c.appendChild(el);
-  }
-})();
-
-(function(){
-  const b=document.getElementById('bird'); let running=false;
-  function launch(){
-    if(running)return; running=true;
-    const goR=Math.random()>.5,vw=window.innerWidth,vh=window.innerHeight;
-    const y=80+Math.random()*(vh*.55), dur=5000+Math.random()*3000;
-    b.style.setProperty('--x0',(goR?-70:vw+70)+'px');
-    b.style.setProperty('--x1',(goR?vw+70:-70)+'px');
-    b.style.setProperty('--y0',y+'px');
-    b.style.setProperty('--flip',goR?1:-1);
-    b.style.display='block'; b.style.animation='none';
-    void b.offsetWidth;
-    b.style.animation=`birdFly ${dur}ms ease-in-out forwards`;
-    setTimeout(()=>{b.style.display='none';b.style.animation='none';running=false;schedule();},dur+100);
-  }
-  function schedule(){setTimeout(launch,10000+Math.random()*20000);}
-  setTimeout(launch,3000+Math.random()*4000);
-})();
-
-function copyCa(){
-  navigator.clipboard.writeText('HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx').then(()=>{
-    const btn=document.getElementById('ca-btn');
-    btn.textContent='Copied!';
-    setTimeout(()=>btn.textContent='Copy',2000);
-  });
-}
-
-function fmt(v){
-  if(!v||isNaN(v))return'—';
-  if(v>=1e9)return'$'+(v/1e9).toFixed(2)+'B';
-  if(v>=1e6)return'$'+(v/1e6).toFixed(2)+'M';
-  if(v>=1e3)return'$'+(v/1e3).toFixed(0)+'K';
-  return'$'+v.toFixed(0);
-}
-
-async function fetchToken(addr){
-  try{
-    const r=await fetch(`https://api.dexscreener.com/latest/dex/tokens/${addr}`);
-    const d=await r.json();
-    if(!d.pairs||!d.pairs.length)return null;
-    return d.pairs.sort((a,b)=>(b.volume?.h24||0)-(a.volume?.h24||0))[0];
-  }catch(e){return null;}
-}
-
-async function update(){
-  const[rip,pigeon,pump]=await Promise.all([
-    fetchToken('HpnfrxB1aw9oCoWBciKgCb1RwPUZrbtwEiHy7eakBiwx'),
-    fetchToken('4fSWEw2wbYEUCcMtitzmeGUfqinoafXxkhqZrA9Gpump'),
-    fetchToken('pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn'),
-  ]);
-
-  if(rip){
-    const mc=rip.marketCap||rip.fdv||0;
-    const ch=parseFloat(rip.priceChange?.h24);
-    document.getElementById('rip-mcap').textContent=fmt(mc);
-    const el=document.getElementById('rip-chg');
-    if(!isNaN(ch)){
-      el.textContent=(ch>=0?'+':'')+ch.toFixed(2)+'%  (24h)';
-      el.className='mcap-chg '+(ch>=0?'pos':'neg');
-    }
-  }
-
-  let pigMc=0,pmpMc=0;
-  if(pigeon){pigMc=pigeon.marketCap||pigeon.fdv||0; document.getElementById('pigeon-mc').textContent=fmt(pigMc);}
-  if(pump)  {pmpMc=pump.marketCap||pump.fdv||0;     document.getElementById('pump-mc').textContent=fmt(pmpMc);}
-
-  if(pigMc>0&&pmpMc>0){
-    const raw=(pigMc/pmpMc)*100;
-    document.getElementById('battle-bar').style.width=Math.min(raw,100)+'%';
-    document.getElementById('battle-cap').textContent=raw>=100
-      ?'🕊️ PIGEON HAS OVERTAKEN PUMP — THE FUNERAL IS COMPLETE 🪦'
-      :`$PIGEON is ${raw.toFixed(1)}% of $PUMP — ${fmt(pmpMc-pigMc)} to go`;
-  }
-
-  document.getElementById('last-upd').textContent='updated '+new Date().toLocaleTimeString();
-}
-
-update();
-setInterval(update,60_000);
-</script>
-
 </body>
 </html>
