@@ -1,99 +1,1889 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Goodness Gracious</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Newlife Church — Help Desk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+
   <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-      --bg: #0b0b0f;
-      --fg: #f7f5ef;
-      --accent: #e8c547;
-      --muted: #9a9a9a;
+      --navy:        #232323;
+      --navy-mid:    #2e2e2e;
+      --navy-light:  #3d3d3d;
+      --gold:        #232323;
+      --gold-dim:    #1a1a1a;
+      --bg:          #f5f1eb;
+      --surface:     #ffffff;
+      --border:      #e8e4e0;
+      --border-soft: #f0ece8;
+      --text:        #232323;
+      --muted:       #888888;
+      --success:     #1a7a4a;
+      --warning:     #8a6200;
+      --danger:      #b83030;
+      --info:        #232323;
+      --r:           2px;
+      --r-sm:        2px;
+      --shadow:      0 1px 3px rgba(35,35,35,.05), 0 4px 20px rgba(35,35,35,.06);
+      --shadow-md:   0 4px 12px rgba(35,35,35,.08), 0 12px 36px rgba(35,35,35,.08);
+      --shadow-lg:   0 8px 24px rgba(35,35,35,.10), 0 24px 64px rgba(35,35,35,.12);
+      --transition:  all .2s cubic-bezier(.4,0,.2,1);
     }
 
-    * { box-sizing: border-box; }
-
-    html, body {
-      margin: 0;
-      padding: 0;
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
       background: var(--bg);
-      color: var(--fg);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: var(--text);
       min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
     }
 
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 4rem 1.5rem;
+    /* ── HEADER ─────────────────────────────────── */
+    .header {
+      background: #232323;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 0 rgba(255,255,255,.06), 0 2px 16px rgba(0,0,0,.22);
     }
-
-    header {
-      text-align: center;
-      margin-bottom: 4rem;
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
-
-    h1 {
-      font-size: clamp(3rem, 10vw, 7rem);
-      font-weight: 900;
-      letter-spacing: -0.03em;
-      line-height: 0.95;
-      margin: 0 0 0.5rem;
+    .header-logo-svg {
+      width: 36px;
+      height: 36px;
+      flex-shrink: 0;
+    }
+    .header-name {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.15;
+    }
+    .header-name strong {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -.01em;
+    }
+    .header-name span {
+      font-size: .7rem;
+      color: rgba(255,255,255,.55);
+      font-weight: 500;
+      letter-spacing: .04em;
       text-transform: uppercase;
     }
+    .admin-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.18);
+      color: rgba(255,255,255,.8);
+      padding: .42rem 1rem;
+      border-radius: 2px;
+      font-size: .75rem;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .admin-btn:hover {
+      background: rgba(255,255,255,.2);
+      color: #fff;
+    }
 
-    .subtitle {
+    /* ── VIEWS ─────────────────────────────────── */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* ── STEP WIZARD ───────────────────────────── */
+    /* FIX 1: labels now sit below their bubble so nothing truncates */
+    .wizard-bar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+    }
+    .wizard-inner {
+      max-width: 720px;
+      margin: 0 auto;
+      display: flex;
+      align-items: flex-start;   /* align to top so lines sit at bubble level */
+      padding: .85rem 0 .65rem;
+    }
+    .wz-step {
+      display: flex;
+      flex-direction: column;    /* bubble on top, label below */
+      align-items: center;
+      gap: 5px;
+      flex: 1;
+    }
+    .wz-bubble {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .72rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      border: 2px solid var(--border);
+      background: var(--surface);
       color: var(--muted);
-      font-size: 1.1rem;
-      font-style: italic;
-      margin: 0;
+      transition: var(--transition);
+    }
+    .wz-step.done .wz-bubble {
+      background: #232323;
+      border-color: #232323;
+      color: #fff;
+    }
+    .wz-step.active .wz-bubble {
+      background: #232323;
+      border-color: #232323;
+      color: #fff;
+      box-shadow: 0 0 0 3px rgba(35,35,35,.10);
+    }
+    .wz-label {
+      font-size: .61rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-align: center;
+      letter-spacing: .04em;
+      transition: var(--transition);
+      line-height: 1.2;
+    }
+    .wz-step.active .wz-label { color: var(--text); }
+    .wz-step.done  .wz-label  { color: #232323; }
+    .wz-line {
+      flex: 1;
+      height: 2px;
+      background: var(--border);
+      margin: 13px 4px 0;        /* 13px top = (28px bubble – 2px line) / 2, centres line on bubble */
+      align-self: flex-start;
+      border-radius: 2px;
+      transition: var(--transition);
+    }
+    .wz-line.done { background: #232323; }
+    @media (max-width:640px) {
+      .wz-label { display: none; }
+      .wz-line  { margin: 13px 3px 0; }
     }
 
-    .video-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-      gap: 2rem;
-      justify-items: center;
+    /* ── PORTAL LAYOUT ─────────────────────────── */
+    .portal {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 4rem;
     }
 
-    .video-card {
+    /* ── CARD ──────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      padding: 2.25rem 2.5rem;
+      margin-bottom: 1.25rem;
+      border: 1px solid var(--border-soft);
+    }
+    @media (max-width:540px) { .card { padding: 1.5rem 1.25rem; } }
+
+    .card-eyebrow {
+      font-size: .7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted); letter-spacing: .14em;
+      margin-bottom: .5rem;
+    }
+    .card-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.6rem;
+      font-weight: 400;
+      color: var(--text);
+      letter-spacing: -.01em;
+      line-height: 1.2;
+      margin-bottom: .5rem;
+    }
+    .card-sub {
+      font-size: .9rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 1.75rem;
+    }
+
+    /* ── INPUTS ────────────────────────────────── */
+    .form-group { margin-bottom: 1.25rem; }
+    .form-label {
+      display: block;
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: .45rem;
+    }
+    .form-input {
       width: 100%;
-      max-width: 400px;
+      padding: .72rem 1rem;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-sm);
+      font-size: .92rem;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      color: var(--text);
+      background: #fff;
+      transition: var(--transition);
+      outline: none;
+    }
+    .form-input:focus {
+      border-color: #232323;
+      box-shadow: 0 0 0 3px rgba(35,35,35,.08);
+    }
+    .form-input::placeholder { color: #b0b9cc; }
+    textarea.form-input { min-height: 120px; resize: vertical; }
+    .err {
+      font-size: .77rem;
+      font-weight: 500;
+      color: var(--danger);
+      margin-top: .3rem;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
 
-    .video-card iframe {
-      width: 100%;
-      height: 600px;
-      border: none;
-      border-radius: 8px;
-      background: #1a1a1f;
+    /* ── OPTION GRID ───────────────────────────── */
+    .opts     { display: grid; gap: .65rem; }
+    .opts.c2  { grid-template-columns: repeat(2,1fr); }
+    @media (max-width:520px) { .opts.c2 { grid-template-columns: 1fr; } }
+
+    /* Simple text option (location, role, issue type etc) */
+    .opt {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      padding: .85rem 1.1rem;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-sm);
+      background: #fff;
+      cursor: pointer;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      font-size: .9rem;
+      color: var(--text);
+      text-align: left;
+      transition: var(--transition);
+      position: relative;
+    }
+    .opt:hover { border-color: #888; background: #faf8f5; }
+    .opt.sel   {
+      border-color: #232323;
+      background: #f5f1eb;
+      color: #232323;
+    }
+    .opt .check-dot {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border);
+      flex-shrink: 0;
+      margin-left: auto;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .65rem;
+      color: transparent;
+      transition: var(--transition);
+    }
+    .opt.sel .check-dot {
+      background: #232323;
+      border-color: #232323;
+      color: #fff;
+    }
+    .opt .oi { font-size: 1.1rem; flex-shrink: 0; }
+    .opt .ol { flex: 1; }
+    .opt .ol strong { display: block; font-size: .88rem; font-weight: 600; }
+    .opt .ol small  { font-size: .77rem; color: var(--muted); font-weight: 400; }
+
+    /* Urgency variants */
+    .opt.u-crit.sel { border-color:#be1e2d; background:#fef2f2; color:#be1e2d; }
+    .opt.u-crit.sel .check-dot { background:#be1e2d; border-color:#be1e2d; }
+    .opt.u-high.sel { border-color:#b45309; background:#fffbeb; color:#b45309; }
+    .opt.u-high.sel .check-dot { background:#b45309; border-color:#b45309; }
+    .opt.u-med.sel  { border-color:#232323; background:#f5f1eb; color:#232323; }
+    .opt.u-med.sel  .check-dot { background:#232323; border-color:#232323; }
+    .opt.u-low.sel  { border-color:#0a7c5c; background:#f0fdf8; color:#0a7c5c; }
+    .opt.u-low.sel  .check-dot { background:#0a7c5c; border-color:#0a7c5c; }
+
+    /* ── APP TILES (tech selection) ────────────── */
+    .app-tile {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: .9rem 1.1rem;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-sm);
+      background: #fff;
+      cursor: pointer;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      text-align: left;
+      transition: var(--transition);
+      position: relative;
+    }
+    .app-tile:hover  { border-color: #888; background: #faf8f5; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(35,35,35,.08); }
+    .app-tile.sel    { border-color: #232323; background: #f5f1eb; box-shadow: 0 0 0 2px rgba(35,35,35,.10); }
+
+    .app-icon {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      background: var(--icon-bg, #2e2e2e);
+      overflow: hidden;
+    }
+    .app-icon img  { width: 24px; height: 24px; display: block; }
+    .app-icon .fa  { font-size: 1.05rem; color: #fff; }
+    .app-icon-txt  { font-size: .68rem; font-weight: 800; color: #fff; letter-spacing: .02em; line-height: 1; text-align: center; }
+
+    .app-info { flex: 1; min-width: 0; }
+    .app-name {
+      font-size: .88rem;
+      font-weight: 700;
+      color: var(--text);
       display: block;
     }
-
-    @media (max-width: 600px) {
-      .video-card iframe { height: 540px; }
+    .app-desc {
+      font-size: .75rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
+    .app-tile .check-dot {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border);
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .65rem;
+      color: transparent;
+      transition: var(--transition);
+    }
+    .app-tile.sel .check-dot {
+      background: #232323;
+      border-color: #232323;
+      color: #fff;
+    }
+    .app-tile.sel .app-name { color: #232323; }
+
+    /* Other input */
+    .other-wrap { margin-top: .6rem; display: none; }
+    .other-wrap.show { display: block; }
+
+    /* ── BUTTONS ───────────────────────────────── */
+    .nav-btns { display: flex; gap: .75rem; margin-top: 1.5rem; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: .76rem 1.75rem;
+      border-radius: var(--r-sm);
+      border: none;
+      font-size: .9rem;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition);
+      letter-spacing: -.01em;
+    }
+    .btn-primary {
+      background: var(--navy);
+      color: #fff;
+      flex: 1;
+    }
+    .btn-primary:hover { background: var(--navy-mid); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(35,35,35,.22); }
+    .btn-ghost {
+      background: #fff;
+      color: var(--muted);
+      border: 1.5px solid var(--border);
+    }
+    .btn-ghost:hover { background: var(--bg); color: var(--text); }
+    .btn-gold { background: #232323; color: #fff; flex: 1; }
+    .btn-gold:hover { background: #2e2e2e; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(35,35,35,.25); }
+
+    /* ── REVIEW ────────────────────────────────── */
+    .review-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: .72rem 0;
+      border-bottom: 1px solid var(--border-soft);
+      font-size: .88rem;
+    }
+    .review-row:last-child { border-bottom: none; }
+    .rl { font-weight: 600; color: var(--muted); min-width: 130px; font-size: .82rem; }
+    .rv { text-align: right; color: var(--text); }
+
+    /* ── SUCCESS ───────────────────────────────── */
+    .success-wrap { text-align: center; padding: 1.5rem .5rem; }
+    .success-icon {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg,#d1fae5,#a7f3d0);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.25rem;
+      margin: 0 auto 1.5rem;
+    }
+    .ticket-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #232323;
+      color: #fff;
+      padding: .55rem 1.75rem;
+      border-radius: 2px;
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      margin: .9rem 0;
+    }
+    .urgency-note {
+      margin-top: 1.25rem;
+      padding: .9rem 1.1rem;
+      border-radius: var(--r-sm);
+      background: var(--bg);
+      font-size: .875rem;
+      line-height: 1.55;
+      color: var(--muted);
+    }
+
+    /* ═══════════════════ ADMIN ═════════════════ */
+    .admin-login-wrap {
+      max-width: 420px;
+      margin: 3.5rem auto;
+      padding: 0 1.25rem;
+    }
+
+    .admin-wrap {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+    .admin-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 2rem;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .admin-title { font-family: 'Playfair Display', Georgia, serif; font-size: 1.7rem; font-weight: 400; color: var(--text); letter-spacing: -.01em; }
+    .admin-sub   { font-size: .8rem; color: var(--muted); margin-top: .25rem; }
+    .admin-acts  { display: flex; gap: .5rem; flex-wrap: wrap; }
+    .btn-sm {
+      padding: .42rem .9rem;
+      border-radius: var(--r-sm);
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      font-size: .78rem;
+      font-weight: 600;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      color: var(--text);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .btn-sm:hover { background: var(--bg); border-color: #b0bcd4; }
+
+    /* Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width:700px) { .stats-grid { grid-template-columns: repeat(2,1fr); } }
+
+    .stat-card {
+      background: var(--surface);
+      border-radius: var(--r);
+      padding: 1.4rem 1.5rem;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-soft);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--stripe, var(--border));
+      border-radius: var(--r) var(--r) 0 0;
+    }
+    .stat-card.s-all  { --stripe: #232323; }
+    .stat-card.s-open { --stripe: var(--info); }
+    .stat-card.s-prog { --stripe: var(--warning); }
+    .stat-card.s-done { --stripe: var(--success); }
+
+    .stat-icon {
+      width: 36px; height: 36px;
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .95rem;
+      margin-bottom: .85rem;
+      background: var(--icon-bg2, var(--bg));
+    }
+    .stat-val {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 2.2rem;
+      font-weight: 400;
+      letter-spacing: -.02em;
+      color: var(--text);
+      line-height: 1;
+    }
+    .stat-lbl { font-size: .78rem; color: var(--muted); margin-top: .3rem; font-weight: 500; }
+
+    /* Trend alerts */
+    .alerts-card {
+      background: var(--surface);
+      border-radius: var(--r);
+      padding: 1.5rem 1.6rem;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-soft);
+      margin-bottom: 1.5rem;
+    }
+    .alerts-title {
+      font-size: .7rem;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .alert-item {
+      display: flex;
+      align-items: flex-start;
+      gap: .65rem;
+      padding: .7rem .9rem;
+      border-radius: var(--r-sm);
+      margin-bottom: .45rem;
+      font-size: .855rem;
+      line-height: 1.45;
+      border-left: 3px solid transparent;
+    }
+    .alert-item:last-child { margin-bottom: 0; }
+    .alert-item.a-hot  { background:#fff7ed; color:#92400e; border-color:#232323; }
+    .alert-item.a-info { background:#eff6ff; color:#1e40af; border-color:#3b82f6; }
+    .alert-item.a-ok   { background:#f0fdf4; color:#14532d; border-color:#22c55e; }
+
+    /* Charts */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .charts-row2 {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width:900px) { .charts-grid { grid-template-columns: 1fr; } }
+    @media (max-width:900px) { .charts-row2 { grid-template-columns: 1fr 1fr; } }
+    @media (max-width:600px) { .charts-row2 { grid-template-columns: 1fr; } }
+
+    .chart-card {
+      background: var(--surface);
+      border-radius: var(--r);
+      padding: 1.4rem 1.5rem;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-soft);
+    }
+    .chart-title  { font-size: .7rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: .9rem; }
+    .chart-canvas { position: relative; }
+    .chart-canvas canvas { display: block; }
+
+    /* Table section */
+    .table-card {
+      background: var(--surface);
+      border-radius: var(--r);
+      padding: 1.4rem 1.5rem;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-soft);
+    }
+    .table-hdr {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.1rem;
+      gap: .75rem;
+      flex-wrap: wrap;
+    }
+    .table-hdr-title { font-family: 'Playfair Display', Georgia, serif; font-size: 1.05rem; font-weight: 400; color: var(--text); }
+    .filters { display: flex; gap: .45rem; flex-wrap: wrap; }
+    .flt {
+      padding: .38rem .7rem;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-sm);
+      font-size: .78rem;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      color: var(--text);
+      background: #fff;
+      cursor: pointer;
+      outline: none;
+    }
+    .flt:focus { border-color: var(--navy-light); }
+
+    .tbl-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: .83rem; }
+    thead { }
+    th {
+      padding: .6rem .9rem;
+      text-align: left;
+      font-weight: 700;
+      color: var(--muted);
+      font-size: .7rem;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      white-space: nowrap;
+      background: #f8fafd;
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: .85rem .9rem;
+      border-bottom: 1px solid var(--border-soft);
+      vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: #faf8f5; }
+
+    /* Badges */
+    .ub {
+      display: inline-block;
+      padding: .2rem .6rem;
+      border-radius: 6px;
+      font-size: .7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      white-space: nowrap;
+    }
+    .ub-crit { background:#fef2f2; color:#be1e2d; }
+    .ub-high { background:#fffbeb; color:#b45309; }
+    .ub-med  { background:#eff6ff; color:#232323; }
+    .ub-low  { background:#f0fdf8; color:#0a7c5c; }
+
+    .status-sel {
+      padding: .3rem .55rem;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      font-size: .78rem;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      cursor: pointer;
+      background: #fff;
+      outline: none;
+    }
+    .view-btn {
+      background: #232323;
+      color: #fff;
+      border: none;
+      padding: .3rem .8rem;
+      border-radius: 6px;
+      font-size: .77rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      transition: var(--transition);
+    }
+    .view-btn:hover { background: #2e2e2e; }
+
+    .empty-state { text-align:center; padding:3.5rem 1rem; color:var(--muted); }
+    .empty-state .ei { font-size:2.5rem; margin-bottom:.75rem; }
+
+    /* Modal */
+    .modal-bg {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(10,20,45,.55);
+      z-index: 300;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+      backdrop-filter: blur(2px);
+    }
+    .modal-bg.open { display: flex; }
+    .modal {
+      background: #fff;
+      border-radius: 2px;
+      padding: 2rem 2.25rem;
+      max-width: 600px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+    }
+    .modal-hdr {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.4rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .modal-title { font-family: 'Playfair Display', Georgia, serif; font-size: 1.2rem; font-weight: 400; color: var(--text); }
+    .modal-close {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      cursor: pointer;
+      color: var(--muted);
+      transition: var(--transition);
+    }
+    .modal-close:hover { background: var(--border); color: var(--text); }
+    .m-row { display:flex; justify-content:space-between; padding:.6rem 0; border-bottom:1px solid var(--border-soft); gap:1rem; font-size:.875rem; }
+    .m-row:last-of-type { border-bottom:none; }
+    .ml { font-weight:600; color:var(--muted); min-width:120px; font-size:.8rem; }
+    .mr { text-align:right; }
+    .m-desc {
+      background: var(--bg);
+      padding: .9rem 1rem;
+      border-radius: var(--r-sm);
+      margin-top: .9rem;
+      font-size: .875rem;
+      line-height: 1.65;
+      color: var(--text);
+    }
+    .m-notes { margin-top: 1.4rem; }
+    .m-notes label { font-weight: 700; font-size: .83rem; display:block; margin-bottom:.45rem; }
+
+    /* ── NEWLIFE BRAND OVERRIDES ─────────────────────────────── */
+    body { font-family: 'DM Sans', system-ui, sans-serif; }
+
+    .card {
+      border-radius: 2px;
+      border: 1px solid var(--border-soft);
+      box-shadow: 0 2px 12px rgba(35,35,35,.06);
+    }
+
+    .wizard-bar { background: #fff; border-bottom: 1px solid var(--border); }
+    .wz-bubble { border-radius: 50%; font-family: 'DM Sans', sans-serif; }
+    .wz-label { font-family: 'DM Sans', sans-serif; }
+
+    .card-eyebrow {
+      font-family: 'DM Sans', sans-serif;
+      font-size: .68rem;
+      font-weight: 600;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: .65rem;
+    }
+
+    .card-sub {
+      font-size: .88rem;
+      color: #888;
+      line-height: 1.65;
+      margin-bottom: 1.75rem;
+      font-weight: 300;
+    }
+
+    .form-label {
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: .5rem;
+    }
+
+    .form-input {
+      border-radius: 2px;
+      border: 1px solid var(--border);
+      font-family: 'DM Sans', sans-serif;
+      background: #fff;
+    }
+    .form-input::placeholder { color: #c8c2b8; }
+
+    .btn { border-radius: 2px; font-family: 'DM Sans', sans-serif; letter-spacing: .04em; }
+    .btn-primary { background: #232323; }
+    .btn-ghost { background: #fff; border-color: var(--border); color: var(--muted); border-radius: 2px; }
+    .btn-ghost:hover { background: var(--bg); color: var(--text); }
+    .btn-sm { border-radius: 2px; font-family: 'DM Sans', sans-serif; }
+
+    .opt { border-radius: 2px; font-family: 'DM Sans', sans-serif; }
+    .app-tile { border-radius: 2px; font-family: 'DM Sans', sans-serif; }
+    .app-icon { border-radius: 4px; }
+
+    .flt { border-radius: 2px; font-family: 'DM Sans', sans-serif; }
+    .status-sel { border-radius: 2px; font-family: 'DM Sans', sans-serif; }
+
+    .stat-card { border-radius: 2px; }
+    .stat-icon { border-radius: 2px; }
+    .stat-lbl { font-size: .72rem; letter-spacing: .04em; }
+
+    .chart-card { border-radius: 2px; }
+    .alerts-card { border-radius: 2px; }
+    .table-card { border-radius: 2px; }
+
+    th { background: var(--bg); font-family: 'DM Sans', sans-serif; color: #888; }
+    td { font-family: 'DM Sans', sans-serif; }
+
+    .ub { border-radius: 2px; font-family: 'DM Sans', sans-serif; }
+    .rl { font-family: 'DM Sans', sans-serif; }
+    .admin-sub { font-family: 'DM Sans', sans-serif; }
+
+    .success-icon {
+      background: #f5f1eb;
+      border: 2px solid #e8e4e0;
+      border-radius: 50%;
+    }
+
+    .ticket-pill { font-family: 'Playfair Display', serif; font-size: 1.4rem; letter-spacing: 4px; }
+    .urgency-note { border-radius: 2px; background: var(--bg); font-size: .85rem; }
+    .alert-item { border-radius: 2px; }
+    .admin-title { letter-spacing: -.02em; }
+    .modal { border-radius: 2px; }
+    .modal-close { border-radius: 2px; }
+    .modal-hdr { border-bottom: 1px solid var(--border-soft); }
+    .empty-state .ei { opacity: .3; }
+
+    .stat-card.s-open { --stripe: #555; }
+    .stat-card.s-prog { --stripe: #888; }
+    .stat-card.s-done { --stripe: var(--success); }
+
+    .portal { padding-top: 2rem; }
+
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>Goodness<br />Gracious</h1>
-      <p class="subtitle">Conversations on Jesus, truth, and the hope within us.</p>
-    </header>
 
-    <div class="video-grid">
-      <div class="video-card">
-        <iframe src="https://www.instagram.com/reel/DKtkfRwzyo6/embed/" allowfullscreen scrolling="no" allowtransparency="true"></iframe>
+<!-- ╔═══════════════════════════════════════════╗
+     ║              HEADER                       ║
+     ╚═══════════════════════════════════════════╝ -->
+<header class="header">
+  <div class="header-brand">
+    <img src="assets/newlife-logo.png" alt="Newlife" style="width:38px;height:38px;object-fit:contain;border-radius:50%;flex-shrink:0;">
+    <div class="header-name">
+      <strong>Newlife Church</strong>
+      <span>Help Desk · Systems Control</span>
+    </div>
+  </div>
+  <button class="admin-btn" onclick="showAdminLogin()">
+    <i class="fa-solid fa-sliders"></i> Admin
+  </button>
+</header>
+
+<!-- ╔═══════════════════════════════════════════╗
+     ║           USER PORTAL                     ║
+     ╚═══════════════════════════════════════════╝ -->
+<div id="userView" class="view active">
+
+<!-- ── PORTAL HERO ─────────────────────────────────────────────── -->
+<div id="portalHero" style="background:#232323;padding:56px 2rem 48px;text-align:center;">
+  <div style="max-width:560px;margin:0 auto;">
+    <div style="font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:18px;">Systems Control · Family-wide</div>
+    <h1 style="font-family:'Playfair Display',Georgia,serif;font-size:clamp(2rem,5vw,3rem);font-weight:400;color:#fff;line-height:1.15;letter-spacing:-.02em;margin-bottom:16px;">How can we help<br><em style="font-style:italic;color:rgba(255,255,255,.65);">you today?</em></h1>
+    <p style="font-size:.95rem;font-weight:300;color:rgba(255,255,255,.45);line-height:1.7;max-width:400px;margin:0 auto;">Submit a support ticket and our team will get back to you promptly. All locations, one system.</p>
+  </div>
+</div>
+
+<!-- Step Wizard Bar -->
+<div class="wizard-bar" id="wizardBar">
+    <div class="wizard-inner" id="wizardInner"></div>
+  </div>
+
+  <div class="portal">
+
+    <!-- STEP 1 · Your Details -->
+    <div id="step1">
+      <div class="card">
+        <div class="card-eyebrow">Step 1 of 6</div>
+        <div class="card-title">Welcome! Let's get started.</div>
+        <div class="card-sub">We'll get your tech issue sorted quickly. Start by entering your details below.</div>
+
+        <div class="form-group">
+          <label class="form-label">Full Name *</label>
+          <input class="form-input" id="iName" type="text" placeholder="e.g. Sarah Johnson">
+          <div class="err" id="errName"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address *</label>
+          <input class="form-input" id="iEmail" type="email" placeholder="e.g. sarah@church.nu">
+          <div class="err" id="errEmail"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone Number <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+          <input class="form-input" id="iPhone" type="tel" placeholder="e.g. 0412 345 678">
+        </div>
+        <!-- FIX 2: Role — Staff and Volunteer only -->
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Your Role</label>
+          <div class="opts c2">
+            <button class="opt" data-f="role" data-v="Staff">
+              <span class="oi">👤</span><span class="ol">Staff</span><span class="check-dot"><i class="fa-solid fa-check"></i></span>
+            </button>
+            <button class="opt" data-f="role" data-v="Volunteer">
+              <span class="oi">🙌</span><span class="ol">Volunteer</span><span class="check-dot"><i class="fa-solid fa-check"></i></span>
+            </button>
+          </div>
+        </div>
       </div>
-      <div class="video-card">
-        <iframe src="https://www.instagram.com/reel/DKlGODYzwd6/embed/" allowfullscreen scrolling="no" allowtransparency="true"></iframe>
+      <div class="nav-btns">
+        <button class="btn btn-primary" onclick="goNext(1)">Continue <i class="fa-solid fa-arrow-right"></i></button>
       </div>
-      <div class="video-card">
-        <iframe src="https://www.instagram.com/reel/DK1fmjxTP-_/embed/" allowfullscreen scrolling="no" allowtransparency="true"></iframe>
+    </div>
+
+    <!-- STEP 2 · Campus -->
+    <!-- FIX 3: Five campuses only — no Other/Remote option -->
+    <div id="step2" style="display:none">
+      <div class="card">
+        <div class="card-eyebrow">Step 2 of 6</div>
+        <div class="card-title">Which campus are you at?</div>
+        <div class="card-sub">Select the Newlife location you're based at.</div>
+        <div class="opts">
+          <button class="opt" data-f="location" data-v="Robina">
+            <span class="oi">📍</span><span class="ol">Robina</span><span class="check-dot"><i class="fa-solid fa-check"></i></span>
+          </button>
+          <button class="opt" data-f="location" data-v="Brisbane">
+            <span class="oi">📍</span><span class="ol">Brisbane</span><span class="check-dot"><i class="fa-solid fa-check"></i></span>
+          </button>
+          <button class="opt" data-f="location" data-v="Coolangatta">
+            <span class="oi">📍</span><span class="ol">Coolangatta</span><span class="check-dot"><i class="fa-solid fa-check"></i></span>
+          </button>
+          <button class="opt" data-f="location" data-v="Moreton">
+            <span class="oi">📍</span><span class="ol">Moreton</span><span class="check-dot"><i class="fa-solid fa-check"></i></span>
+          </button>
+          <button class="opt" data-f="location" data-v="Coomera">
+            <span class="oi">📍</span><span class="ol">Coomera</span><span class="check-dot"><i class="fa-solid fa-check"></i></span>
+          </button>
+        </div>
+        <div class="err" id="errLocation"></div>
+      </div>
+      <div class="nav-btns">
+        <button class="btn btn-ghost" onclick="goBack(2)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+        <button class="btn btn-primary" onclick="goNext(2)">Continue <i class="fa-solid fa-arrow-right"></i></button>
+      </div>
+    </div>
+
+    <!-- STEP 3 · Technology Category -->
+    <div id="step3" style="display:none">
+      <div class="card">
+        <div class="card-eyebrow">Step 3 of 6</div>
+        <div class="card-title">What area is the issue in?</div>
+        <div class="card-sub">Select the broad category that best fits your problem.</div>
+        <div class="opts c2">
+          <button class="opt" data-f="techCat" data-v="Microsoft 365">
+            <span class="oi">
+              <div class="app-icon" style="--icon-bg:#0078d4;width:36px;height:36px;border-radius:8px;">
+                <img src="https://cdn.simpleicons.org/microsoft/ffffff" alt="">
+              </div>
+            </span>
+            <span class="ol">
+              <strong>Microsoft 365</strong>
+              <small>Outlook, Word, Excel, Teams, OneDrive…</small>
+            </span>
+            <span class="check-dot"><i class="fa-solid fa-check"></i></span>
+          </button>
+          <button class="opt" data-f="techCat" data-v="Church Systems">
+            <span class="oi">
+              <div class="app-icon" style="--icon-bg:#1D82D5;width:36px;height:36px;border-radius:8px;">
+                <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><rect x="10" y="3" width="4" height="18" rx="2" fill="white"/><rect x="3" y="9" width="18" height="4" rx="2" fill="white"/></svg>
+              </div>
+            </span>
+            <span class="ol">
+              <strong>Church Systems</strong>
+              <small>Planning Center, Sentrient, MYOB…</small>
+            </span>
+            <span class="check-dot"><i class="fa-solid fa-check"></i></span>
+          </button>
+          <button class="opt" data-f="techCat" data-v="Hardware & Network">
+            <span class="oi">
+              <div class="app-icon" style="--icon-bg:#475569;width:36px;height:36px;border-radius:8px;">
+                <i class="fa-solid fa-print" style="color:#fff;font-size:.9rem"></i>
+              </div>
+            </span>
+            <span class="ol">
+              <strong>Hardware &amp; Network</strong>
+              <small>Printers, Wi-Fi, computers, screens…</small>
+            </span>
+            <span class="check-dot"><i class="fa-solid fa-check"></i></span>
+          </button>
+          <button class="opt" data-f="techCat" data-v="Other">
+            <span class="oi">
+              <div class="app-icon" style="--icon-bg:#64748b;width:36px;height:36px;border-radius:8px;">
+                <i class="fa-solid fa-circle-question" style="color:#fff;font-size:.9rem"></i>
+              </div>
+            </span>
+            <span class="ol">
+              <strong>Other / Not sure</strong>
+              <small>Something else, or I'm not sure</small>
+            </span>
+            <span class="check-dot"><i class="fa-solid fa-check"></i></span>
+          </button>
+        </div>
+        <div class="err" id="errTechCat"></div>
+      </div>
+      <div class="nav-btns">
+        <button class="btn btn-ghost" onclick="goBack(3)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+        <button class="btn btn-primary" onclick="goNext(3)">Continue <i class="fa-solid fa-arrow-right"></i></button>
+      </div>
+    </div>
+
+    <!-- STEP 4 · Specific Technology -->
+    <div id="step4" style="display:none">
+      <div class="card">
+        <div class="card-eyebrow">Step 4 of 6</div>
+        <div class="card-title" id="step4Title">Which tool specifically?</div>
+        <div class="card-sub">Select the application or tool you're having trouble with.</div>
+        <div class="opts c2" id="techGrid"></div>
+        <div class="other-wrap" id="techOtherWrap">
+          <input class="form-input" id="iTechOther" placeholder="Please specify the tool or system">
+        </div>
+        <div class="err" id="errTech"></div>
+      </div>
+      <div class="nav-btns">
+        <button class="btn btn-ghost" onclick="goBack(4)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+        <button class="btn btn-primary" onclick="goNext(4)">Continue <i class="fa-solid fa-arrow-right"></i></button>
+      </div>
+    </div>
+
+    <!-- STEP 5 · Issue Details -->
+    <div id="step5" style="display:none">
+      <div class="card">
+        <div class="card-eyebrow">Step 5 of 6 · Part A</div>
+        <div class="card-title">What type of issue is it?</div>
+        <div class="card-sub">Choose the option that best describes the problem.</div>
+        <div class="opts">
+          <button class="opt" data-f="issueType" data-v="Can't login / Access denied">
+            <span class="oi">🔒</span><span class="ol">Can't login / Access denied</span><span class="check-dot"><i class="fa-solid fa-check"></i></span>
+          </button>
+          <button class="opt" data-f="issueType" data-v="Error message or crash">
+            <span class="oi">⚠️</span><span class="ol">Error message or crash</span><span class="check-dot"><i class="fa-solid fa-check"></i></span>
+          </button>
+          <button class="opt" data-f="issueType" data-v="Slow or not responding">
+            <span class="oi">🐢</span><span class="ol">Slow or not responding</span><span class="check-dot"><i class="fa-solid fa-check"></i></span>
+          </button>
+          <button class="opt" data-f="issueType" data-v="Lost or deleted data / files">
+            <span class="oi">🗑️</span><span class="ol">Lost or deleted data / files</span><span class="check-dot"><i class="fa-solid fa-check"></i></span>
+          </button>
+          <button class="opt" data-f="issueType" data-v="Don't know how to use a feature">
+            <span class="oi">🤔</span><span class="ol">Don't know how to use a feature</span><span class="check-dot"><i class="fa-solid fa-check"></i></span>
+          </button>
+          <button class="opt" data-f="issueType" data-v="Setup or installation needed">
+            <span class="oi">🔧</span><span class="ol">Setup or installation needed</span><span class="check-dot"><i class="fa-solid fa-check"></i></span>
+          </button>
+          <button class="opt" data-f="issueType" data-v="Other" data-other="issueOtherWrap">
+            <span class="oi">❓</span><span class="ol">Other</span><span class="check-dot"><i class="fa-solid fa-check"></i></span>
+          </button>
+        </div>
+        <div class="other-wrap" id="issueOtherWrap">
+          <input class="form-input" id="iIssueOther" placeholder="Briefly describe the issue type">
+        </div>
+        <div class="err" id="errIssueType"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-eyebrow">Step 5 of 6 · Part B</div>
+        <div class="card-title">How urgent is this?</div>
+        <div class="card-sub">This helps us prioritise your ticket appropriately.</div>
+        <div class="opts">
+          <button class="opt u-crit" data-f="urgency" data-v="Critical">
+            <span class="oi">🔴</span>
+            <span class="ol"><strong>Critical</strong> — I cannot work at all right now</span>
+            <span class="check-dot"><i class="fa-solid fa-check"></i></span>
+          </button>
+          <button class="opt u-high" data-f="urgency" data-v="High">
+            <span class="oi">🟠</span>
+            <span class="ol"><strong>High</strong> — Significantly affecting my work today</span>
+            <span class="check-dot"><i class="fa-solid fa-check"></i></span>
+          </button>
+          <button class="opt u-med" data-f="urgency" data-v="Medium">
+            <span class="oi">🔵</span>
+            <span class="ol"><strong>Medium</strong> — Minor inconvenience, can still work</span>
+            <span class="check-dot"><i class="fa-solid fa-check"></i></span>
+          </button>
+          <button class="opt u-low" data-f="urgency" data-v="Low">
+            <span class="oi">🟢</span>
+            <span class="ol"><strong>Low</strong> — General question or future need</span>
+            <span class="check-dot"><i class="fa-solid fa-check"></i></span>
+          </button>
+        </div>
+        <div class="err" id="errUrgency"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-eyebrow">Step 5 of 6 · Part C</div>
+        <div class="card-title">Describe the issue</div>
+        <div class="card-sub">What happened? What were you trying to do? Include any error messages you saw.</div>
+        <textarea class="form-input" id="iDesc"
+          placeholder="e.g. I tried to open Outlook this morning and got an error saying 'Cannot connect to server'. I've restarted twice but the same message keeps appearing."></textarea>
+        <div class="err" id="errDesc"></div>
+      </div>
+
+      <div class="nav-btns">
+        <button class="btn btn-ghost" onclick="goBack(5)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+        <button class="btn btn-primary" onclick="goNext(5)">Review Ticket <i class="fa-solid fa-arrow-right"></i></button>
+      </div>
+    </div>
+
+    <!-- STEP 6 · Review -->
+    <div id="step6" style="display:none">
+      <div class="card">
+        <div class="card-eyebrow">Step 6 of 6</div>
+        <div class="card-title">Review &amp; Submit</div>
+        <div class="card-sub">Please confirm the details below are correct before submitting your ticket.</div>
+        <div id="reviewBody"></div>
+      </div>
+      <div class="nav-btns">
+        <button class="btn btn-ghost" onclick="goBack(6)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+        <button class="btn btn-gold" onclick="submitTicket()"><i class="fa-solid fa-paper-plane"></i> Submit Ticket</button>
+      </div>
+    </div>
+
+    <!-- STEP 7 · Confirmation -->
+    <div id="step7" style="display:none">
+      <div class="card">
+        <div class="success-wrap">
+          <div class="success-icon">✅</div>
+          <h2 style="font-size:1.5rem;font-weight:900;color:var(--navy);letter-spacing:-.03em">Ticket Submitted!</h2>
+          <p style="color:var(--muted);margin-top:.4rem;font-size:.92rem;line-height:1.5">
+            Your request has been logged and a team member will be in touch.
+          </p>
+          <div class="ticket-pill">
+            <i class="fa-solid fa-ticket"></i>
+            <span id="s7Id">NL-0001</span>
+          </div>
+          <p style="color:var(--muted);font-size:.8rem">Save this reference number for your records.</p>
+          <div class="urgency-note" id="s7Msg"></div>
+        </div>
+      </div>
+      <div class="nav-btns">
+        <button class="btn btn-primary" onclick="resetForm()">
+          <i class="fa-solid fa-plus"></i> Submit Another Ticket
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ╔═══════════════════════════════════════════╗
+     ║           ADMIN PORTAL                    ║
+     ╚═══════════════════════════════════════════╝ -->
+<div id="adminView" class="view">
+
+  <!-- Login -->
+  <div id="adminLogin" class="admin-login-wrap">
+    <div class="card">
+      <div class="card-eyebrow">Admin Access</div>
+      <div class="card-title">Sign in to Dashboard</div>
+      <div class="card-sub">Enter your admin password to view and manage all help desk tickets.</div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" id="iPwd" type="password" placeholder="Enter password"
+               onkeypress="if(event.key==='Enter')doLogin()">
+        <div class="err" id="errPwd"></div>
+      </div>
+      <div class="nav-btns">
+        <button class="btn btn-ghost" onclick="showUserView()"><i class="fa-solid fa-arrow-left"></i> Back</button>
+        <button class="btn btn-primary" onclick="doLogin()">Sign In <i class="fa-solid fa-arrow-right"></i></button>
       </div>
     </div>
   </div>
+
+  <!-- Dashboard -->
+  <div id="adminDash" style="display:none">
+    <div class="admin-wrap">
+
+      <div class="admin-topbar">
+        <div>
+          <div class="admin-title">Help Desk Dashboard</div>
+          <div class="admin-sub" id="dashSub">Newlife Church — All Campuses</div>
+        </div>
+        <div class="admin-acts">
+          <button class="btn-sm" onclick="loadDash()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+          <button class="btn-sm" onclick="exportCSV()"><i class="fa-solid fa-download"></i> Export CSV</button>
+          <button class="btn-sm" onclick="clearAll()" style="color:var(--danger)"><i class="fa-solid fa-trash"></i> Clear All</button>
+          <button class="btn-sm" onclick="showUserView()"><i class="fa-solid fa-arrow-left"></i> User Portal</button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card s-all">
+          <div class="stat-icon" style="--icon-bg2:#e8edf6;color:var(--navy)"><i class="fa-solid fa-ticket"></i></div>
+          <div class="stat-val" id="sTotal">0</div>
+          <div class="stat-lbl">Total Tickets</div>
+        </div>
+        <div class="stat-card s-open">
+          <div class="stat-icon" style="--icon-bg2:#dbeafe;color:var(--info)"><i class="fa-solid fa-circle-dot"></i></div>
+          <div class="stat-val" id="sOpen" style="color:var(--info)">0</div>
+          <div class="stat-lbl">Open</div>
+        </div>
+        <div class="stat-card s-prog">
+          <div class="stat-icon" style="--icon-bg2:#fef3c7;color:var(--warning)"><i class="fa-solid fa-spinner"></i></div>
+          <div class="stat-val" id="sProg" style="color:var(--warning)">0</div>
+          <div class="stat-lbl">In Progress</div>
+        </div>
+        <div class="stat-card s-done">
+          <div class="stat-icon" style="--icon-bg2:#d1fae5;color:var(--success)"><i class="fa-solid fa-circle-check"></i></div>
+          <div class="stat-val" id="sDone" style="color:var(--success)">0</div>
+          <div class="stat-lbl">Resolved</div>
+        </div>
+      </div>
+
+      <!-- Trend Alerts -->
+      <div class="alerts-card">
+        <div class="alerts-title"><i class="fa-solid fa-bolt" style="color:var(--gold)"></i> Trend Insights</div>
+        <div id="alertsList"></div>
+      </div>
+
+      <!-- Charts Row 1 -->
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-title"><i class="fa-solid fa-chart-bar" style="color:var(--navy-light);margin-right:5px"></i>Tickets by Technology</div>
+          <div class="chart-canvas"><canvas id="cTech" height="240"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title"><i class="fa-solid fa-location-dot" style="color:var(--navy-light);margin-right:5px"></i>By Campus</div>
+          <div class="chart-canvas"><canvas id="cLoc" height="240"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Charts Row 2 -->
+      <div class="charts-row2">
+        <div class="chart-card">
+          <div class="chart-title"><i class="fa-solid fa-triangle-exclamation" style="color:var(--navy-light);margin-right:5px"></i>Urgency Distribution</div>
+          <div class="chart-canvas"><canvas id="cUrg" height="210"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title"><i class="fa-solid fa-circle-question" style="color:var(--navy-light);margin-right:5px"></i>Issue Types</div>
+          <div class="chart-canvas"><canvas id="cIssue" height="210"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title"><i class="fa-solid fa-layer-group" style="color:var(--navy-light);margin-right:5px"></i>By Category</div>
+          <div class="chart-canvas"><canvas id="cCat" height="210"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Tickets Table -->
+      <div class="table-card">
+        <div class="table-hdr">
+          <div class="table-hdr-title"><i class="fa-solid fa-list-ul" style="margin-right:6px;color:var(--navy-light)"></i>All Tickets</div>
+          <div class="filters">
+            <select class="flt" id="fStatus" onchange="renderTable()">
+              <option value="">All Status</option>
+              <option>Open</option>
+              <option>In Progress</option>
+              <option>Resolved</option>
+            </select>
+            <select class="flt" id="fLocation" onchange="renderTable()">
+              <option value="">All Campuses</option>
+            </select>
+            <select class="flt" id="fTech" onchange="renderTable()">
+              <option value="">All Technologies</option>
+            </select>
+            <select class="flt" id="fUrgency" onchange="renderTable()">
+              <option value="">All Urgency</option>
+              <option>Critical</option><option>High</option><option>Medium</option><option>Low</option>
+            </select>
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Person</th>
+                <th>Campus</th>
+                <th>Technology</th>
+                <th>Issue</th>
+                <th>Urgency</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tBody"></tbody>
+          </table>
+        </div>
+        <div id="emptyState" class="empty-state" style="display:none">
+          <div class="ei">🎉</div>
+          <div style="font-weight:700;font-size:.95rem">No tickets found</div>
+          <div style="font-size:.83rem;margin-top:.2rem">Try adjusting your filters or wait for new submissions.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Ticket Detail Modal -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="modalTitle">Ticket Details</div>
+      <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<!-- ╔═══════════════════════════════════════════╗
+     ║              SCRIPT                       ║
+     ╚═══════════════════════════════════════════╝ -->
+<script>
+'use strict';
+
+const ADMIN_PWD   = 'newlife2024';
+const TOTAL_STEPS = 6;
+const STEP_LABELS = ['Details','Campus','Category','Tool','Issue','Review'];
+
+let step = 1;
+let fd = freshFD();
+
+function freshFD() {
+  return {
+    name:'',email:'',phone:'',role:'',
+    location:'',
+    techCat:'',technology:'',technologyOther:'',
+    issueType:'',issueTypeOther:'',
+    urgency:'',description:''
+  };
+}
+
+/* ── STORAGE ──────────────────────────────── */
+function getTickets() {
+  try { return JSON.parse(localStorage.getItem('nl_hd2_tickets')||'[]'); }
+  catch { return []; }
+}
+function saveTickets(t) { localStorage.setItem('nl_hd2_tickets', JSON.stringify(t)); }
+function nextId() {
+  return 'NL-' + String(getTickets().length + 1).padStart(4,'0');
+}
+
+/* ── TECH MAP ─────────────────────────────── */
+/* FIX 4: Microsoft logos use Font Awesome icons — no external image CDN needed */
+const TECH_MAP = {
+  'Microsoft 365': [
+    { name:'Outlook',     desc:'Email & calendar',         bg:'#0078D4', icon:'<i class="fa-regular fa-envelope" style="color:#fff;font-size:1.05rem"></i>' },
+    { name:'Word',        desc:'Documents & writing',      bg:'#185ABD', icon:'<i class="fa-regular fa-file-word" style="color:#fff;font-size:1.05rem"></i>' },
+    { name:'Excel',       desc:'Spreadsheets & data',      bg:'#107C41', icon:'<i class="fa-regular fa-file-excel" style="color:#fff;font-size:1.05rem"></i>' },
+    { name:'PowerPoint',  desc:'Presentations',            bg:'#C43E1C', icon:'<i class="fa-regular fa-file-powerpoint" style="color:#fff;font-size:1.05rem"></i>' },
+    { name:'Teams',       desc:'Chat & video calls',       bg:'#6264A7', icon:'<i class="fa-solid fa-people-group" style="color:#fff;font-size:1rem"></i>' },
+    { name:'OneDrive',    desc:'Cloud file storage',       bg:'#0364B8', icon:'<i class="fa-solid fa-cloud" style="color:#fff;font-size:1rem"></i>' },
+    { name:'SharePoint',  desc:'Intranet & file sharing',  bg:'#038387', icon:'<i class="fa-solid fa-share-nodes" style="color:#fff;font-size:1rem"></i>' },
+    { name:'OneNote',     desc:'Notes & notebooks',        bg:'#7719AA', icon:'<i class="fa-solid fa-book-open" style="color:#fff;font-size:1rem"></i>' },
+    { name:'Other M365',  desc:'Another M365 application', bg:'#505050', icon:'<i class="fa-brands fa-microsoft" style="color:#fff;font-size:.95rem"></i>' }
+  ],
+  'Church Systems': [
+    { name:'Planning Center',  desc:'Church management (PCO)',  bg:'#1D82D5', icon:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none"><rect x="10" y="3" width="4" height="18" rx="2" fill="white"/><rect x="3" y="9" width="18" height="4" rx="2" fill="white"/></svg>' },
+    { name:'Sentrient',        desc:'HR & compliance platform', bg:'#D62828', icon:'<span style="color:#fff;font-weight:900;font-size:.82rem;letter-spacing:-.02em">Sen</span>' },
+    { name:'MYOB',             desc:'Accounting & payroll',     bg:'#7B2D8B', icon:'<span style="color:#fff;font-weight:900;font-size:.72rem">MYOB</span>' },
+    { name:'Church Online',    desc:'Livestreaming platform',   bg:'#1B1B1B', icon:'<i class="fa-solid fa-tv" style="color:#fff;font-size:.9rem"></i>' },
+    { name:'Elvanto',          desc:'Volunteer management',     bg:'#E8630A', icon:'<span style="color:#fff;font-weight:900;font-size:.78rem">E</span>' },
+    { name:'Other System',     desc:'Another church system',    bg:'#505050', icon:'<i class="fa-solid fa-circle-question" style="color:#fff;font-size:.9rem"></i>' }
+  ],
+  'Hardware & Network': [
+    { name:'Printer / Scanner', desc:'Printing & scanning',      bg:'#374151', icon:'<i class="fa-solid fa-print" style="color:#fff;font-size:.9rem"></i>' },
+    { name:'Computer / Laptop', desc:'Desktop or laptop issues', bg:'#1e40af', icon:'<i class="fa-solid fa-laptop" style="color:#fff;font-size:.9rem"></i>' },
+    { name:'Wi-Fi / Network',   desc:'Internet & connectivity',  bg:'#065f46', icon:'<i class="fa-solid fa-wifi" style="color:#fff;font-size:.9rem"></i>' },
+    { name:'Projector / Screen',desc:'AV & display equipment',   bg:'#7c3aed', icon:'<i class="fa-solid fa-display" style="color:#fff;font-size:.9rem"></i>' },
+    { name:'Phone / Desk phone',desc:'Telephone system',         bg:'#b45309', icon:'<i class="fa-solid fa-phone" style="color:#fff;font-size:.9rem"></i>' },
+    { name:'Webcam / Mic',      desc:'Audio & video peripherals',bg:'#be185d', icon:'<i class="fa-solid fa-microphone" style="color:#fff;font-size:.9rem"></i>' },
+    { name:'Other Hardware',    desc:'Another hardware issue',   bg:'#505050', icon:'<i class="fa-solid fa-circle-question" style="color:#fff;font-size:.9rem"></i>' }
+  ],
+  'Other': [
+    { name:'Church Website',    desc:'Website or web portal',   bg:'#0369a1', icon:'<i class="fa-solid fa-globe" style="color:#fff;font-size:.9rem"></i>' },
+    { name:'Account / Password',desc:'Login or access issue',   bg:'#b45309', icon:'<i class="fa-solid fa-key" style="color:#fff;font-size:.9rem"></i>' },
+    { name:'App on Phone',      desc:'Mobile app issue',        bg:'#0e7490', icon:'<i class="fa-solid fa-mobile-screen-button" style="color:#fff;font-size:.9rem"></i>' },
+    { name:'Other',             desc:'Something else',          bg:'#505050', icon:'<i class="fa-solid fa-circle-question" style="color:#fff;font-size:.9rem"></i>' }
+  ]
+};
+
+/* ── WIZARD ───────────────────────────────── */
+function renderWizard() {
+  const inner = document.getElementById('wizardInner');
+  inner.innerHTML = '';
+  STEP_LABELS.forEach((label, i) => {
+    const n = i + 1;
+    const isDone   = n < step;
+    const isActive = n === step;
+    const div = document.createElement('div');
+    div.className = `wz-step${isDone?' done':isActive?' active':''}`;
+    div.innerHTML = `
+      <div class="wz-bubble">${isDone ? '<i class="fa-solid fa-check" style="font-size:.6rem"></i>' : n}</div>
+      <div class="wz-label">${label}</div>
+    `;
+    inner.appendChild(div);
+    if (n < TOTAL_STEPS) {
+      const line = document.createElement('div');
+      line.className = `wz-line${isDone?' done':''}`;
+      inner.appendChild(line);
+    }
+  });
+}
+
+/* ── OPTION CLICK HANDLER ─────────────────── */
+document.addEventListener('click', e => {
+  const btn = e.target.closest('[data-f]');
+  if (!btn) return;
+  const field = btn.dataset.f;
+  const container = btn.closest('.opts') || btn.parentElement;
+  container.querySelectorAll('[data-f]').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  fd[field] = btn.dataset.v;
+
+  // Show/hide "other" input
+  const otherId = btn.dataset.other;
+  container.querySelectorAll('[data-other]').forEach(b => {
+    const wrap = document.getElementById(b.dataset.other);
+    if (wrap) { wrap.classList.remove('show'); }
+  });
+  if (otherId) {
+    document.getElementById(otherId)?.classList.add('show');
+  }
+
+  // Build tech options when category selected
+  if (field === 'techCat') buildTechGrid(btn.dataset.v);
+});
+
+function buildTechGrid(cat) {
+  const grid = document.getElementById('techGrid');
+  grid.innerHTML = '';
+  fd.technology = '';
+  document.getElementById('techOtherWrap').classList.remove('show');
+
+  (TECH_MAP[cat] || []).forEach(t => {
+    const btn = document.createElement('button');
+    btn.className = 'app-tile';
+    btn.dataset.f = 'technology';
+    btn.dataset.v = t.name;
+    if (t.name === 'Other' || t.name.startsWith('Other ')) btn.dataset.other = 'techOtherWrap';
+    btn.innerHTML = `
+      <div class="app-icon" style="--icon-bg:${t.bg}">${t.icon}</div>
+      <div class="app-info">
+        <span class="app-name">${t.name}</span>
+        <span class="app-desc">${t.desc}</span>
+      </div>
+      <div class="check-dot"><i class="fa-solid fa-check" style="font-size:.6rem"></i></div>
+    `;
+    grid.appendChild(btn);
+  });
+}
+
+/* ── VALIDATION ───────────────────────────── */
+function clrErr(id) { const e=document.getElementById(id); if(e) e.textContent=''; }
+function setErr(id, m) { const e=document.getElementById(id); if(e) e.innerHTML=`<i class="fa-solid fa-circle-exclamation"></i> ${m}`; }
+
+function validate(s) {
+  let ok = true;
+  if (s===1) {
+    clrErr('errName'); clrErr('errEmail');
+    fd.name  = document.getElementById('iName').value.trim();
+    fd.email = document.getElementById('iEmail').value.trim();
+    fd.phone = document.getElementById('iPhone').value.trim();
+    if (!fd.name)  { setErr('errName','Please enter your name.'); ok=false; }
+    if (!fd.email) { setErr('errEmail','Please enter your email.'); ok=false; }
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fd.email)) { setErr('errEmail','Please enter a valid email address.'); ok=false; }
+  }
+  if (s===2) {
+    clrErr('errLocation');
+    /* FIX 3: no "Other" location — just require a selection */
+    if (!fd.location) { setErr('errLocation','Please select your campus.'); return false; }
+  }
+  if (s===3) {
+    clrErr('errTechCat');
+    if (!fd.techCat) { setErr('errTechCat','Please select a technology area.'); return false; }
+  }
+  if (s===4) {
+    clrErr('errTech');
+    if (!fd.technology) { setErr('errTech','Please select the specific tool.'); return false; }
+    if (fd.technology.startsWith('Other')) fd.technologyOther = document.getElementById('iTechOther').value.trim();
+  }
+  if (s===5) {
+    clrErr('errIssueType'); clrErr('errUrgency'); clrErr('errDesc');
+    if (!fd.issueType) { setErr('errIssueType','Please select an issue type.'); ok=false; }
+    if (fd.issueType==='Other') fd.issueTypeOther = document.getElementById('iIssueOther').value.trim();
+    if (!fd.urgency)  { setErr('errUrgency','Please select an urgency level.'); ok=false; }
+    fd.description = document.getElementById('iDesc').value.trim();
+    if (!fd.description) { setErr('errDesc','Please describe the issue in more detail.'); ok=false; }
+  }
+  return ok;
+}
+
+/* ── NAV ──────────────────────────────────── */
+function goNext(s) {
+  if (!validate(s)) return;
+  document.getElementById('step'+s).style.display = 'none';
+  step = s + 1;
+  if (step===6) buildReview();
+  document.getElementById('step'+step).style.display = 'block';
+  renderWizard();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function goBack(s) {
+  document.getElementById('step'+s).style.display = 'none';
+  step = s - 1;
+  document.getElementById('step'+step).style.display = 'block';
+  renderWizard();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ── REVIEW ───────────────────────────────── */
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function buildReview() {
+  const tech = fd.technology.startsWith('Other') ? (fd.technologyOther||'Other') : fd.technology;
+  const iss  = fd.issueType==='Other'            ? (fd.issueTypeOther||'Other')  : fd.issueType;
+  const rows = [
+    ['Name',fd.name],['Email',fd.email],['Phone',fd.phone||'—'],['Role',fd.role||'—'],
+    ['Campus',fd.location],['Technology Area',fd.techCat],['Tool / App',tech],
+    ['Issue Type',iss],['Urgency',fd.urgency],['Description',fd.description]
+  ];
+  document.getElementById('reviewBody').innerHTML = rows.map(([l,v])=>
+    `<div class="review-row"><span class="rl">${l}</span><span class="rv">${esc(v)}</span></div>`
+  ).join('');
+}
+
+/* ── SUBMIT ───────────────────────────────── */
+function submitTicket() {
+  const id   = nextId();
+  const tech = fd.technology.startsWith('Other') ? (fd.technologyOther||'Other') : fd.technology;
+  const iss  = fd.issueType==='Other'            ? (fd.issueTypeOther||'Other')  : fd.issueType;
+
+  const ticket = {
+    id, timestamp: new Date().toISOString(),
+    name:fd.name, email:fd.email, phone:fd.phone, role:fd.role,
+    location:fd.location, techCat:fd.techCat, technology:tech,
+    issueType:iss, urgency:fd.urgency, description:fd.description,
+    status:'Open', notes:''
+  };
+
+  const all = getTickets(); all.push(ticket); saveTickets(all);
+
+  document.getElementById('step6').style.display = 'none';
+  step = 7;
+  document.getElementById('step7').style.display = 'block';
+  document.getElementById('wizardBar').style.display = 'none';
+  document.getElementById('s7Id').textContent = id;
+
+  const urgMsg = {
+    'Critical':'🔴 <strong>Critical priority</strong> — someone will contact you as soon as possible.',
+    'High':    '🟠 <strong>High priority</strong> — we aim to respond within the same business day.',
+    'Medium':  '🔵 Your ticket will be picked up within 2–3 business days.',
+    'Low':     '🟢 Your ticket has been logged and will be addressed at the next available opportunity.'
+  };
+  document.getElementById('s7Msg').innerHTML = urgMsg[fd.urgency]||'';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ── RESET ────────────────────────────────── */
+function resetForm() {
+  fd = freshFD();
+  step = 1;
+  for (let i=1;i<=7;i++) {
+    const el=document.getElementById('step'+i);
+    if (el) el.style.display = (i===1)?'block':'none';
+  }
+  document.getElementById('wizardBar').style.display = 'block';
+  ['iName','iEmail','iPhone','iDesc','iTechOther','iIssueOther']
+    .forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  document.querySelectorAll('[data-f].sel,[data-f].app-tile.sel').forEach(b=>b.classList.remove('sel'));
+  document.querySelectorAll('.other-wrap.show').forEach(c=>c.classList.remove('show'));
+  renderWizard();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ── ADMIN ────────────────────────────────── */
+function showAdminLogin() {
+  document.getElementById('userView').classList.remove('active');
+  document.getElementById('adminView').classList.add('active');
+  document.getElementById('adminLogin').style.display='block';
+  document.getElementById('adminDash').style.display='none';
+}
+function showUserView() {
+  document.getElementById('adminView').classList.remove('active');
+  document.getElementById('userView').classList.add('active');
+}
+function doLogin() {
+  if (document.getElementById('iPwd').value===ADMIN_PWD) {
+    clrErr('errPwd');
+    document.getElementById('adminLogin').style.display='none';
+    document.getElementById('adminDash').style.display='block';
+    document.getElementById('iPwd').value='';
+    loadDash();
+  } else {
+    setErr('errPwd','Incorrect password. Please try again.');
+  }
+}
+
+/* ── DASHBOARD ────────────────────────────── */
+let charts = {};
+
+function loadDash() {
+  const tickets = getTickets();
+  renderStats(tickets);
+  renderAlerts(tickets);
+  populateFilters(tickets);
+  renderCharts(tickets);
+  renderTable();
+  const now = new Date();
+  document.getElementById('dashSub').textContent =
+    `Refreshed ${now.toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})} at ${now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'})}`;
+}
+
+function renderStats(t) {
+  document.getElementById('sTotal').textContent = t.length;
+  document.getElementById('sOpen').textContent  = t.filter(x=>x.status==='Open').length;
+  document.getElementById('sProg').textContent  = t.filter(x=>x.status==='In Progress').length;
+  document.getElementById('sDone').textContent  = t.filter(x=>x.status==='Resolved').length;
+}
+
+function countBy(tickets, key) {
+  return tickets.reduce((a,t)=>{ a[t[key]]=(a[t[key]]||0)+1; return a; },{});
+}
+
+function renderAlerts(tickets) {
+  const el = document.getElementById('alertsList');
+  if (!tickets.length) {
+    el.innerHTML = '<div class="alert-item a-ok">✅ No tickets yet — trend insights will appear here as submissions come in.</div>';
+    return;
+  }
+  const alerts = [];
+  const techC = countBy(tickets,'technology');
+  const locC  = countBy(tickets,'location');
+  const catC  = countBy(tickets,'techCat');
+
+  const critOpen = tickets.filter(t=>t.urgency==='Critical'&&t.status!=='Resolved');
+  if (critOpen.length) alerts.push({c:'a-hot', m:`🔴 <strong>${critOpen.length} Critical ticket${critOpen.length>1?'s':''}</strong> are still unresolved — needs immediate attention.`});
+
+  Object.entries(techC).sort((a,b)=>b[1]-a[1]).forEach(([tech,n])=>{
+    if (n>=3) alerts.push({c:'a-hot', m:`📈 <strong>${tech}</strong> has <strong>${n} tickets</strong> — consider an org-wide fix or group training session.`});
+    else if (n===2) alerts.push({c:'a-info', m:`📌 <strong>${tech}</strong> has 2 tickets — monitor for a broader pattern.`});
+  });
+
+  const topLoc = Object.entries(locC).sort((a,b)=>b[1]-a[1])[0];
+  if (topLoc && topLoc[1]>=3) alerts.push({c:'a-info',m:`📍 <strong>${topLoc[0]}</strong> is generating the most tickets (${topLoc[1]}) — may benefit from on-site support.`});
+
+  const topCat = Object.entries(catC).sort((a,b)=>b[1]-a[1])[0];
+  if (topCat && topCat[1]>=4) alerts.push({c:'a-info',m:`💡 <strong>${topCat[0]}</strong> accounts for ${topCat[1]} tickets — consider proactive training in this area.`});
+
+  if (!alerts.length) alerts.push({c:'a-ok',m:'✅ No significant trends detected — tickets are spread across different technologies and campuses.'});
+  el.innerHTML = alerts.map(a=>`<div class="alert-item ${a.c}">${a.m}</div>`).join('');
+}
+
+function populateFilters(tickets) {
+  const locs  = [...new Set(tickets.map(t=>t.location))].sort();
+  const techs = [...new Set(tickets.map(t=>t.technology))].sort();
+  const fLoc  = document.getElementById('fLocation');
+  const fTech = document.getElementById('fTech');
+  const existing = sel => [...sel.options].map(o=>o.value);
+  locs.forEach(l =>  { if(!existing(fLoc).includes(l))  { const o=document.createElement('option'); o.value=o.textContent=l; fLoc.appendChild(o); }});
+  techs.forEach(t => { if(!existing(fTech).includes(t)) { const o=document.createElement('option'); o.value=o.textContent=t; fTech.appendChild(o); }});
+}
+
+/* ── CHARTS ───────────────────────────────── */
+const PAL = ['#232323','#555','#888','#aaa','#059669','#be1e2d','#7c3aed','#0369a1','#b45309','#065f46','#9d174d','#1e40af'];
+
+function destroyCharts() { Object.values(charts).forEach(c=>c.destroy()); charts={}; }
+
+function renderCharts(tickets) {
+  destroyCharts();
+  if (!tickets.length) return;
+
+  const techC  = countBy(tickets,'technology');
+  const locC   = countBy(tickets,'location');
+  const catC   = countBy(tickets,'techCat');
+  const issC   = countBy(tickets,'issueType');
+  const urgOrd = ['Critical','High','Medium','Low'];
+  const urgC   = countBy(tickets,'urgency');
+  const urgCol = { Critical:'#be1e2d',High:'#b45309',Medium:'#232323',Low:'#0a7c5c' };
+
+  const baseOpts = { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} };
+
+  const techS = Object.entries(techC).sort((a,b)=>b[1]-a[1]);
+  charts.tech = new Chart(document.getElementById('cTech'), {
+    type:'bar',
+    data:{ labels:techS.map(e=>e[0]), datasets:[{label:'Tickets',data:techS.map(e=>e[1]),backgroundColor:PAL,borderRadius:5,borderSkipped:false}] },
+    options:{ ...baseOpts, indexAxis:'y', scales:{ x:{ticks:{stepSize:1,font:{size:11}},grid:{color:'#f0f3f8'}}, y:{ticks:{font:{size:11}}} } }
+  });
+
+  charts.loc = new Chart(document.getElementById('cLoc'), {
+    type:'doughnut',
+    data:{ labels:Object.keys(locC), datasets:[{data:Object.values(locC),backgroundColor:PAL,borderWidth:3,borderColor:'#fff',hoverOffset:6}] },
+    options:{ responsive:true,maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{font:{size:10},padding:10,boxWidth:10}}} }
+  });
+
+  charts.urg = new Chart(document.getElementById('cUrg'), {
+    type:'bar',
+    data:{ labels:urgOrd, datasets:[{label:'Tickets',data:urgOrd.map(u=>urgC[u]||0),backgroundColor:urgOrd.map(u=>urgCol[u]),borderRadius:6,borderSkipped:false}] },
+    options:{ ...baseOpts, scales:{ y:{ticks:{stepSize:1,font:{size:11}},grid:{color:'#f0f3f8'}}, x:{ticks:{font:{size:11}}} } }
+  });
+
+  charts.issue = new Chart(document.getElementById('cIssue'), {
+    type:'doughnut',
+    data:{ labels:Object.keys(issC), datasets:[{data:Object.values(issC),backgroundColor:PAL,borderWidth:3,borderColor:'#fff',hoverOffset:6}] },
+    options:{ responsive:true,maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{font:{size:10},padding:8,boxWidth:10}}} }
+  });
+
+  const catS = Object.entries(catC).sort((a,b)=>b[1]-a[1]);
+  charts.cat = new Chart(document.getElementById('cCat'), {
+    type:'bar',
+    data:{ labels:catS.map(e=>e[0]), datasets:[{label:'Tickets',data:catS.map(e=>e[1]),backgroundColor:PAL,borderRadius:6,borderSkipped:false}] },
+    options:{ ...baseOpts, scales:{ y:{ticks:{stepSize:1,font:{size:10}},grid:{color:'#f0f3f8'}}, x:{ticks:{font:{size:10}}} } }
+  });
+}
+
+/* ── TABLE ────────────────────────────────── */
+function renderTable() {
+  const fs=document.getElementById('fStatus').value;
+  const fl=document.getElementById('fLocation').value;
+  const ft=document.getElementById('fTech').value;
+  const fu=document.getElementById('fUrgency').value;
+
+  let tickets = getTickets();
+  if (fs) tickets=tickets.filter(t=>t.status===fs);
+  if (fl) tickets=tickets.filter(t=>t.location===fl);
+  if (ft) tickets=tickets.filter(t=>t.technology===ft);
+  if (fu) tickets=tickets.filter(t=>t.urgency===fu);
+  tickets = [...tickets].reverse();
+
+  const tbody=document.getElementById('tBody');
+  const empty=document.getElementById('emptyState');
+  if (!tickets.length) { tbody.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+
+  const ubC = {Critical:'ub-crit',High:'ub-high',Medium:'ub-med',Low:'ub-low'};
+  tbody.innerHTML = tickets.map(t => {
+    const d=new Date(t.timestamp);
+    const ds=d.toLocaleDateString('en-AU',{day:'numeric',month:'short'});
+    const ts=d.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
+    return `<tr>
+      <td><code style="font-weight:800;color:var(--navy);font-size:.79rem;letter-spacing:.01em">${esc(t.id)}</code></td>
+      <td style="white-space:nowrap"><div style="font-size:.82rem;font-weight:500">${ds}</div><div style="color:var(--muted);font-size:.73rem">${ts}</div></td>
+      <td><div style="font-weight:600;font-size:.84rem">${esc(t.name)}</div><div style="color:var(--muted);font-size:.74rem">${esc(t.email)}</div></td>
+      <td style="font-size:.84rem">${esc(t.location)}</td>
+      <td><div style="font-size:.84rem;font-weight:500">${esc(t.technology)}</div><div style="color:var(--muted);font-size:.74rem">${esc(t.techCat)}</div></td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.83rem">${esc(t.issueType)}</td>
+      <td><span class="ub ${ubC[t.urgency]||''}">${esc(t.urgency)}</span></td>
+      <td>
+        <select class="status-sel" onchange="updateStatus('${esc(t.id)}',this.value)">
+          <option ${t.status==='Open'?'selected':''}>Open</option>
+          <option ${t.status==='In Progress'?'selected':''}>In Progress</option>
+          <option ${t.status==='Resolved'?'selected':''}>Resolved</option>
+        </select>
+      </td>
+      <td><button class="view-btn" onclick="viewTicket('${esc(t.id)}')">View</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function updateStatus(id, status) {
+  const all=getTickets(); const t=all.find(x=>x.id===id);
+  if (t) { t.status=status; saveTickets(all); renderStats(all); renderAlerts(all); }
+}
+
+/* ── MODAL ────────────────────────────────── */
+function viewTicket(id) {
+  const t = getTickets().find(x=>x.id===id);
+  if (!t) return;
+  const d = new Date(t.timestamp);
+  const ds = d.toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'});
+  const ts = d.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
+
+  document.getElementById('modalTitle').textContent = `Ticket ${t.id}`;
+  document.getElementById('modalBody').innerHTML = `
+    <div class="m-row"><span class="ml">Submitted</span><span class="mr">${ds} at ${ts}</span></div>
+    <div class="m-row"><span class="ml">Name</span><span class="mr">${esc(t.name)}</span></div>
+    <div class="m-row"><span class="ml">Email</span><span class="mr">${esc(t.email)}</span></div>
+    ${t.phone?`<div class="m-row"><span class="ml">Phone</span><span class="mr">${esc(t.phone)}</span></div>`:''}
+    <div class="m-row"><span class="ml">Role</span><span class="mr">${esc(t.role||'—')}</span></div>
+    <div class="m-row"><span class="ml">Campus</span><span class="mr">${esc(t.location)}</span></div>
+    <div class="m-row"><span class="ml">Technology</span><span class="mr">${esc(t.technology)} <span style="color:var(--muted);font-size:.79rem">(${esc(t.techCat)})</span></span></div>
+    <div class="m-row"><span class="ml">Issue Type</span><span class="mr">${esc(t.issueType)}</span></div>
+    <div class="m-row"><span class="ml">Urgency</span><span class="mr">${esc(t.urgency)}</span></div>
+    <div class="m-row">
+      <span class="ml">Status</span>
+      <span class="mr">
+        <select class="status-sel" onchange="updateStatus('${esc(t.id)}',this.value);renderTable()">
+          <option ${t.status==='Open'?'selected':''}>Open</option>
+          <option ${t.status==='In Progress'?'selected':''}>In Progress</option>
+          <option ${t.status==='Resolved'?'selected':''}>Resolved</option>
+        </select>
+      </span>
+    </div>
+    <div class="m-desc"><strong style="font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Description</strong><br><br>${esc(t.description).replace(/\n/g,'<br>')}</div>
+    <div class="m-notes">
+      <label><i class="fa-solid fa-note-sticky" style="margin-right:4px;color:var(--gold-dim)"></i> Admin Notes</label>
+      <textarea class="form-input" id="mNotes" style="min-height:80px" placeholder="Internal notes — not visible to the user…">${esc(t.notes||'')}</textarea>
+      <button class="btn btn-primary" style="margin-top:.65rem;padding:.5rem 1.25rem;font-size:.83rem;flex:0" onclick="saveNotes('${esc(t.id)}')">
+        <i class="fa-solid fa-floppy-disk"></i> Save Notes
+      </button>
+    </div>
+  `;
+  document.getElementById('modal').classList.add('open');
+}
+
+function saveNotes(id) {
+  const all=getTickets(); const t=all.find(x=>x.id===id);
+  if (t) { t.notes=document.getElementById('mNotes').value; saveTickets(all); }
+}
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  renderTable(); renderStats(getTickets());
+}
+document.getElementById('modal').addEventListener('click',e=>{ if(e.target===document.getElementById('modal')) closeModal(); });
+
+/* ── EXPORT ───────────────────────────────── */
+function exportCSV() {
+  const all=getTickets();
+  if (!all.length) { alert('No tickets to export.'); return; }
+  const hdr=['ID','Date','Name','Email','Phone','Role','Campus','Tech Category','Technology','Issue Type','Urgency','Status','Description','Notes'];
+  const rows=all.map(t=>[
+    t.id,new Date(t.timestamp).toLocaleString('en-AU'),
+    t.name,t.email,t.phone||'',t.role||'',t.location,
+    t.techCat,t.technology,t.issueType,t.urgency,t.status,
+    t.description.replace(/"/g,'""'),(t.notes||'').replace(/"/g,'""')
+  ].map(v=>`"${v}"`).join(','));
+  const csv=[hdr.join(','),...rows].join('\n');
+  const a=Object.assign(document.createElement('a'),{
+    href:URL.createObjectURL(new Blob([csv],{type:'text/csv'})),
+    download:`newlife-helpdesk-${new Date().toISOString().slice(0,10)}.csv`
+  });
+  a.click();
+}
+
+function clearAll() {
+  if (confirm('Delete ALL tickets? This cannot be undone.')) {
+    localStorage.removeItem('nl_hd2_tickets');
+    loadDash();
+  }
+}
+
+/* ── INIT ─────────────────────────────────── */
+renderWizard();
+</script>
 </body>
 </html>
