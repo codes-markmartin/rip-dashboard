@@ -2460,12 +2460,12 @@ function switchAdminTab(tab) {
   const isTickets = tab === 'tickets';
   document.getElementById('tabTickets').classList.toggle('active', isTickets);
   document.getElementById('tabTraining').classList.toggle('active', !isTickets);
-  document.getElementById('adminTicketsPanel').style.display  = isTickets ? '' : 'none';
-  document.getElementById('adminTrainingPanel').style.display = isTickets ? 'none' : '';
+  document.getElementById('adminTicketsPanel').style.display  = isTickets ? 'block' : 'none';
+  document.getElementById('adminTrainingPanel').style.display = isTickets ? 'none' : 'block';
   // Show/hide ticket toolbar buttons
   ['ticketsRefreshBtn','ticketsExportBtn','ticketsClearBtn'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.style.display = isTickets ? '' : 'none';
+    if (el) el.style.display = isTickets ? 'inline-flex' : 'none';
   });
   if (!isTickets) loadAdminTraining();
 }
