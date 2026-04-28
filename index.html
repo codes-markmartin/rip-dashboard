@@ -1155,7 +1155,7 @@
       </div>
       <div class="nav-btns">
         <button class="btn btn-ghost" onclick="goBack(6)"><i class="fa-solid fa-arrow-left"></i> Back</button>
-        <button class="btn btn-gold" onclick="submitTicket()"><i class="fa-solid fa-paper-plane"></i> Submit Ticket</button>
+        <button class="btn btn-gold" id="submitBtn" onclick="submitTicket()"><i class="fa-solid fa-paper-plane"></i> Submit Ticket</button>
       </div>
     </div>
 
@@ -1355,6 +1355,18 @@
 'use strict';
 
 const ADMIN_PWD   = 'newlife2024';
+
+/* ── SUPABASE CONFIG ────────────────────────────
+   SETUP (one-time, ~5 min):
+   1. Sign up free at https://supabase.com → New Project
+   2. In your project: Settings → API
+   3. Copy "Project URL" → paste into SUPABASE_URL
+   4. Copy "anon public" key → paste into SUPABASE_ANON_KEY
+   5. In the SQL Editor, run the SQL from the setup guide
+   ─────────────────────────────────────────────── */
+const SUPABASE_URL      = 'https://snoevbscqvpwkyllkzfl.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_AKNwLnw1hiIbHrCYniLdcg_2TrgbjRU';
+
 const TOTAL_STEPS = 6;
 const STEP_LABELS = ['Details','Campus','Category','Tool','Issue','Review'];
 
@@ -1371,14 +1383,63 @@ function freshFD() {
   };
 }
 
-/* ── STORAGE ──────────────────────────────── */
-function getTickets() {
-  try { return JSON.parse(localStorage.getItem('nl_hd2_tickets')||'[]'); }
-  catch { return []; }
+/* ── STORAGE (Supabase) ──────────────────────
+   Tickets live in a shared Supabase database —
+   every device reads and writes the same data. */
+let _allTickets = [];   // in-memory cache; refreshed each time loadDash() runs
+
+function _isConfigured() {
+  return !SUPABASE_URL.startsWith('PASTE') && !SUPABASE_ANON_KEY.startsWith('PASTE');
 }
-function saveTickets(t) { localStorage.setItem('nl_hd2_tickets', JSON.stringify(t)); }
-function nextId() {
-  return 'NL-' + String(getTickets().length + 1).padStart(4,'0');
+
+async function supaFetch(path, method = 'GET', body = null) {
+  const headers = {
+    'apikey':        SUPABASE_ANON_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+    'Content-Type':  'application/json'
+  };
+  if (method === 'POST') headers['Prefer'] = 'return=representation';
+  const opts = { method, headers };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(SUPABASE_URL + '/rest/v1' + path, opts);
+  if (!res.ok) { const t = await res.text(); throw new Error(res.status + ': ' + t); }
+  const text = await res.text();
+  return text ? JSON.parse(text) : [];
+}
+
+function dbRow(r) {
+  return {
+    id:          r.ticket_id    || '',
+    timestamp:   r.created_at   || '',
+    name:        r.name         || '',
+    email:       r.email        || '',
+    phone:       r.phone        || '',
+    role:        r.role         || '',
+    location:    r.location     || '',
+    techCat:     r.tech_cat     || '',
+    technology:  r.technology   || '',
+    issueType:   r.issue_type   || '',
+    urgency:     r.urgency      || '',
+    description: r.description  || '',
+    status:      r.status       || 'Open',
+    notes:       r.notes        || ''
+  };
+}
+
+async function fetchTickets() {
+  try {
+    const rows = await supaFetch('/tickets?select=*&order=created_at.asc');
+    return rows.map(dbRow);
+  } catch(e) { console.error('fetchTickets:', e); return []; }
+}
+
+async function getNextTicketId() {
+  try {
+    const rows = await supaFetch('/tickets?select=ticket_id&order=id.desc&limit=1');
+    if (!rows.length) return 'NL-0001';
+    const num = parseInt((rows[0].ticket_id || 'NL-0000').replace('NL-', ''), 10) || 0;
+    return 'NL-' + String(num + 1).padStart(4, '0');
+  } catch { return 'NL-T' + Date.now().toString().slice(-4); }
 }
 
 /* ── TECH MAP ─────────────────────────────── */
@@ -1568,35 +1629,56 @@ function buildReview() {
 }
 
 /* ── SUBMIT ───────────────────────────────── */
-function submitTicket() {
-  const id   = nextId();
-  const tech = fd.technology.startsWith('Other') ? (fd.technologyOther||'Other') : fd.technology;
-  const iss  = fd.issueType==='Other'            ? (fd.issueTypeOther||'Other')  : fd.issueType;
+async function submitTicket() {
+  if (!_isConfigured()) {
+    alert('The help desk is not yet connected to a database.\n\nPlease contact your IT administrator to complete the Supabase setup.');
+    return;
+  }
 
-  const ticket = {
-    id, timestamp: new Date().toISOString(),
-    name:fd.name, email:fd.email, phone:fd.phone, role:fd.role,
-    location:fd.location, techCat:fd.techCat, technology:tech,
-    issueType:iss, urgency:fd.urgency, description:fd.description,
-    status:'Open', notes:''
-  };
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting…';
 
-  const all = getTickets(); all.push(ticket); saveTickets(all);
+  try {
+    const ticketId = await getNextTicketId();
+    const tech = fd.technology.startsWith('Other') ? (fd.technologyOther||'Other') : fd.technology;
+    const iss  = fd.issueType==='Other'            ? (fd.issueTypeOther||'Other')  : fd.issueType;
 
-  document.getElementById('step6').style.display = 'none';
-  step = 7;
-  document.getElementById('step7').style.display = 'block';
-  document.getElementById('wizardBar').style.display = 'none';
-  document.getElementById('s7Id').textContent = id;
+    await supaFetch('/tickets', 'POST', {
+      ticket_id:   ticketId,
+      name:        fd.name,
+      email:       fd.email,
+      phone:       fd.phone        || null,
+      role:        fd.role         || null,
+      location:    fd.location,
+      tech_cat:    fd.techCat,
+      technology:  tech,
+      issue_type:  iss,
+      urgency:     fd.urgency,
+      description: fd.description,
+      status:      'Open',
+      notes:       ''
+    });
 
-  const urgMsg = {
-    'Critical':'🔴 <strong>Critical priority</strong> — someone will contact you as soon as possible.',
-    'High':    '🟠 <strong>High priority</strong> — we aim to respond within the same business day.',
-    'Medium':  '🔵 Your ticket will be picked up within 2–3 business days.',
-    'Low':     '🟢 Your ticket has been logged and will be addressed at the next available opportunity.'
-  };
-  document.getElementById('s7Msg').innerHTML = urgMsg[fd.urgency]||'';
-  window.scrollTo({top:0,behavior:'smooth'});
+    document.getElementById('step6').style.display = 'none';
+    step = 7;
+    document.getElementById('step7').style.display = 'block';
+    document.getElementById('wizardBar').style.display = 'none';
+    document.getElementById('s7Id').textContent = ticketId;
+
+    const urgMsg = {
+      'Critical':'🔴 <strong>Critical priority</strong> — someone will contact you as soon as possible.',
+      'High':    '🟠 <strong>High priority</strong> — we aim to respond within the same business day.',
+      'Medium':  '🔵 Your ticket will be picked up within 2–3 business days.',
+      'Low':     '🟢 Your ticket has been logged and will be addressed at the next available opportunity.'
+    };
+    document.getElementById('s7Msg').innerHTML = urgMsg[fd.urgency]||'';
+    window.scrollTo({top:0,behavior:'smooth'});
+  } catch(e) {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Submit Ticket';
+    alert('Could not submit your ticket — please check your connection and try again.\n\n' + e.message);
+  }
 }
 
 /* ── RESET ────────────────────────────────── */
@@ -1642,12 +1724,17 @@ function doLogin() {
 /* ── DASHBOARD ────────────────────────────── */
 let charts = {};
 
-function loadDash() {
-  const tickets = getTickets();
-  renderStats(tickets);
-  renderAlerts(tickets);
-  populateFilters(tickets);
-  renderCharts(tickets);
+async function loadDash() {
+  if (!_isConfigured()) {
+    document.getElementById('dashSub').textContent = '⚠️ Supabase not configured — open helpdesk.html and fill in SUPABASE_URL and SUPABASE_ANON_KEY';
+    return;
+  }
+  document.getElementById('dashSub').textContent = 'Loading tickets…';
+  _allTickets = await fetchTickets();
+  renderStats(_allTickets);
+  renderAlerts(_allTickets);
+  populateFilters(_allTickets);
+  renderCharts(_allTickets);
   renderTable();
   const now = new Date();
   document.getElementById('dashSub').textContent =
@@ -1763,7 +1850,7 @@ function renderTable() {
   const ft=document.getElementById('fTech').value;
   const fu=document.getElementById('fUrgency').value;
 
-  let tickets = getTickets();
+  let tickets = [..._allTickets];
   if (fs) tickets=tickets.filter(t=>t.status===fs);
   if (fl) tickets=tickets.filter(t=>t.location===fl);
   if (ft) tickets=tickets.filter(t=>t.technology===ft);
@@ -1800,14 +1887,17 @@ function renderTable() {
   }).join('');
 }
 
-function updateStatus(id, status) {
-  const all=getTickets(); const t=all.find(x=>x.id===id);
-  if (t) { t.status=status; saveTickets(all); renderStats(all); renderAlerts(all); }
+async function updateStatus(id, status) {
+  try {
+    await supaFetch('/tickets?ticket_id=eq.' + encodeURIComponent(id), 'PATCH', { status });
+    const t = _allTickets.find(x => x.id === id);
+    if (t) { t.status = status; renderStats(_allTickets); renderAlerts(_allTickets); }
+  } catch(e) { alert('Failed to update status: ' + e.message); }
 }
 
 /* ── MODAL ────────────────────────────────── */
 function viewTicket(id) {
-  const t = getTickets().find(x=>x.id===id);
+  const t = _allTickets.find(x=>x.id===id);
   if (!t) return;
   const d = new Date(t.timestamp);
   const ds = d.toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'});
@@ -1846,19 +1936,24 @@ function viewTicket(id) {
   document.getElementById('modal').classList.add('open');
 }
 
-function saveNotes(id) {
-  const all=getTickets(); const t=all.find(x=>x.id===id);
-  if (t) { t.notes=document.getElementById('mNotes').value; saveTickets(all); }
+async function saveNotes(id) {
+  const notes = document.getElementById('mNotes').value;
+  try {
+    await supaFetch('/tickets?ticket_id=eq.' + encodeURIComponent(id), 'PATCH', { notes });
+    const t = _allTickets.find(x => x.id === id);
+    if (t) t.notes = notes;
+    alert('Notes saved ✓');
+  } catch(e) { alert('Failed to save notes: ' + e.message); }
 }
 function closeModal() {
   document.getElementById('modal').classList.remove('open');
-  renderTable(); renderStats(getTickets());
+  renderTable(); renderStats(_allTickets);
 }
 document.getElementById('modal').addEventListener('click',e=>{ if(e.target===document.getElementById('modal')) closeModal(); });
 
 /* ── EXPORT ───────────────────────────────── */
 function exportCSV() {
-  const all=getTickets();
+  const all=[..._allTickets];
   if (!all.length) { alert('No tickets to export.'); return; }
   const hdr=['ID','Date','Name','Email','Phone','Role','Campus','Tech Category','Technology','Issue Type','Urgency','Status','Description','Notes'];
   const rows=all.map(t=>[
@@ -1875,11 +1970,13 @@ function exportCSV() {
   a.click();
 }
 
-function clearAll() {
-  if (confirm('Delete ALL tickets? This cannot be undone.')) {
-    localStorage.removeItem('nl_hd2_tickets');
+async function clearAll() {
+  if (!confirm('Delete ALL tickets? This cannot be undone.')) return;
+  try {
+    await supaFetch('/tickets?id=gt.0', 'DELETE');
+    _allTickets = [];
     loadDash();
-  }
+  } catch(e) { alert('Failed to delete tickets: ' + e.message); }
 }
 
 /* ── INIT ─────────────────────────────────── */
