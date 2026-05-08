@@ -76,8 +76,7 @@ nav{background:var(--surface);border-bottom:1px solid var(--b);
 main{max-width:1380px;margin:0 auto;padding:26px 22px}
 
 /* Metrics */
-.metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px;}
-@media(max-width:1100px){.metrics{grid-template-columns:repeat(3,1fr)}}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;}
 @media(max-width:660px){.metrics{grid-template-columns:1fr 1fr}}
 .metric{background:var(--surface);border-radius:var(--r3);box-shadow:var(--s1);
   border:1px solid var(--blt);padding:16px 18px;}
@@ -107,7 +106,28 @@ tbody tr{transition:background .1s}
 tbody tr:hover{background:var(--hover)}
 .a-cell{display:flex;align-items:center;gap:10px}
 .a-orb{width:35px;height:35px;border-radius:9px;display:flex;align-items:center;
-  justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;}
+  justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;overflow:hidden;}
+.a-orb img{width:22px;height:22px;object-fit:contain;border-radius:3px;}
+
+/* Milestones */
+.milestone-grid{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px;}
+.ms-card{background:var(--surface);border-radius:var(--r3);box-shadow:var(--s1);
+  border:1px solid var(--blt);padding:13px 15px;flex:1;min-width:120px;position:relative;}
+.ms-card.ms-done{border-color:rgba(20,121,74,.25);background:rgba(20,121,74,.04);}
+.ms-card.ms-active{border-color:var(--gold);box-shadow:0 2px 10px rgba(168,112,22,.15);}
+.ms-card.ms-future{opacity:.45;}
+.ms-lbl{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;
+  color:var(--t3);margin-bottom:3px;}
+.ms-card.ms-active .ms-lbl{color:var(--gold)}
+.ms-amt{font-size:17px;font-weight:700;color:var(--t1);letter-spacing:-.3px;}
+.ms-card.ms-done .ms-amt{color:var(--pos);}
+.ms-card.ms-active .ms-amt{color:var(--gold);}
+.ms-sub{font-size:10.5px;color:var(--t3);margin-top:3px;}
+.ms-bar{height:3px;background:var(--b);border-radius:2px;overflow:hidden;margin-top:8px;}
+.ms-bar-fill{height:100%;border-radius:2px;background:var(--gold);transition:width .6s;}
+.ms-check{position:absolute;top:9px;right:11px;font-size:13px;color:var(--pos);}
+@media(max-width:700px){.milestone-grid{gap:6px}.ms-card{min-width:90px;padding:10px 11px;}
+  .ms-amt{font-size:14px}}
 .a-sym{font-weight:700;font-size:14px;letter-spacing:-.2px;color:var(--t1)}
 .a-full{font-size:11px;color:var(--t3);margin-top:1px}
 .tag{display:inline-block;padding:1px 5px;border-radius:3px;font-size:9px;
@@ -259,21 +279,16 @@ footer a{color:var(--navy);text-decoration:none;font-weight:600}
       <div class="metric-sub" id="mv-chg-s">—</div>
     </div>
     <div class="metric">
-      <div class="metric-lbl">Total Invested</div>
-      <div class="metric-val" id="mv-inv">—</div>
-      <div class="metric-sub">At average cost</div>
-    </div>
-    <div class="metric">
-      <div class="metric-lbl">Unrealised P&amp;L</div>
-      <div class="metric-val" id="mv-pnl">—</div>
-      <div class="metric-sub" id="mv-pnl-s">Set avg cost to track</div>
-    </div>
-    <div class="metric">
       <div class="metric-lbl">Holdings</div>
       <div class="metric-val" id="mv-cnt">—</div>
       <div class="metric-sub">Assets tracked</div>
     </div>
   </div>
+
+  <div class="sec-head" style="margin-bottom:10px">
+    <div class="sec-lbl">AUD Milestones</div>
+  </div>
+  <div class="milestone-grid" id="milestoneGrid"></div>
 
   <div class="sec-head">
     <div class="sec-lbl">Holdings</div>
@@ -285,7 +300,6 @@ footer a{color:var(--navy);text-decoration:none;font-weight:600}
         <tr>
           <th>Asset</th><th>Price</th><th>24h</th>
           <th class="hide-sm">Quantity</th><th>Value</th>
-          <th class="hide-sm">Avg Cost</th><th class="hide-sm">P&amp;L</th>
           <th>Weight</th>
         </tr>
       </thead>
@@ -320,7 +334,7 @@ footer a{color:var(--navy);text-decoration:none;font-weight:600}
 </main>
 
 <footer>
-  <span>Prices: DexScreener · CoinGecko · Stooq · Yahoo Finance (fallback)</span>
+  <span>Prices: DexScreener · CoinGecko · Finnhub · Stooq (fallback)</span>
   <span>
     <a href="#" onclick="openSettings();return false">Settings</a>
     &nbsp;·&nbsp; Values in <span id="ftCcy">USD</span>
@@ -346,7 +360,7 @@ footer a{color:var(--navy);text-decoration:none;font-weight:600}
     </div>
     <div id="sBody">
       <p style="font-size:11.5px;color:var(--t2);margin-bottom:16px">
-        Quantities, average cost (USD), and manual price overrides. Set Manual Price to 0 or leave blank for live data.
+        Adjust quantities and set manual price overrides. Leave Manual Price blank for live data.
       </p>
       <div class="sec-lbl" style="margin-bottom:11px">Current Holdings</div>
       <div id="sAssets"></div>
@@ -369,10 +383,7 @@ footer a{color:var(--navy);text-decoration:none;font-weight:600}
         <div id="n-ca-w"  class="fg"><label>Contract Address</label><input id="n-ca" placeholder="Solana CA…"/></div>
         <div id="n-cg-w"  class="fg" style="display:none"><label>CoinGecko ID</label><input id="n-cgid" placeholder="ripple"/></div>
         <div id="n-tk-w"  class="fg" style="display:none"><label>Ticker Symbol</label><input id="n-ticker" placeholder="IREN"/></div>
-        <div class="two">
-          <div class="fg"><label>Quantity</label><input type="number" id="n-qty" step="any" placeholder="0"/></div>
-          <div class="fg"><label>Avg Cost (USD)</label><input type="number" id="n-cost" step="any" placeholder="0.00"/></div>
-        </div>
+        <div class="fg"><label>Quantity</label><input type="number" id="n-qty" step="any" placeholder="0"/></div>
         <button class="btn primary" style="width:100%;justify-content:center" onclick="addAsset()">+ Add Asset</button>
       </div>
       <div class="divider"></div>
@@ -421,10 +432,18 @@ let P      = loadP();
   }
 */
 let PX     = {};
+let LOGOS  = {};     // asset id → logo image URL
 let CCY    = 'USD';
 let AUDRT  = null;   // live USD→AUD exchange rate
 let CHARTS = {pie:null,line:null};
 let RT     = null;
+
+const MILESTONES_AUD = [5000,10000,20000,30000,40000,50000];
+
+// Known logos hardcoded
+const LOGO_DEFAULTS = {
+  xrp: 'https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png',
+};
 
 function loadP(){
   try{const r=localStorage.getItem('ptv5');if(r)return JSON.parse(r);}catch(e){}
@@ -456,12 +475,6 @@ function assetVal(a){
 
 /* Total portfolio in display currency */
 function totalVal(){return P.assets.reduce((s,a)=>s+assetVal(a),0);}
-
-/* Total invested in display currency (cost entered in USD) */
-function investedVal(){
-  const usdTotal=P.assets.reduce((s,a)=>s+(a.cost*a.qty),0);
-  return CCY==='AUD' ? usdTotal*(AUDRT||1.58) : usdTotal;
-}
 
 /* 24h change in display currency */
 function change24(){
@@ -515,15 +528,33 @@ function setCurrency(c){
 }
 
 async function fetchAUDRate(){
+  // Try open.er-api.com first (reliable, free, no key)
+  try{
+    const r=await fetch('https://open.er-api.com/v6/latest/USD',{signal:AbortSignal.timeout(7000)});
+    if(r.ok){
+      const d=await r.json();
+      if(d.rates?.AUD){
+        AUDRT=d.rates.AUD;
+        document.getElementById('fxRate').textContent=`1 USD = ${AUDRT.toFixed(4)} AUD`;
+        return;
+      }
+    }
+  }catch(e){}
+  // Fallback: Frankfurter
   try{
     const r=await fetch('https://api.frankfurter.app/latest?from=USD&to=AUD',{signal:AbortSignal.timeout(7000)});
-    const d=await r.json();
-    AUDRT=d.rates.AUD;
-    document.getElementById('fxRate').textContent=`1 USD = ${AUDRT.toFixed(4)} AUD`;
-  }catch(e){
-    AUDRT=1.58;
-    document.getElementById('fxRate').textContent='Rate estimated';
-  }
+    if(r.ok){
+      const d=await r.json();
+      if(d.rates?.AUD){
+        AUDRT=d.rates.AUD;
+        document.getElementById('fxRate').textContent=`1 USD = ${AUDRT.toFixed(4)} AUD`;
+        return;
+      }
+    }
+  }catch(e){}
+  // Last resort hardcoded estimate
+  AUDRT=1.57;
+  document.getElementById('fxRate').textContent='~1 USD = 1.5700 AUD (est.)';
 }
 
 /* ═══════════════════════════════════════════════════
@@ -585,6 +616,9 @@ async function fetchDex(a){
   if(!d.pairs?.length) throw new Error('No pairs');
   const pair=d.pairs.sort((x,y)=>(y.liquidity?.usd||0)-(x.liquidity?.usd||0))[0];
   const price=parseFloat(pair.priceUsd)||0;
+  // Grab logo if DexScreener provides one
+  const logoUrl=pair.info?.imageUrl||pair.baseToken?.info?.imageUrl||null;
+  if(logoUrl&&!LOGOS[a.id]) LOGOS[a.id]=logoUrl;
   // No native AUD price available from DexScreener — will be converted
   return{price,priceAud:null,ch24:pair.priceChange?.h24||0,
     mcap:pair.marketCap||pair.fdv||0,source:'DexScreener'};
@@ -593,6 +627,8 @@ async function fetchDex(a){
 /* ── CoinGecko: fetches BOTH USD and native AUD prices ── */
 async function fetchCoinGecko(a){
   const id=a.cgId;
+  // Set logo from defaults if not already set
+  if(!LOGOS[a.id]&&LOGO_DEFAULTS[a.id]) LOGOS[a.id]=LOGO_DEFAULTS[a.id];
   const url=`https://api.coingecko.com/api/v3/simple/price?ids=${id}`+
     `&vs_currencies=usd,aud&include_24hr_change=true&include_market_cap=true`;
   const r=await fetch(url,{signal:AbortSignal.timeout(12000)});
@@ -621,12 +657,23 @@ async function fetchStock(a){
 
 async function tryFinnhub(ticker){
   try{
-    const url=`https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${FINNHUB_KEY}`;
-    const r=await fetch(url,{signal:AbortSignal.timeout(8000)});
-    if(!r.ok) return null;
-    const d=await r.json();
-    // d.c = current price, d.pc = previous close, d.dp = % change
+    // Fetch quote and profile in parallel
+    const [qr,pr]=await Promise.allSettled([
+      fetch(`https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${FINNHUB_KEY}`,{signal:AbortSignal.timeout(8000)}),
+      fetch(`https://finnhub.io/api/v1/stock/profile2?symbol=${ticker}&token=${FINNHUB_KEY}`,{signal:AbortSignal.timeout(8000)})
+    ]);
+    // Parse quote
+    if(qr.status!=='fulfilled'||!qr.value.ok) return null;
+    const d=await qr.value.json();
     if(!d||!d.c||d.c<=0) return null;
+    // Extract logo from profile if available
+    const assetId=P.assets.find(a=>a.ticker===ticker)?.id;
+    if(assetId&&pr.status==='fulfilled'&&pr.value.ok){
+      try{
+        const prof=await pr.value.json();
+        if(prof?.logo) LOGOS[assetId]=prof.logo;
+      }catch(e){}
+    }
     return{
       price:   d.c,
       priceAud:null,
@@ -683,14 +730,55 @@ function recordHistory(){
 /* ═══════════════════════════════════════════════════
    RENDER
 ═══════════════════════════════════════════════════ */
-function renderAll(){renderMetrics();renderTable();renderPie();renderLine();
+/* Total portfolio value always in AUD (for milestones) */
+function totalValAUD(){
+  return P.assets.reduce((s,a)=>{
+    const px=PX[a.id];
+    if(!px||px.failed||px.price===null) return s;
+    const audP=px.priceAud!=null?px.priceAud:px.price*(AUDRT||1.57);
+    return s+a.qty*audP;
+  },0);
+}
+
+function renderAll(){renderMetrics();renderMilestones();renderTable();renderPie();renderLine();
   document.getElementById('lastUpd').textContent='Updated '+new Date().toLocaleTimeString();
   document.getElementById('tblNote').style.display=CCY==='AUD'?'block':'none';
 }
 
+function renderMilestones(){
+  const audTotal=totalValAUD();
+  const el=document.getElementById('milestoneGrid');
+  if(!el) return;
+  // Format as A$5K, A$10K etc
+  function fmtMs(v){return v>=1000?'A$'+(v/1000).toFixed(0)+'K':'A$'+v;}
+  el.innerHTML=MILESTONES_AUD.map(ms=>{
+    const done=audTotal>=ms;
+    const isNext=!done&&MILESTONES_AUD.filter(m=>m<ms).every(m=>audTotal>=m);
+    const cls=done?'ms-done':isNext?'ms-active':'ms-future';
+    let inner='';
+    if(done){
+      inner=`<div class="ms-check">✓</div>
+        <div class="ms-lbl">Reached</div>
+        <div class="ms-amt">${fmtMs(ms)}</div>
+        <div class="ms-sub">Goal achieved 🎉</div>`;
+    } else if(isNext){
+      const pct=Math.min(100,(audTotal/ms)*100);
+      const rem=ms-audTotal;
+      inner=`<div class="ms-lbl">Next milestone</div>
+        <div class="ms-amt">${fmtMs(ms)}</div>
+        <div class="ms-sub">A$${rem.toLocaleString('en-AU',{maximumFractionDigits:0})} to go</div>
+        <div class="ms-bar"><div class="ms-bar-fill" style="width:${pct.toFixed(1)}%"></div></div>`;
+    } else {
+      inner=`<div class="ms-lbl">Future goal</div>
+        <div class="ms-amt">${fmtMs(ms)}</div>
+        <div class="ms-sub">&nbsp;</div>`;
+    }
+    return`<div class="ms-card ${cls}">${inner}</div>`;
+  }).join('');
+}
+
 function renderMetrics(){
-  const total=totalVal(),inv=investedVal();
-  const pnl=total-inv,pnlPct=inv>0?(pnl/inv*100):0;
+  const total=totalVal();
   const ch=change24();
   const anyConv=CCY==='AUD'&&P.assets.some(a=>PX[a.id]&&!PX[a.id].failed&&isConv(PX[a.id]));
 
@@ -702,14 +790,6 @@ function renderMetrics(){
     setH('mv-chg-s',(ch.pct>=0?'▲ +':'▼ ')+fmtPct(Math.abs(ch.pct))+' today');
     setC('mv-chg','metric-val',ch.$>=0?'pos':'neg');
   }else{setH('mv-chg','—');setH('mv-chg-s','Awaiting data');setC('mv-chg','metric-val','');}
-
-  setH('mv-inv',inv>0?fmtV(inv,CCY==='AUD'):'—');
-
-  if(inv>0){
-    setH('mv-pnl',(pnl>=0?'+':'')+fmtV(pnl,anyConv));
-    setH('mv-pnl-s',(pnl>=0?'▲ +':'▼ ')+fmtPct(Math.abs(pnlPct)));
-    setC('mv-pnl','metric-val',pnl>=0?'pos':'neg');
-  }else{setH('mv-pnl','—');setH('mv-pnl-s','Set avg cost to track');setC('mv-pnl','metric-val','');}
 
   setH('mv-cnt',P.assets.length.toString());
 }
@@ -727,6 +807,12 @@ function renderTable(){
     const tc=a.type==='solana_token'?'tag-sol':a.type==='crypto'?'tag-cry':'tag-stk';
     const tl=a.type==='solana_token'?'SOL':a.type==='crypto'?'CRYPTO':'STOCK';
 
+    // Logo: use image if available, else fallback to first letter
+    const logoUrl=LOGOS[a.id];
+    const orbInner=logoUrl
+      ?`<img src="${logoUrl}" alt="${a.sym}" onerror="this.style.display='none';this.insertAdjacentText('afterend','${a.sym[0]}')">`
+      :a.sym[0];
+
     let priceCell;
     if(!px)              priceCell=`<span class="txt-load">loading…</span>`;
     else if(px.failed)   priceCell=`<span class="txt-err" onclick="openSettings()" title="Open Settings → set a manual price">Set manual ↗</span>`;
@@ -737,19 +823,10 @@ function renderTable(){
       :`<span class="chip ${px.ch24>=0?'pos':'neg'}">${px.ch24>=0?'▲ +':'▼ '}${fmtPct(Math.abs(px.ch24))}</span>`;
 
     const valCell=val>0?`<strong class="mono">${fmtV(val,conv)}</strong>`:`<span class="dim">—</span>`;
-    const costCell=a.cost>0?fmtP(CCY==='AUD'?a.cost*(AUDRT||1.58):a.cost,CCY==='AUD'&&a.cost>0):`<span class="dim">—</span>`;
-
-    // P&L — cost stored in USD, compare against display-currency value
-    let pnlCell=`<span class="dim">—</span>`;
-    if(a.cost>0&&px&&!px.failed&&p!=null){
-      const costDisp=CCY==='AUD'?a.cost*(AUDRT||1.58):a.cost;
-      const pl=val-costDisp*a.qty, plPct=pl/(costDisp*a.qty)*100;
-      pnlCell=`<span class="chip ${pl>=0?'pos':'neg'}">${pl>=0?'+':''}${fmtV(pl,conv)}<br><small>${plPct>=0?'+':''}${fmtPct(plPct)}</small></span>`;
-    }
 
     return`<tr>
       <td><div class="a-cell">
-        <div class="a-orb" style="background:${a.color}18;color:${a.color}">${a.sym[0]}</div>
+        <div class="a-orb" style="background:${a.color}18;color:${a.color}">${orbInner}</div>
         <div>
           <div class="a-sym">$${a.sym}<span class="tag ${tc}">${tl}</span></div>
           <div class="a-full">${a.name}</div>
@@ -759,8 +836,6 @@ function renderTable(){
       <td>${chgCell}</td>
       <td class="hide-sm mono dim">${fmtQty(a.qty)}</td>
       <td>${valCell}</td>
-      <td class="hide-sm">${costCell}</td>
-      <td class="hide-sm">${pnlCell}</td>
       <td><div class="alloc-cell">
         <span class="alloc-pct" style="color:${a.color}">${alloc>0?alloc.toFixed(1)+'%':'—'}</span>
         <div class="alloc-bar"><div class="alloc-fill" style="width:${alloc}%;background:${a.color}"></div></div>
@@ -866,12 +941,10 @@ function buildSettings(){
         </div>
         <button class="s-del" onclick="removeAsset('${a.id}')">✕ Remove</button>
       </div>
-      <div class="three">
+      <div class="two">
         <div class="fg" style="margin:0"><label>Quantity</label>
           <input type="number" value="${a.qty}" step="any" onchange="updateA('${a.id}','qty',this.value)"/></div>
-        <div class="fg" style="margin:0"><label>Avg Cost (USD)</label>
-          <input type="number" value="${a.cost}" step="any" placeholder="0.00" onchange="updateA('${a.id}','cost',this.value)"/></div>
-        <div class="fg" style="margin:0"><label>Manual Price USD (0=auto)</label>
+        <div class="fg" style="margin:0"><label>Manual Price USD (0=live)</label>
           <input type="number" value="${a.manual||''}" step="any" placeholder="Live" onchange="updateA('${a.id}','manual',this.value)"/></div>
       </div>
     </div>`).join('');
@@ -900,16 +973,15 @@ function addAsset(){
   const name=document.getElementById('n-name').value.trim();
   const type=document.getElementById('n-type').value;
   const qty=parseFloat(document.getElementById('n-qty').value)||0;
-  const cost=parseFloat(document.getElementById('n-cost').value)||0;
   if(!sym_||!name){toast('Symbol and name required','err');return;}
   const id=sym_.toLowerCase()+'_'+Date.now();
   const color=PAL[P.assets.length%PAL.length];
-  const a={id,name,sym:sym_,type,qty,cost,manual:null,color};
+  const a={id,name,sym:sym_,type,qty,cost:0,manual:null,color};
   if(type==='solana_token'){const ca=document.getElementById('n-ca').value.trim();if(!ca){toast('CA required','err');return;}a.ca=ca;}
   else if(type==='crypto'){const cg=document.getElementById('n-cgid').value.trim().toLowerCase();if(!cg){toast('CoinGecko ID required','err');return;}a.cgId=cg;}
   else{const tk=document.getElementById('n-ticker').value.trim().toUpperCase();if(!tk){toast('Ticker required','err');return;}a.ticker=tk;}
   P.assets.push(a);saveP();buildSettings();
-  ['n-sym','n-name','n-ca','n-cgid','n-ticker','n-qty','n-cost'].forEach(i=>{const e=document.getElementById(i);if(e)e.value='';});
+  ['n-sym','n-name','n-ca','n-cgid','n-ticker','n-qty'].forEach(i=>{const e=document.getElementById(i);if(e)e.value='';});
   toast('$'+sym_+' added — fetching price…','ok');doRefresh();
 }
 function clearHist(){
