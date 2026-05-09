@@ -193,6 +193,39 @@ tbody tr{transition:background .1s}tbody tr:hover{background:var(--hover)}
 .chart-legend{display:flex;align-items:center;gap:12px;flex-wrap:wrap;
   margin-top:6px;font-size:10px;color:var(--t3);}
 .chart-legend span{display:inline-flex;align-items:center;gap:4px;}
+/* Burn tracker */
+.burn-wrap{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:11px;margin-bottom:22px;}
+.burn-card{background:var(--surface);border-radius:var(--r3);box-shadow:var(--s1);
+  border:1px solid var(--blt);padding:15px 17px;position:relative;overflow:hidden;}
+.burn-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,#ff6b35,#ff4500);}
+.burn-hd{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.burn-orb{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;
+  justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;overflow:hidden;}
+.burn-orb img{width:20px;height:20px;object-fit:contain;border-radius:3px;}
+.burn-sym{font-weight:700;font-size:13.5px;letter-spacing:-.2px;color:var(--t1)}
+.burn-type{font-size:10px;color:var(--t3);margin-top:1px;}
+.burn-ico{font-size:18px;margin-left:auto;opacity:.6;line-height:1;}
+.burn-row{display:flex;align-items:baseline;justify-content:space-between;
+  margin-bottom:3px;}
+.burn-lbl{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;}
+.burn-val{font-size:18px;font-weight:700;color:var(--t1);letter-spacing:-.4px;
+  font-variant-numeric:tabular-nums;}
+.burn-sub{font-size:11px;color:var(--t3);margin-top:1px;}
+.burn-24h{display:inline-flex;align-items:center;gap:5px;margin-top:6px;
+  padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;}
+.burn-24h.burning{background:rgba(190,32,48,.09);color:var(--neg);}
+.burn-24h.minting{background:rgba(20,121,74,.09);color:var(--pos);}
+.burn-24h.flat{background:var(--raised);color:var(--t3);}
+.burn-progress-wrap{margin-top:10px;}
+.burn-progress-lbl{display:flex;justify-content:space-between;
+  font-size:9.5px;color:var(--t4);margin-bottom:3px;}
+.burn-progress-bar{height:3px;background:var(--b);border-radius:2px;overflow:hidden;}
+.burn-progress-fill{height:100%;border-radius:2px;
+  background:linear-gradient(90deg,#ff6b35,#f7931a);transition:width .8s;}
+.burn-loading{color:var(--t3);font-size:11px;font-style:italic;padding:6px 0;}
+.burn-err{color:var(--neg);font-size:11px;}
 .whatif-card{background:var(--surface);border-radius:var(--r3);box-shadow:var(--s1);
   border:1px solid var(--blt);padding:17px 19px;margin-bottom:22px;}
 .whatif-hd{display:flex;align-items:baseline;gap:8px;margin-bottom:13px;}
@@ -375,6 +408,15 @@ footer a{color:var(--navy);text-decoration:none;font-weight:600}
     </div>
   </div>
 
+  <div class="sec-head">
+    <div class="sec-lbl">🔥 Deflationary Supply</div>
+    <div class="sec-lbl" id="supplyUpdLbl" style="font-weight:400;letter-spacing:0">—</div>
+  </div>
+  <div class="burn-wrap" id="burnTracker">
+    <div class="burn-card"><div class="burn-loading">Fetching supply data…</div></div>
+    <div class="burn-card"><div class="burn-loading">Fetching supply data…</div></div>
+  </div>
+
   <div class="charts">
     <div class="chart-card">
       <div class="chart-title">Allocation</div>
@@ -495,8 +537,7 @@ const PAL = ['#a87016','#14794a','#235fa0','#5e38b8','#be2030',
              '#c8880e','#0e7a6e','#b83870','#1e6eb8','#7a4e10'];
 const MILESTONES_AUD   = [5000,10000,20000,30000,40000,50000,100000];
 const LOGO_DEFAULTS    = {
-  xrp:'https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png',
-  btc:'https://assets.coingecko.com/coins/images/1/small/bitcoin.png'
+  xrp:'https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png'
 };
 const FINNHUB_KEY      = 'd7ulad9r01qnv95o1ihgd7ulad9r01qnv95o1ii0';
 const REFRESH_SECS     = 60;
@@ -506,12 +547,11 @@ const SIGNAL_THRESHOLD = 5;
 const SIGNAL_GAP       = 3;
 
 const DEFAULTS = {
-  v:9,
+  v:10,
   assets:[
     {id:'pigeon',name:'Pigeon',          sym:'PIGEON',type:'solana_token',ca:'4fSWEw2wbYEUCcMtitzmeGUfqinoafXxkhqZrA9Gpump',qty:989934,    manual:null,color:'#5e38b8'},
     {id:'income',name:'Income',           sym:'INCOME',type:'solana_token',ca:'5QmbJw7mM6tcCdXVy8ftc2bu8izded7Etc57TMA2pump',qty:249497.79, manual:null,color:'#14794a'},
-    {id:'xrp',   name:'XRP',              sym:'XRP',   type:'crypto',      cgId:'ripple',  qty:500,    manual:null,color:'#235fa0'},
-    {id:'btc',   name:'Bitcoin',          sym:'BTC',   type:'crypto',      cgId:'bitcoin', qty:0.0022, manual:null,color:'#f7931a'},
+    {id:'xrp',   name:'XRP',              sym:'XRP',   type:'crypto',      cgId:'ripple',  qty:618.48, manual:null,color:'#235fa0'},
     {id:'iren',  name:'Iris Energy',      sym:'IREN',  type:'stock',       ticker:'IREN',  qty:9.05,   manual:null,color:'#a87016'},
     {id:'mara',  name:'Marathon Digital', sym:'MARA',  type:'stock',       ticker:'MARA',  qty:37.21,  manual:null,color:'#be2030'},
   ],
@@ -524,6 +564,7 @@ const DEFAULTS = {
 let P      = loadP();
 let PX     = {};
 let SPK    = {};
+let SUP    = {};  // supply data: { [assetId]: { supply, decimals, status } }
 let WIF    = {};
 let LOGOS  = {};
 let CCY    = 'USD';
@@ -536,21 +577,25 @@ let CD_LEFT= REFRESH_SECS;
 
 function loadP(){
   try{
-    const r=localStorage.getItem('ptv9');
+    const r=localStorage.getItem('ptv10');
     if(r){
       const d=JSON.parse(r);
       if(!d.history) d.history=[];
-      if(!d.assets.find(a=>a.id==='btc')){
-        const xi=d.assets.findIndex(a=>a.id==='xrp');
-        d.assets.splice(xi>=0?xi+1:d.assets.length,0,
-          {id:'btc',name:'Bitcoin',sym:'BTC',type:'crypto',cgId:'bitcoin',qty:0.0022,manual:null,color:'#f7931a'});
-      }
+      // Remove BTC (no longer held)
+      d.assets=d.assets.filter(a=>a.id!=='btc');
+      // Remove legacy supplySnaps
+      delete d.supplySnaps;
+      // Update XRP qty if it hasn't been manually changed to the new amount
+      const xrpA=d.assets.find(a=>a.id==='xrp');
+      if(xrpA&&xrpA.qty===500) xrpA.qty=618.48;
+      // Bump version
+      d.v=10;
       return d;
     }
   }catch(e){}
   return JSON.parse(JSON.stringify(DEFAULTS));
 }
-function saveP(){try{localStorage.setItem('ptv9',JSON.stringify(P));}catch(e){}}
+function saveP(){try{localStorage.setItem('ptv10',JSON.stringify(P));}catch(e){}}
 
 /* ═══════════════════════════════════════════════════
    DARK MODE
@@ -882,6 +927,7 @@ async function fetchAllPrices(){
     }
   });
   fetchSparklines().then(()=>renderTable());
+  fetchTokenSupplies().then(()=>renderBurnTracker());
   if(anyOk){
     recordHistory();
     setStatus('ok','Updated '+new Date().toLocaleTimeString());
@@ -1035,6 +1081,99 @@ function recordHistory(){
   else P.history.push(entry);
   if(P.history.length>2016) P.history=P.history.slice(-2016);
   saveP();
+}
+
+/* ═══════════════════════════════════════════════════
+   TOKEN SUPPLY  (Solana RPC — deflationary tracker)
+═══════════════════════════════════════════════════ */
+const SOL_RPC_ENDPOINTS = [
+  'https://api.mainnet-beta.solana.com',
+  'https://solana-api.projectserum.com'
+];
+
+async function solRpcCall(method, params, endpointIdx=0){
+  if(endpointIdx >= SOL_RPC_ENDPOINTS.length) throw new Error('All RPC endpoints failed');
+  try{
+    const r=await fetch(SOL_RPC_ENDPOINTS[endpointIdx],{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({jsonrpc:'2.0',id:1,method,params}),
+      signal:AbortSignal.timeout(12000)
+    });
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    if(d.error) throw new Error(d.error.message||'RPC error');
+    return d.result;
+  }catch(e){
+    return solRpcCall(method,params,endpointIdx+1);
+  }
+}
+
+async function fetchTokenSupplies(){
+  const solTokens=P.assets.filter(a=>a.type==='solana_token'&&a.ca);
+  if(!solTokens.length) return;
+  await Promise.allSettled(solTokens.map(async a=>{
+    try{
+      const result=await solRpcCall('getTokenSupply',[a.ca]);
+      if(result&&result.value){
+        SUP[a.id]={supply:result.value.uiAmount,status:'ok',ts:Date.now()};
+      }
+    }catch(e){
+      if(!SUP[a.id]) SUP[a.id]={status:'fail',supply:null,ts:Date.now()};
+    }
+  }));
+}
+
+function fmtSupply(n){
+  if(n==null||isNaN(n)) return '—';
+  if(n>=1e9)  return (n/1e9).toLocaleString('en-AU',{minimumFractionDigits:3,maximumFractionDigits:3})+'B';
+  if(n>=1e6)  return (n/1e6).toLocaleString('en-AU',{minimumFractionDigits:3,maximumFractionDigits:3})+'M';
+  if(n>=1e3)  return (n/1e3).toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})+'K';
+  return n.toLocaleString('en-AU',{maximumFractionDigits:2});
+}
+
+function renderBurnTracker(){
+  const el=document.getElementById('burnTracker');
+  const updLbl=document.getElementById('supplyUpdLbl');
+  if(!el) return;
+
+  const solTokens=P.assets.filter(a=>a.type==='solana_token'&&a.ca);
+  if(!solTokens.length){el.innerHTML='';return;}
+
+  const anyOk=solTokens.some(a=>SUP[a.id]?.status==='ok');
+  if(updLbl) updLbl.textContent=anyOk?'Updated '+new Date().toLocaleTimeString():'Fetching…';
+
+  el.innerHTML=solTokens.map(a=>{
+    const sup=SUP[a.id];
+    const logo=LOGOS[a.id];
+    const orb=logo
+      ?`<img src="${logo}" alt="${a.sym[0]}" onerror="this.style.display='none';this.insertAdjacentText('afterend','${a.sym[0]}')">`
+      :a.sym[0];
+
+    const cur=sup?.supply;
+    const loading=!sup;
+    const failed=sup?.status==='fail';
+
+    const supplyLine = loading
+      ? `<div class="burn-loading">Fetching from Solana RPC…</div>`
+      : failed
+        ? `<div class="burn-err">Unable to fetch supply — retrying next refresh</div>`
+        : `<div class="burn-val">${fmtSupply(cur)}</div>
+           <div class="burn-sub">Your ${fmtQty(a.qty)} = ${cur>0?(a.qty/cur*100).toFixed(4)+'% of supply':'—'}</div>`;
+
+    return`<div class="burn-card">
+      <div class="burn-hd">
+        <div class="burn-orb" style="background:${a.color}18;color:${a.color}">${orb}</div>
+        <div>
+          <div class="burn-sym">$${a.sym}</div>
+          <div class="burn-type">Deflationary · Solana SPL</div>
+        </div>
+        <div class="burn-ico">🔥</div>
+      </div>
+      <div class="burn-lbl" style="margin-bottom:4px">Circulating Supply</div>
+      ${supplyLine}
+    </div>`;
+  }).join('');
 }
 
 /* ═══════════════════════════════════════════════════
