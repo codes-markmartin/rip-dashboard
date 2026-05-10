@@ -477,6 +477,15 @@ footer a{color:var(--navy);text-decoration:none;font-weight:600}
     </div>
   </div>
 
+  <div class="chart-card" style="margin-bottom:22px;">
+    <div class="chart-title">Asset Allocation — Weight Over Time</div>
+    <canvas id="allocChart" style="display:none"></canvas>
+    <div class="no-hist" id="noAllocHist">
+      <div class="ico">📊</div>
+      <div>Allocation history builds over time — check back after a few refreshes.</div>
+    </div>
+  </div>
+
   <div class="whatif-card">
     <div class="whatif-hd">
       <span class="whatif-hd-title">🔮 What-If Calculator</span>
@@ -641,7 +650,7 @@ let LOGOS  = {};
 let CCY    = 'USD';
 let AUDRT  = null;
 let DARK   = false;
-let CHARTS = {pie:null,line:null};
+let CHARTS = {pie:null,line:null,alloc:null};
 let RT     = null;
 let CD_IV  = null;
 let CD_LEFT= REFRESH_SECS;
@@ -1158,44 +1167,22 @@ function recordHistory(){
 }
 
 /* ═══════════════════════════════════════════════════
-   TOKEN SUPPLY  (Solana RPC — deflationary tracker)
+   TOKEN SUPPLY  (derived from DexScreener marketCap)
+   marketCap / price = circulating supply — no extra
+   API call needed since we already have both values.
 ═══════════════════════════════════════════════════ */
-const SOL_RPC_ENDPOINTS = [
-  'https://api.mainnet-beta.solana.com',
-  'https://solana-api.projectserum.com'
-];
-
-async function solRpcCall(method, params, endpointIdx=0){
-  if(endpointIdx >= SOL_RPC_ENDPOINTS.length) throw new Error('All RPC endpoints failed');
-  try{
-    const r=await fetch(SOL_RPC_ENDPOINTS[endpointIdx],{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({jsonrpc:'2.0',id:1,method,params}),
-      signal:AbortSignal.timeout(12000)
-    });
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    const d=await r.json();
-    if(d.error) throw new Error(d.error.message||'RPC error');
-    return d.result;
-  }catch(e){
-    return solRpcCall(method,params,endpointIdx+1);
-  }
-}
-
-async function fetchTokenSupplies(){
+function fetchTokenSupplies(){
+  // Synchronous — uses PX data already fetched by fetchAllPrices()
   const solTokens=P.assets.filter(a=>a.type==='solana_token'&&a.ca);
-  if(!solTokens.length) return;
-  await Promise.allSettled(solTokens.map(async a=>{
-    try{
-      const result=await solRpcCall('getTokenSupply',[a.ca]);
-      if(result&&result.value){
-        SUP[a.id]={supply:result.value.uiAmount,status:'ok',ts:Date.now()};
-      }
-    }catch(e){
-      if(!SUP[a.id]) SUP[a.id]={status:'fail',supply:null,ts:Date.now()};
+  solTokens.forEach(a=>{
+    const px=PX[a.id];
+    if(px&&!px.failed&&px.price>0&&px.mcap>0){
+      SUP[a.id]={supply:px.mcap/px.price, status:'ok', ts:Date.now()};
+    } else {
+      SUP[a.id]={supply:null, status:'fail', ts:Date.now()};
     }
-  }));
+  });
+  return Promise.resolve(); // keep async interface consistent
 }
 
 function fmtSupply(n){
@@ -1311,6 +1298,7 @@ function renderAll(){
   renderTable();
   renderPie();
   renderLine();
+  renderAllocChart();
   buildWifGrid();
   document.getElementById('lastUpd').textContent='Updated '+new Date().toLocaleTimeString();
   document.getElementById('tblNote').style.display=CCY==='AUD'?'block':'none';
@@ -1553,6 +1541,88 @@ function renderLine(){
       scales:{
         x:{display:slice.length<=60,ticks:{color:tc,maxTicksLimit:7,font:{size:10}},grid:{color:gc}},
         y:{ticks:{color:tc,callback:v=>sym()+Math.round(v).toLocaleString('en-AU'),font:{size:10.5}},grid:{color:gc}}
+      }
+    }
+  });
+}
+
+function renderAllocChart(){
+  const hist=P.history;
+  const noH=document.getElementById('noAllocHist');
+  const ctx=document.getElementById('allocChart');
+  const slice=hist.slice(-144); // last ~12h at 5-min intervals
+
+  if(slice.length<2){
+    if(noH) noH.style.display='flex';
+    if(ctx) ctx.style.display='none';
+    if(CHARTS.alloc){CHARTS.alloc.destroy();CHARTS.alloc=null;}
+    return;
+  }
+  if(noH) noH.style.display='none';
+  if(ctx) ctx.style.display='block';
+
+  const labels=slice.map(e=>{
+    const d=new Date(e.ts);
+    return d.toLocaleDateString('en-AU',{month:'short',day:'numeric'})+
+      ' '+d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  });
+
+  const datasets=P.assets.map(a=>{
+    const data=slice.map(e=>{
+      // Need per-asset price snapshot (av) to compute allocation at that point in time
+      if(!e.av||e.av[a.id]==null||e.usd<=0) return null;
+      const val=a.qty*e.av[a.id];
+      return+(val/e.usd*100).toFixed(2);
+    });
+    // Skip assets that have no data at all across the slice
+    if(data.every(v=>v===null)) return null;
+    return{
+      label:'$'+a.sym,
+      data,
+      borderColor:a.color,
+      backgroundColor:'transparent',
+      borderWidth:1.8,
+      tension:0.3,
+      pointRadius:slice.length>40?0:2,
+      pointHoverRadius:4,
+      spanGaps:false
+    };
+  }).filter(Boolean);
+
+  const tc=cc('#7d93a8','#6e7681');
+  const gc=DARK?'rgba(255,255,255,.04)':'rgba(0,0,0,.04)';
+
+  if(CHARTS.alloc) CHARTS.alloc.destroy();
+  CHARTS.alloc=new Chart(ctx,{
+    type:'line',
+    data:{labels,datasets},
+    options:{
+      responsive:true,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{
+          display:true,
+          position:'bottom',
+          labels:{color:tc,font:{size:10},padding:12,boxWidth:12,usePointStyle:true,pointStyle:'line'}
+        },
+        tooltip:{
+          callbacks:{
+            label:c=>` ${c.dataset.label}: ${c.parsed.y!=null?c.parsed.y.toFixed(1)+'%':'—'}`
+          }
+        }
+      },
+      scales:{
+        x:{
+          display:slice.length<=60,
+          ticks:{color:tc,maxTicksLimit:7,font:{size:10}},
+          grid:{color:gc}
+        },
+        y:{
+          min:0,
+          suggestedMax:100,
+          ticks:{color:tc,callback:v=>v+'%',font:{size:10.5}},
+          grid:{color:gc}
+        }
       }
     }
   });
