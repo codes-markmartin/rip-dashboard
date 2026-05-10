@@ -82,6 +82,36 @@ nav{background:var(--surface);border-bottom:1px solid var(--b);height:52px;
 .btn.primary:hover{background:var(--navy2)}
 .cd-bar-wrap{position:absolute;bottom:0;left:0;right:0;height:2px;pointer-events:none;}
 .cd-bar{height:100%;background:var(--gold);opacity:.5;transition:width 1s linear;}
+/* Cloud sync indicator */
+.sync-pill{display:flex;align-items:center;gap:5px;font-size:10.5px;color:var(--t3);
+  padding:3px 8px;border-radius:12px;border:1px solid var(--blt);background:var(--raised);
+  cursor:default;white-space:nowrap;}
+.sync-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;background:var(--t4);}
+.sync-dot.synced{background:var(--pos);animation:breathe 3s ease-in-out infinite;}
+.sync-dot.syncing{background:var(--goldl);animation:breathe 1s ease-in-out infinite;}
+.sync-dot.err{background:var(--neg);animation:none;}
+.sync-dot.off{background:var(--t4);animation:none;}
+/* Cloud sync settings section */
+.sync-section{background:var(--raised);border:1px solid var(--b);border-radius:var(--r2);
+  padding:13px 14px;margin-bottom:12px;}
+.sync-section-hd{display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:2px;}
+.sync-hd-title{font-size:11px;font-weight:700;color:var(--t1);}
+.sync-hd-badge{font-size:9px;padding:1px 6px;border-radius:8px;font-weight:700;
+  background:rgba(20,121,74,.1);color:var(--pos);}
+.sync-desc{font-size:11px;color:var(--t3);margin-bottom:10px;line-height:1.5;}
+.sync-steps{list-style:none;padding:0;margin:0 0 12px 0;
+  display:flex;flex-direction:column;gap:5px;}
+.sync-steps li{display:flex;gap:8px;font-size:11px;color:var(--t2);line-height:1.4;}
+.sync-steps li .step-n{width:17px;height:17px;border-radius:50%;background:var(--navy);
+  color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;
+  justify-content:center;flex-shrink:0;margin-top:1px;}
+.sync-steps li a{color:var(--navy);font-weight:600;}
+.sync-status-row{display:flex;align-items:center;gap:6px;margin-top:8px;
+  font-size:10.5px;color:var(--t3);}
+.secret-row{display:flex;gap:6px;align-items:center;}
+.secret-row input{flex:1;}
+.copy-btn{padding:5px 9px;font-size:11px;white-space:nowrap;flex-shrink:0;}
 main{max-width:1380px;margin:0 auto;padding:22px 20px}
 .metrics{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
   gap:11px;margin-bottom:22px;}
@@ -345,6 +375,10 @@ footer a{color:var(--navy);text-decoration:none;font-weight:600}
     <div class="dot" id="sDot"></div>
     <span id="sTxt">Loading…</span>
   </div>
+  <div class="sync-pill hide-sm" id="syncPill" title="Cloud sync status">
+    <div class="sync-dot off" id="syncDot"></div>
+    <span id="syncTxt">No sync</span>
+  </div>
   <button class="btn-icon" id="refreshBtn" onclick="doRefresh()" title="Refresh prices">↻</button>
   <button class="btn-icon" id="darkBtn" title="Toggle dark mode" onclick="toggleDark()">🌙</button>
   <button class="btn-icon" title="Settings" onclick="openSettings()">⚙</button>
@@ -518,6 +552,46 @@ footer a{color:var(--navy);text-decoration:none;font-weight:600}
         <button class="btn primary" style="width:100%;justify-content:center" onclick="addAsset()">+ Add Asset</button>
       </div>
       <div class="divider"></div>
+
+      <!-- ☁ Cloud Sync -->
+      <div class="sync-section">
+        <div class="sync-section-hd">
+          <span class="sync-hd-title">☁ Cloud Sync</span>
+          <span class="sync-hd-badge">FREE</span>
+        </div>
+        <p class="sync-desc" style="margin-top:5px">
+          Sync your portfolio across all devices using Firebase's free database.
+          One-time 3-minute setup — no credit card required.
+        </p>
+        <ol class="sync-steps">
+          <li><span class="step-n">1</span><span>Go to <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> → <strong>Add project</strong> → skip Analytics → Create</span></li>
+          <li><span class="step-n">2</span><span>In the left menu: <strong>Build → Realtime Database → Create database</strong> → choose any location → <strong>Start in test mode</strong> → Done</span></li>
+          <li><span class="step-n">3</span><span>Copy the Database URL (looks like <code style="font-size:10px;background:var(--b);padding:1px 4px;border-radius:3px">https://my-project-default-rtdb.firebaseio.com</code>) and paste it below</span></li>
+        </ol>
+        <div class="fg" style="margin-bottom:8px">
+          <label>Firebase Database URL</label>
+          <input type="url" id="syncUrlIn" placeholder="https://my-project-default-rtdb.firebaseio.com"
+            value="" oninput="syncUrlChanged()"/>
+        </div>
+        <div class="fg" style="margin-bottom:10px">
+          <label>Secret Key <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--t3)">(auto-generated — keep it private, same on all devices)</span></label>
+          <div class="secret-row">
+            <input type="text" id="syncSecretIn" placeholder="auto-generated" readonly/>
+            <button class="btn copy-btn" onclick="copySecret()">Copy</button>
+            <button class="btn copy-btn" onclick="genSecret()" title="Regenerate (will break existing synced data)">↺ New</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap">
+          <button class="btn primary" onclick="saveSyncConfig()">Save & Connect</button>
+          <button class="btn" onclick="testSync()">Test Connection</button>
+          <button class="btn" style="color:var(--neg)" onclick="clearSyncConfig()">Disconnect</button>
+        </div>
+        <div class="sync-status-row" id="syncStatusRow" style="display:none">
+          <div class="sync-dot" id="syncModalDot"></div>
+          <span id="syncModalTxt"></span>
+        </div>
+      </div>
+
       <div style="display:flex;justify-content:space-between">
         <button class="btn" onclick="clearHist()">Clear History</button>
         <button class="btn primary" onclick="closeSettings()">Done</button>
@@ -595,7 +669,10 @@ function loadP(){
   }catch(e){}
   return JSON.parse(JSON.stringify(DEFAULTS));
 }
-function saveP(){try{localStorage.setItem('ptv10',JSON.stringify(P));}catch(e){}}
+function saveP(){
+  try{ localStorage.setItem('ptv10',JSON.stringify(P)); }catch(e){}
+  if(hasSyncConfig()) schedulePush();
+}
 
 /* ═══════════════════════════════════════════════════
    DARK MODE
@@ -1508,7 +1585,7 @@ function checkPw(){
     document.getElementById('pwIn').focus();
   }
 }
-function buildSettings(){
+function buildSettings(){ buildSyncUI();
   document.getElementById('sAssets').innerHTML=P.assets.map(a=>`
     <div class="s-row">
       <div class="s-row-hd">
@@ -1587,11 +1664,193 @@ function toast(msg,type='inf'){
 }
 
 /* ═══════════════════════════════════════════════════
+   CLOUD SYNC  (Firebase Realtime Database — REST)
+═══════════════════════════════════════════════════ */
+let SYNC_CFG = loadSyncConfig();
+let SYNC_PUSH_TM = null;   // debounce timer for push
+
+function loadSyncConfig(){
+  try{
+    const r=localStorage.getItem('ptSync');
+    return r ? JSON.parse(r) : {url:'',secret:''};
+  }catch(e){ return {url:'',secret:''}; }
+}
+function saveSyncConfigStore(cfg){
+  try{ localStorage.setItem('ptSync',JSON.stringify(cfg)); }catch(e){}
+}
+function syncEndpoint(){
+  if(!SYNC_CFG.url||!SYNC_CFG.secret) return null;
+  // Trim trailing slash from URL
+  const base=SYNC_CFG.url.replace(/\/+$/,'');
+  return `${base}/portfolio/${SYNC_CFG.secret}.json`;
+}
+function hasSyncConfig(){ return !!(SYNC_CFG.url && SYNC_CFG.secret); }
+
+// Build a POJO with only what needs to sync (no live price data)
+function syncPayload(){
+  return {
+    assets:    P.assets,
+    history:   P.history,
+    v:         P.v,
+    lastMod:   P.lastMod || Date.now()
+  };
+}
+
+async function pushToCloud(silent=false){
+  const ep=syncEndpoint();
+  if(!ep) return;
+  setSyncStatus('syncing','Syncing…');
+  try{
+    P.lastMod = Date.now();
+    const r=await fetch(ep,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(syncPayload()),
+      signal:AbortSignal.timeout(10000)
+    });
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    setSyncStatus('synced','Synced '+new Date().toLocaleTimeString());
+    if(!silent) toast('Portfolio synced to cloud','ok');
+  }catch(e){
+    setSyncStatus('err','Sync failed — check URL');
+    if(!silent) toast('Cloud sync failed: '+e.message,'err');
+  }
+}
+
+async function pullFromCloud(){
+  const ep=syncEndpoint();
+  if(!ep) return false;
+  setSyncStatus('syncing','Checking cloud…');
+  try{
+    const r=await fetch(ep+'?shallow=false',{signal:AbortSignal.timeout(10000)});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    if(!d||!d.assets) { setSyncStatus('synced','Cloud empty — will push on next save'); return false; }
+
+    const cloudMod = d.lastMod || 0;
+    const localMod = P.lastMod || 0;
+
+    if(cloudMod > localMod){
+      // Cloud is newer — use it
+      P.assets  = d.assets;
+      P.history = d.history || [];
+      P.v       = d.v || 10;
+      P.lastMod = cloudMod;
+      saveP();
+      setSyncStatus('synced','Pulled from cloud '+new Date().toLocaleTimeString());
+      toast('Portfolio pulled from cloud — updated to latest version','inf');
+      renderAll();
+      return true;
+    } else {
+      setSyncStatus('synced','Up to date '+new Date().toLocaleTimeString());
+      return false;
+    }
+  }catch(e){
+    setSyncStatus('err','Pull failed — '+e.message);
+    return false;
+  }
+}
+
+function schedulePush(){
+  // Debounce: wait 1.5s after last save before pushing
+  clearTimeout(SYNC_PUSH_TM);
+  SYNC_PUSH_TM=setTimeout(()=>pushToCloud(true), 1500);
+}
+
+function setSyncStatus(state, msg){
+  // Nav pill
+  const dot=document.getElementById('syncDot');
+  const txt=document.getElementById('syncTxt');
+  if(dot){ dot.className='sync-dot '+state; }
+  if(txt){ txt.textContent=msg; }
+  // Modal status row (if open)
+  const row=document.getElementById('syncStatusRow');
+  const mdot=document.getElementById('syncModalDot');
+  const mtxt=document.getElementById('syncModalTxt');
+  if(row){ row.style.display='flex'; }
+  if(mdot){ mdot.className='sync-dot '+state; }
+  if(mtxt){ mtxt.textContent=msg; }
+}
+
+// Settings modal — sync section wiring
+function buildSyncUI(){
+  const urlIn=document.getElementById('syncUrlIn');
+  const secIn=document.getElementById('syncSecretIn');
+  if(urlIn) urlIn.value=SYNC_CFG.url||'';
+  if(secIn){
+    if(!SYNC_CFG.secret){ SYNC_CFG.secret=genUUID(); saveSyncConfigStore(SYNC_CFG); }
+    secIn.value=SYNC_CFG.secret;
+  }
+  // Reflect current status
+  if(!hasSyncConfig()){
+    setSyncStatus('off','Not configured');
+  }
+}
+function syncUrlChanged(){
+  const v=document.getElementById('syncUrlIn')?.value.trim();
+  SYNC_CFG.url=v||'';
+}
+function genUUID(){
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{
+    const r=Math.random()*16|0;return(c==='x'?r:(r&0x3|0x8)).toString(16);});
+}
+function genSecret(){
+  if(!confirm('Regenerate secret key? Any other devices using the old key will need to be updated.')) return;
+  SYNC_CFG.secret=genUUID();
+  saveSyncConfigStore(SYNC_CFG);
+  const secIn=document.getElementById('syncSecretIn');
+  if(secIn) secIn.value=SYNC_CFG.secret;
+  toast('New secret key generated — copy it to your other devices','inf');
+}
+function copySecret(){
+  const s=SYNC_CFG.secret;
+  if(!s) return;
+  navigator.clipboard.writeText(s).then(()=>toast('Secret key copied','ok')).catch(()=>{
+    // Fallback
+    const el=document.getElementById('syncSecretIn');
+    if(el){ el.select(); document.execCommand('copy'); toast('Secret key copied','ok'); }
+  });
+}
+async function saveSyncConfig(){
+  const urlIn=document.getElementById('syncUrlIn');
+  const url=(urlIn?.value||'').trim();
+  if(!url){ toast('Please enter your Firebase Database URL','err'); return; }
+  if(!url.startsWith('https://')){ toast('URL must start with https://','err'); return; }
+  SYNC_CFG.url=url;
+  saveSyncConfigStore(SYNC_CFG);
+  setSyncStatus('syncing','Connecting…');
+  // Try a push to verify it works
+  await pushToCloud(true);
+}
+async function testSync(){
+  if(!hasSyncConfig()){ toast('Save a URL first','err'); return; }
+  setSyncStatus('syncing','Testing…');
+  try{
+    const r=await fetch(syncEndpoint(),{signal:AbortSignal.timeout(8000)});
+    if(r.ok){ setSyncStatus('synced','Connection OK ✓'); toast('Connection successful','ok'); }
+    else     { setSyncStatus('err','HTTP '+r.status); toast('Connection failed: HTTP '+r.status,'err'); }
+  }catch(e){ setSyncStatus('err','Failed: '+e.message); toast('Connection failed: '+e.message,'err'); }
+}
+function clearSyncConfig(){
+  if(!confirm('Disconnect cloud sync? Your local data is unaffected.')) return;
+  SYNC_CFG={url:'',secret:''};
+  saveSyncConfigStore(SYNC_CFG);
+  setSyncStatus('off','Not configured');
+  buildSyncUI();
+  toast('Cloud sync disconnected','inf');
+}
+
+/* ═══════════════════════════════════════════════════
    BOOT
 ═══════════════════════════════════════════════════ */
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded',async ()=>{
   try{if(localStorage.getItem('ptDark')==='1') applyDark(true);}catch(e){}
+  // Set initial sync status
+  if(hasSyncConfig()) setSyncStatus('syncing','Checking cloud…');
+  else setSyncStatus('off','No sync');
   renderAll();
+  // Pull from cloud first — if newer data arrives, renderAll() is called again inside
+  if(hasSyncConfig()) await pullFromCloud();
   doRefresh();
   document.getElementById('overlay').addEventListener('keydown',e=>{
     if(e.key==='Escape') closeSettings();
