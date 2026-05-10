@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Portfolio — Unto the Lord</title>
+<title>Storehouse</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -20,8 +20,6 @@
   --s2:0 2px 8px rgba(0,0,0,.08),0 0 0 1px rgba(0,0,0,.04);
   --s3:0 8px 28px rgba(0,0,0,.13),0 0 0 1px rgba(0,0,0,.06);
   --r1:4px;--r2:8px;--r3:12px;--r4:16px;
-  --scr-bg:linear-gradient(135deg,#fef9f0,#fdf6e8);
-  --scr-txt:#5a4628;--scr-cit:#9a8258;
 }
 body.dark{
   --bg:#0d1117;--surface:#161b22;--raised:#1c2128;--hover:#21262d;
@@ -30,21 +28,24 @@ body.dark{
   --s1:0 1px 3px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.04);
   --s2:0 2px 8px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.04);
   --s3:0 8px 28px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.06);
-  --scr-bg:linear-gradient(135deg,#1a1508,#1d1b0e);
-  --scr-txt:#c8a06a;--scr-cit:#8a7040;
 }
 body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',system-ui,sans-serif;
   background:var(--bg);color:var(--t1);min-height:100vh;font-size:14px;
   line-height:1.5;-webkit-font-smoothing:antialiased;transition:background .2s,color .2s;}
 ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--bmd);border-radius:3px}
-.scripture{background:var(--scr-bg);border-top:3px solid var(--gold);
-  border-bottom:1px solid rgba(168,112,22,.15);padding:10px 24px;text-align:center;}
-.scripture blockquote{font-style:italic;color:var(--scr-txt);font-size:12px;
-  max-width:820px;margin:0 auto;line-height:1.85;}
-.scripture blockquote strong{color:var(--gold);font-style:normal;font-weight:700}
-.scripture cite{display:block;margin-top:4px;font-size:10px;color:var(--scr-cit);
-  font-style:normal;letter-spacing:.3px;}
+.scripture{background:var(--surface);border-bottom:1px solid rgba(168,112,22,.18);
+  padding:5px 22px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;}
+.scr-verse{font-style:italic;color:var(--t3);font-size:11px;}
+.scr-verse strong{font-style:normal;color:var(--gold);font-weight:600;}
+.scr-ref{font-size:10px;color:var(--gold);opacity:.75;white-space:nowrap;letter-spacing:.2px;}
+/* What-If breakdown */
+.wif-breakdown{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;min-height:0;}
+.wif-bd-item{background:var(--raised);border:1px solid var(--b);border-radius:var(--r1);
+  padding:4px 9px;font-size:11px;display:flex;align-items:center;gap:7px;}
+.wif-bd-sym{font-weight:700;color:var(--t2);font-size:10.5px;}
+.wif-bd-val{font-size:10px;color:var(--t3);}
+.wif-bd-delta{font-weight:700;}
 nav{background:var(--surface);border-bottom:1px solid var(--b);height:52px;
   display:flex;align-items:center;padding:0 22px;gap:8px;
   position:sticky;top:0;z-index:200;box-shadow:0 1px 4px rgba(0,0,0,.05);}
@@ -256,6 +257,15 @@ tbody tr{transition:background .1s}tbody tr:hover{background:var(--hover)}
   background:linear-gradient(90deg,#ff6b35,#f7931a);transition:width .8s;}
 .burn-loading{color:var(--t3);font-size:11px;font-style:italic;padding:6px 0;}
 .burn-err{color:var(--neg);font-size:11px;}
+.burn-periods{margin-top:8px;display:flex;flex-direction:column;gap:5px;}
+.burn-period-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.burn-period-lbl{font-size:9.5px;color:var(--t3);text-transform:uppercase;letter-spacing:.7px;min-width:68px;}
+.burn-period-val{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;}
+.burn-period-val.burning{color:#e05a00;}
+.burn-period-val.minting{color:var(--pos);}
+.burn-period-val.flat{color:var(--t4);}
+.burn-period-val.loading{color:var(--t4);font-weight:400;font-style:italic;font-size:11px;}
+.burn-period-reset{font-size:9px;color:var(--t4);margin-left:auto;white-space:nowrap;}
 .whatif-card{background:var(--surface);border-radius:var(--r3);box-shadow:var(--s1);
   border:1px solid var(--blt);padding:17px 19px;margin-bottom:22px;}
 .whatif-hd{display:flex;align-items:baseline;gap:8px;margin-bottom:13px;}
@@ -349,21 +359,25 @@ footer a{color:var(--navy);text-decoration:none;font-weight:600}
 <body>
 
 <div class="scripture">
-  <blockquote>
-    "Come now, you who say, 'Today or tomorrow we will go into such and such a town
-    and spend a year there and trade and make a profit' — yet you do not know what tomorrow will bring.
-    What is your life? For you are a mist that appears for a little time and then vanishes.
-    Instead you ought to say, <strong>'If the Lord wills, we will live and do this or that.'"</strong>
-  </blockquote>
-  <cite>— James 4:13–15 (ESV) &nbsp;·&nbsp; Dedicated unto the Lord</cite>
+  <span class="scr-verse">"Instead you ought to say, <strong>'If the Lord wills, we will live and do this or that.'"</strong></span>
+  <span class="scr-ref">— James 4:15 · Storehouse, unto the Lord</span>
 </div>
 
 <nav style="position:relative;">
   <div class="brand">
-    <div class="brand-mark">✦</div>
+    <div class="brand-mark">
+      <svg width="17" height="17" viewBox="0 0 17 17" fill="currentColor">
+        <polygon points="8.5,1.5 15.5,6.5 1.5,6.5"/>
+        <rect x="1.5" y="7" width="14" height="1.8" rx="0.4" opacity="0.85"/>
+        <rect x="2.5" y="9.5" width="2.5" height="5.5" rx="0.3"/>
+        <rect x="7.25" y="9.5" width="2.5" height="5.5" rx="0.3"/>
+        <rect x="12" y="9.5" width="2.5" height="5.5" rx="0.3"/>
+        <rect x="1.5" y="15.2" width="14" height="1.5" rx="0.4" opacity="0.85"/>
+      </svg>
+    </div>
     <div>
-      <div class="brand-name">Cody's Portfolio</div>
-      <div class="brand-sub">Live Tracker</div>
+      <div class="brand-name">Storehouse</div>
+      <div class="brand-sub">Portfolio Tracker</div>
     </div>
   </div>
   <div class="fx-pill" id="fxPill">
@@ -503,6 +517,7 @@ footer a{color:var(--navy);text-decoration:none;font-weight:600}
       </div>
       <button class="wif-clear" onclick="clearWif()">✕ Clear all</button>
     </div>
+    <div class="wif-breakdown" id="wifBreakdown"></div>
   </div>
 </main>
 
@@ -645,6 +660,7 @@ let P      = loadP();
 let PX     = {};
 let SPK    = {};
 let SUP    = {};  // supply data: { [assetId]: { supply, decimals, status } }
+let BURN_LOG = loadBurnLog(); // daily/weekly burn snapshots per token
 let WIF    = {};
 let LOGOS  = {};
 let CCY    = 'USD';
@@ -1044,17 +1060,24 @@ async function fetchDex(a){
 }
 async function fetchCoinGecko(a){
   if(!LOGOS[a.id]&&LOGO_DEFAULTS[a.id]) LOGOS[a.id]=LOGO_DEFAULTS[a.id];
-  const url=`https://api.coingecko.com/api/v3/simple/price?ids=${a.cgId}`+
-    `&vs_currencies=usd,aud&include_24hr_change=true&include_market_cap=true`;
+  // /coins/markets gives price + 24h% + 7d% + sparkline in one call
+  const url=`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd`+
+    `&ids=${a.cgId}&sparkline=true&price_change_percentage=7d`;
   const r=await fetch(url,{signal:AbortSignal.timeout(12000)});
   if(!r.ok) throw new Error('CG '+r.status);
   const d=await r.json();
-  if(!d[a.cgId]) throw new Error('No CG data');
+  if(!d?.length||!d[0]) throw new Error('No CG data');
+  const coin=d[0];
+  // Grab sparkline data so the separate sparkline fetch isn't needed for crypto
+  if(coin.sparkline_in_7d?.price?.length) SPK[a.id]=coin.sparkline_in_7d.price;
+  // Use CoinGecko image as logo if not already set
+  if(coin.image&&!LOGOS[a.id]) LOGOS[a.id]=coin.image;
   return{
-    price:    d[a.cgId].usd||0,
-    priceAud: d[a.cgId].aud||null,
-    ch24:     d[a.cgId].usd_24h_change||0,
-    mcap:     d[a.cgId].usd_market_cap||0,
+    price:    coin.current_price||0,
+    priceAud: null,  // converted via AUDRT
+    ch24:     coin.price_change_percentage_24h||0,
+    ch7d:     coin.price_change_percentage_7d_in_currency||0,
+    mcap:     coin.market_cap||0,
     source:   'CoinGecko'
   };
 }
@@ -1103,17 +1126,8 @@ async function tryStooq(ticker){
    SPARKLINES
 ═══════════════════════════════════════════════════ */
 async function fetchSparklines(){
-  const cgAssets=P.assets.filter(a=>a.type==='crypto'&&a.cgId);
-  for(const a of cgAssets){
-    try{
-      const r=await fetch(
-        `https://api.coingecko.com/api/v3/coins/${a.cgId}/market_chart?vs_currency=usd&days=7&interval=daily`,
-        {signal:AbortSignal.timeout(10000)});
-      if(!r.ok) continue;
-      const d=await r.json();
-      if(d.prices?.length) SPK[a.id]=d.prices.map(p=>p[1]);
-    }catch(e){}
-  }
+  // Crypto sparklines are now fetched inside fetchCoinGecko() via /coins/markets
+  // This function only handles stocks via Finnhub daily candles
   const stocks=P.assets.filter(a=>a.type==='stock'&&a.ticker);
   const now=Math.floor(Date.now()/1000);
   const from=now-7*86400;
@@ -1177,7 +1191,9 @@ function fetchTokenSupplies(){
   solTokens.forEach(a=>{
     const px=PX[a.id];
     if(px&&!px.failed&&px.price>0&&px.mcap>0){
-      SUP[a.id]={supply:px.mcap/px.price, status:'ok', ts:Date.now()};
+      const derivedSupply=px.mcap/px.price;
+      SUP[a.id]={supply:derivedSupply, status:'ok', ts:Date.now()};
+      recordBurnSnap(a.id, derivedSupply);
     } else {
       SUP[a.id]={supply:null, status:'fail', ts:Date.now()};
     }
@@ -1191,6 +1207,74 @@ function fmtSupply(n){
   if(n>=1e6)  return (n/1e6).toLocaleString('en-AU',{minimumFractionDigits:3,maximumFractionDigits:3})+'M';
   if(n>=1e3)  return (n/1e3).toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})+'K';
   return n.toLocaleString('en-AU',{maximumFractionDigits:2});
+}
+
+/* ═══════════════════════════════════════════════════
+   BURN LOG  — daily & weekly supply tracking
+   Brisbane = UTC+10, no daylight saving (AEST year-round)
+═══════════════════════════════════════════════════ */
+const BRISBANE_MS = 10 * 3600 * 1000;
+
+function loadBurnLog(){
+  try{ const r=localStorage.getItem('ptBurnLog'); return r?JSON.parse(r):{}; }catch(e){ return {}; }
+}
+function saveBurnLog(){
+  try{ localStorage.setItem('ptBurnLog',JSON.stringify(BURN_LOG)); }catch(e){}
+}
+
+// Returns UTC ms of midnight at the start of today in Brisbane
+function startOfBrisbaneDay(nowMs){
+  const bd=new Date(nowMs+BRISBANE_MS);
+  const midBrisUtc=Date.UTC(bd.getUTCFullYear(),bd.getUTCMonth(),bd.getUTCDate());
+  return midBrisUtc-BRISBANE_MS;
+}
+
+// Returns UTC ms of Monday midnight Brisbane for the current week
+// (week resets Sunday 11:59:59 PM → Monday 00:00:00 AEST)
+function startOfBrisbaneWeek(nowMs){
+  const bd=new Date(nowMs+BRISBANE_MS);
+  const dow=bd.getUTCDay(); // 0=Sun,1=Mon,...,6=Sat
+  const daysSinceMon=(dow===0)?6:(dow-1);
+  const todayBrisUtc=Date.UTC(bd.getUTCFullYear(),bd.getUTCMonth(),bd.getUTCDate());
+  const monBrisUtc=todayBrisUtc-daysSinceMon*86400000;
+  return monBrisUtc-BRISBANE_MS;
+}
+
+// Append a supply snapshot; prune entries older than 8 days
+function recordBurnSnap(id,supply){
+  if(!supply||supply<=0) return;
+  if(!BURN_LOG[id]) BURN_LOG[id]=[];
+  BURN_LOG[id].push({ts:Date.now(),supply});
+  const cutoff=Date.now()-8*86400000;
+  BURN_LOG[id]=BURN_LOG[id].filter(s=>s.ts>=cutoff);
+  saveBurnLog();
+}
+
+// Accumulated burn since sinceTs — sums all positive supply drops across consecutive
+// refresh intervals where the LATER snap falls within the period.
+// Returns null when no interval data exists yet for the period (shows "Tracking…").
+function getAccumBurn(id,sinceTs){
+  const snaps=(BURN_LOG[id]||[]).slice().sort((a,b)=>a.ts-b.ts);
+  if(snaps.length<2) return null;
+  let totalBurn=0, hasData=false;
+  for(let i=1;i<snaps.length;i++){
+    // Include any interval whose end-point falls within the period
+    if(snaps[i].ts<sinceTs) continue;
+    const delta=snaps[i-1].supply-snaps[i].supply; // positive = tokens removed
+    if(delta>0) totalBurn+=delta;
+    hasData=true;
+  }
+  return hasData?totalBurn:null;
+}
+
+function getDailyBurn(id) { return getAccumBurn(id,startOfBrisbaneDay(Date.now())); }
+function getWeeklyBurn(id){ return getAccumBurn(id,startOfBrisbaneWeek(Date.now())); }
+
+function fmtBurnStat(b){
+  if(b==null) return `<span class="burn-period-val loading">Tracking…</span>`;
+  if(b<0)     return `<span class="burn-period-val minting">+${fmtSupply(Math.abs(b))} minted</span>`;
+  if(b===0)   return `<span class="burn-period-val flat">No change</span>`;
+  return `<span class="burn-period-val burning">🔥 ${fmtSupply(b)}</span>`;
 }
 
 function renderBurnTracker(){
@@ -1215,12 +1299,30 @@ function renderBurnTracker(){
     const loading=!sup;
     const failed=sup?.status==='fail';
 
-    const supplyLine = loading
-      ? `<div class="burn-loading">Fetching from Solana RPC…</div>`
-      : failed
-        ? `<div class="burn-err">Unable to fetch supply — retrying next refresh</div>`
-        : `<div class="burn-val">${fmtSupply(cur)}</div>
-           <div class="burn-sub">Your ${fmtQty(a.qty)} = ${cur>0?(a.qty/cur*100).toFixed(4)+'% of supply':'—'}</div>`;
+    let supplyLine;
+    if(loading){
+      supplyLine=`<div class="burn-loading">Fetching supply data…</div>`;
+    } else if(failed){
+      supplyLine=`<div class="burn-err">Unable to fetch supply — retrying next refresh</div>`;
+    } else {
+      const daily=getDailyBurn(a.id);
+      const weekly=getWeeklyBurn(a.id);
+      supplyLine=`
+        <div class="burn-val">${fmtSupply(cur)}</div>
+        <div class="burn-sub">Your ${fmtQty(a.qty)} = ${cur>0?(a.qty/cur*100).toFixed(4)+'% of supply':'—'}</div>
+        <div class="burn-periods">
+          <div class="burn-period-row">
+            <span class="burn-period-lbl">Today</span>
+            ${fmtBurnStat(daily)}
+            <span class="burn-period-reset">resets midnight AEST</span>
+          </div>
+          <div class="burn-period-row">
+            <span class="burn-period-lbl">This Week</span>
+            ${fmtBurnStat(weekly)}
+            <span class="burn-period-reset">resets Mon midnight AEST</span>
+          </div>
+        </div>`;
+    }
 
     return`<div class="burn-card">
       <div class="burn-hd">
@@ -1281,6 +1383,25 @@ function calcWhatIf(){
     const sign=delta>=0?'+':'';
     delEl.textContent=`${sign}${fmtV(delta,anyConv)} (${sign}${fmtPct(Math.abs(pct))})`;
     delEl.className='wif-res-delta '+(delta>=0?'pos':'neg');
+  }
+  // Per-asset breakdown — only show assets whose price was changed
+  const breakdownEl=document.getElementById('wifBreakdown');
+  if(breakdownEl){
+    const changed=P.assets.filter(a=>WIF[a.id]!=null);
+    if(!changed.length){ breakdownEl.innerHTML=''; return; }
+    breakdownEl.innerHTML=changed.map(a=>{
+      const px=PX[a.id];
+      const liveP=px&&!px.failed?dp(px)||0:0;
+      const scenP=CCY==='AUD'?WIF[a.id]*(AUDRT||1.57):WIF[a.id];
+      const d=a.qty*(scenP-liveP);
+      const sign=d>=0?'+':'';
+      const pctChg=liveP>0?((scenP-liveP)/liveP*100):0;
+      return`<div class="wif-bd-item">
+        <span class="wif-bd-sym">$${a.sym}</span>
+        <span class="wif-bd-val">${fmtP(liveP,false)} → ${fmtP(scenP,false)}</span>
+        <span class="wif-bd-delta ${d>=0?'pos':'neg'}">${sign}${fmtV(d,false)} (${sign}${pctChg.toFixed(1)}%)</span>
+      </div>`;
+    }).join('');
   }
 }
 function clearWif(){
@@ -1371,7 +1492,7 @@ function renderMomentumCard(){
 
 function renderRisk(total){
   if(total<=0){setH('mv-risk','—');setH('mv-risk-s','—');return;}
-  const allocs=P.assets.map(a=>total>0?assetVal(a)/total:0);
+  const allocs=P.assets.map(a=>assetVal(a)/total);
   const max=Math.max(...allocs);
   const top=P.assets[allocs.indexOf(max)];
   let label,cls;
@@ -1379,8 +1500,15 @@ function renderRisk(total){
   else if(max<0.50){label='Moderate'; cls='risk-med';}
   else if(max<0.70){label='High';     cls='risk-high';}
   else             {label='Critical'; cls='risk-crit';}
-  setH('mv-risk',`<span class="risk-badge ${cls}">${label}</span>`);
-  setH('mv-risk-s',`${top?'$'+top.sym+' ':''}${(max*100).toFixed(1)}% of portfolio`);
+  // Combined speculative exposure: sum of all Solana meme token allocations
+  const specAlloc=P.assets
+    .filter(a=>a.type==='solana_token')
+    .reduce((s,a)=>s+(assetVal(a)/total),0);
+  const specWarn=specAlloc>0.30
+    ?`<span style="display:inline-block;margin-top:3px;font-size:9px;color:var(--neg);font-weight:600">⚠ ${(specAlloc*100).toFixed(0)}% in Solana tokens</span>`
+    :'';
+  setH('mv-risk',`<span class="risk-badge ${cls}">${label}</span><br>${specWarn}`);
+  setH('mv-risk-s',`${top?'$'+top.sym+' ':''}${(max*100).toFixed(1)}% · Low <30 · Mod <50 · High <70`);
 }
 
 function renderMilestones(){
@@ -1445,6 +1573,14 @@ function renderTable(){
       ?`<span class="chip neu">—</span>`
       :`<span class="chip ${px.ch24>=0?'pos':'neg'}">${px.ch24>=0?'▲ +':'▼ '}${fmtPct(Math.abs(px.ch24))}</span>`;
     const valCell=val>0?`<strong class="mono">${fmtV(val,conv)}</strong>`:`<span class="dim">—</span>`;
+    // 7-day: prefer sparkline SVG, fall back to 7d% chip if sparkline unavailable
+    const spkSvg=sparklineSVG(a.id);
+    const has7d=px&&!px.failed&&px.ch7d!=null&&px.ch7d!==0;
+    const d7Cell=spkSvg.includes('<svg')
+      ? spkSvg
+      : has7d
+        ? `<span class="chip ${px.ch7d>=0?'pos':'neg'}">${px.ch7d>=0?'▲ +':'▼ '}${Math.abs(px.ch7d).toFixed(1)}%</span>`
+        : `<span style="color:var(--t4);font-size:11px">—</span>`;
     return`<tr>
       <td><div class="a-cell">
         <div class="a-orb" style="background:${a.color}18;color:${a.color}">${orb}</div>
@@ -1457,7 +1593,7 @@ function renderTable(){
       <td>${chgCell}</td>
       <td class="hide-sm mono dim">${fmtQty(a.qty)}</td>
       <td>${valCell}</td>
-      <td class="hide-sm">${sparklineSVG(a.id)}</td>
+      <td class="hide-sm">${d7Cell}</td>
       <td><div class="alloc-cell">
         <span class="alloc-pct" style="color:${a.color}">${alloc>0?alloc.toFixed(1)+'%':'—'}</span>
         <div class="alloc-bar"><div class="alloc-fill" style="width:${alloc}%;background:${a.color}"></div></div>
@@ -1585,9 +1721,19 @@ function renderAllocChart(){
       tension:0.3,
       pointRadius:slice.length>40?0:2,
       pointHoverRadius:4,
-      spanGaps:false
+      spanGaps:true
     };
   }).filter(Boolean);
+
+  // Compute dynamic Y-axis range from actual data
+  let minVal=100, maxVal=0;
+  datasets.forEach(ds=>ds.data.forEach(v=>{
+    if(v==null) return;
+    if(v<minVal) minVal=v; if(v>maxVal) maxVal=v;
+  }));
+  const pad=Math.max(2,(maxVal-minVal)*0.18);
+  const yMin=Math.max(0,Math.floor(minVal-pad));
+  const yMax=Math.min(100,Math.ceil(maxVal+pad));
 
   const tc=cc('#7d93a8','#6e7681');
   const gc=DARK?'rgba(255,255,255,.04)':'rgba(0,0,0,.04)';
@@ -1618,8 +1764,8 @@ function renderAllocChart(){
           grid:{color:gc}
         },
         y:{
-          min:0,
-          suggestedMax:100,
+          min:yMin,
+          max:yMax,
           ticks:{color:tc,callback:v=>v+'%',font:{size:10.5}},
           grid:{color:gc}
         }
