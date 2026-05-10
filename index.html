@@ -556,22 +556,27 @@ footer a{color:var(--navy);text-decoration:none;font-weight:600}
       <!-- ☁ Cloud Sync -->
       <div class="sync-section">
         <div class="sync-section-hd">
-          <span class="sync-hd-title">☁ Cloud Sync</span>
+          <span class="sync-hd-title">☁ Cloud Sync — Supabase</span>
           <span class="sync-hd-badge">FREE</span>
         </div>
         <p class="sync-desc" style="margin-top:5px">
-          Sync your portfolio across all devices using Firebase's free database.
-          One-time 3-minute setup — no credit card required.
+          Sync across all your devices using Supabase's free database. One-time setup.
         </p>
         <ol class="sync-steps">
-          <li><span class="step-n">1</span><span>Go to <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> → <strong>Add project</strong> → skip Analytics → Create</span></li>
-          <li><span class="step-n">2</span><span>In the left menu: <strong>Build → Realtime Database → Create database</strong> → choose any location → <strong>Start in test mode</strong> → Done</span></li>
-          <li><span class="step-n">3</span><span>Copy the Database URL (looks like <code style="font-size:10px;background:var(--b);padding:1px 4px;border-radius:3px">https://my-project-default-rtdb.firebaseio.com</code>) and paste it below</span></li>
+          <li><span class="step-n">1</span><span>Go to <a href="https://supabase.com" target="_blank">supabase.com</a> → <strong>Start your project</strong> → New project (free)</span></li>
+          <li><span class="step-n">2</span><span>Once provisioned, go to <strong>SQL Editor</strong> and run this query:<br/>
+            <code style="display:block;margin-top:4px;font-size:9.5px;background:var(--b);padding:5px 7px;border-radius:4px;line-height:1.6;white-space:pre-wrap;word-break:break-all">create table if not exists portfolio (id text primary key, data jsonb, updated_at timestamptz default now());
+alter table portfolio disable row level security;</code></span></li>
+          <li><span class="step-n">3</span><span>Go to <strong>Project Settings → API</strong> → copy your <strong>Project URL</strong> and <strong>anon / public</strong> key → paste below</span></li>
         </ol>
         <div class="fg" style="margin-bottom:8px">
-          <label>Firebase Database URL</label>
-          <input type="url" id="syncUrlIn" placeholder="https://my-project-default-rtdb.firebaseio.com"
+          <label>Supabase Project URL</label>
+          <input type="url" id="syncUrlIn" placeholder="https://xxxxxxxxxxxx.supabase.co"
             value="" oninput="syncUrlChanged()"/>
+        </div>
+        <div class="fg" style="margin-bottom:8px">
+          <label>Supabase Anon / Public Key</label>
+          <input type="text" id="syncAnonKeyIn" placeholder="eyJhbGciOiJIUzI1NiIs…" style="font-size:11px"/>
         </div>
         <div class="fg" style="margin-bottom:10px">
           <label>Secret Key <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--t3)">(auto-generated — keep it private, same on all devices)</span></label>
@@ -1664,176 +1669,173 @@ function toast(msg,type='inf'){
 }
 
 /* ═══════════════════════════════════════════════════
-   CLOUD SYNC  (Firebase Realtime Database — REST)
+   CLOUD SYNC  (Supabase — PostgREST)
 ═══════════════════════════════════════════════════ */
-let SYNC_CFG = loadSyncConfig();
-let SYNC_PUSH_TM = null;   // debounce timer for push
+let SYNC_CFG    = loadSyncConfig();
+let SYNC_PUSH_TM = null;
 
 function loadSyncConfig(){
   try{
     const r=localStorage.getItem('ptSync');
-    return r ? JSON.parse(r) : {url:'',secret:''};
-  }catch(e){ return {url:'',secret:''}; }
+    return r ? JSON.parse(r) : {url:'',anonKey:'',secret:''};
+  }catch(e){ return {url:'',anonKey:'',secret:''}; }
 }
 function saveSyncConfigStore(cfg){
   try{ localStorage.setItem('ptSync',JSON.stringify(cfg)); }catch(e){}
 }
-function syncEndpoint(){
-  if(!SYNC_CFG.url||!SYNC_CFG.secret) return null;
-  // Trim trailing slash from URL
-  const base=SYNC_CFG.url.replace(/\/+$/,'');
-  return `${base}/portfolio/${SYNC_CFG.secret}.json`;
-}
-function hasSyncConfig(){ return !!(SYNC_CFG.url && SYNC_CFG.secret); }
+function hasSyncConfig(){ return !!(SYNC_CFG.url && SYNC_CFG.anonKey && SYNC_CFG.secret); }
 
-// Build a POJO with only what needs to sync (no live price data)
+function sbHeaders(){
+  return {
+    'Content-Type':  'application/json',
+    'apikey':        SYNC_CFG.anonKey,
+    'Authorization': 'Bearer '+SYNC_CFG.anonKey
+  };
+}
+function sbUrl(){
+  return SYNC_CFG.url.replace(/\/+$/,'')+'/rest/v1/portfolio';
+}
+
 function syncPayload(){
   return {
-    assets:    P.assets,
-    history:   P.history,
-    v:         P.v,
-    lastMod:   P.lastMod || Date.now()
+    id:         SYNC_CFG.secret,
+    data:       {assets:P.assets, history:P.history, v:P.v, lastMod:P.lastMod||Date.now()},
+    updated_at: new Date().toISOString()
   };
 }
 
 async function pushToCloud(silent=false){
-  const ep=syncEndpoint();
-  if(!ep) return;
+  if(!hasSyncConfig()) return;
   setSyncStatus('syncing','Syncing…');
   try{
-    P.lastMod = Date.now();
-    const r=await fetch(ep,{
-      method:'PUT',
-      headers:{'Content-Type':'application/json'},
+    P.lastMod=Date.now();
+    const r=await fetch(sbUrl(),{
+      method:'POST',
+      headers:{...sbHeaders(),'Prefer':'resolution=merge-duplicates,return=minimal'},
       body:JSON.stringify(syncPayload()),
       signal:AbortSignal.timeout(10000)
     });
-    if(!r.ok) throw new Error('HTTP '+r.status);
+    if(!r.ok){ const t=await r.text(); throw new Error('HTTP '+r.status+' '+t); }
     setSyncStatus('synced','Synced '+new Date().toLocaleTimeString());
     if(!silent) toast('Portfolio synced to cloud','ok');
   }catch(e){
-    setSyncStatus('err','Sync failed — check URL');
-    if(!silent) toast('Cloud sync failed: '+e.message,'err');
+    setSyncStatus('err','Sync failed');
+    if(!silent) toast('Sync failed: '+e.message,'err');
   }
 }
 
 async function pullFromCloud(){
-  const ep=syncEndpoint();
-  if(!ep) return false;
+  if(!hasSyncConfig()) return false;
   setSyncStatus('syncing','Checking cloud…');
   try{
-    const r=await fetch(ep+'?shallow=false',{signal:AbortSignal.timeout(10000)});
+    const r=await fetch(
+      sbUrl()+'?id=eq.'+encodeURIComponent(SYNC_CFG.secret)+'&select=data',
+      {headers:sbHeaders(), signal:AbortSignal.timeout(10000)}
+    );
     if(!r.ok) throw new Error('HTTP '+r.status);
-    const d=await r.json();
-    if(!d||!d.assets) { setSyncStatus('synced','Cloud empty — will push on next save'); return false; }
-
-    const cloudMod = d.lastMod || 0;
-    const localMod = P.lastMod || 0;
-
+    const rows=await r.json();
+    if(!rows||!rows.length||!rows[0].data){
+      setSyncStatus('synced','Cloud empty — will push on next save');
+      return false;
+    }
+    const d=rows[0].data;
+    const cloudMod=d.lastMod||0;
+    const localMod=P.lastMod||0;
     if(cloudMod > localMod){
-      // Cloud is newer — use it
       P.assets  = d.assets;
-      P.history = d.history || [];
-      P.v       = d.v || 10;
+      P.history = d.history||[];
+      P.v       = d.v||10;
       P.lastMod = cloudMod;
       saveP();
       setSyncStatus('synced','Pulled from cloud '+new Date().toLocaleTimeString());
-      toast('Portfolio pulled from cloud — updated to latest version','inf');
+      toast('Portfolio pulled from cloud','inf');
       renderAll();
       return true;
-    } else {
-      setSyncStatus('synced','Up to date '+new Date().toLocaleTimeString());
-      return false;
     }
+    setSyncStatus('synced','Up to date');
+    return false;
   }catch(e){
-    setSyncStatus('err','Pull failed — '+e.message);
+    setSyncStatus('err','Pull failed');
     return false;
   }
 }
 
 function schedulePush(){
-  // Debounce: wait 1.5s after last save before pushing
   clearTimeout(SYNC_PUSH_TM);
-  SYNC_PUSH_TM=setTimeout(()=>pushToCloud(true), 1500);
+  SYNC_PUSH_TM=setTimeout(()=>pushToCloud(true),1500);
 }
 
-function setSyncStatus(state, msg){
-  // Nav pill
-  const dot=document.getElementById('syncDot');
+function setSyncStatus(state,msg){
+  ['syncDot','syncModalDot'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.className='sync-dot '+state;
+  });
   const txt=document.getElementById('syncTxt');
-  if(dot){ dot.className='sync-dot '+state; }
-  if(txt){ txt.textContent=msg; }
-  // Modal status row (if open)
+  if(txt) txt.textContent=msg;
   const row=document.getElementById('syncStatusRow');
-  const mdot=document.getElementById('syncModalDot');
   const mtxt=document.getElementById('syncModalTxt');
-  if(row){ row.style.display='flex'; }
-  if(mdot){ mdot.className='sync-dot '+state; }
-  if(mtxt){ mtxt.textContent=msg; }
+  if(row) row.style.display='flex';
+  if(mtxt) mtxt.textContent=msg;
 }
 
-// Settings modal — sync section wiring
 function buildSyncUI(){
   const urlIn=document.getElementById('syncUrlIn');
+  const keyIn=document.getElementById('syncAnonKeyIn');
   const secIn=document.getElementById('syncSecretIn');
   if(urlIn) urlIn.value=SYNC_CFG.url||'';
+  if(keyIn) keyIn.value=SYNC_CFG.anonKey||'';
   if(secIn){
     if(!SYNC_CFG.secret){ SYNC_CFG.secret=genUUID(); saveSyncConfigStore(SYNC_CFG); }
     secIn.value=SYNC_CFG.secret;
   }
-  // Reflect current status
-  if(!hasSyncConfig()){
-    setSyncStatus('off','Not configured');
-  }
+  if(!hasSyncConfig()) setSyncStatus('off','Not configured');
 }
 function syncUrlChanged(){
-  const v=document.getElementById('syncUrlIn')?.value.trim();
-  SYNC_CFG.url=v||'';
+  SYNC_CFG.url=(document.getElementById('syncUrlIn')?.value||'').trim();
 }
 function genUUID(){
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{
-    const r=Math.random()*16|0;return(c==='x'?r:(r&0x3|0x8)).toString(16);});
-}
-function genSecret(){
-  if(!confirm('Regenerate secret key? Any other devices using the old key will need to be updated.')) return;
-  SYNC_CFG.secret=genUUID();
-  saveSyncConfigStore(SYNC_CFG);
-  const secIn=document.getElementById('syncSecretIn');
-  if(secIn) secIn.value=SYNC_CFG.secret;
-  toast('New secret key generated — copy it to your other devices','inf');
-}
-function copySecret(){
-  const s=SYNC_CFG.secret;
-  if(!s) return;
-  navigator.clipboard.writeText(s).then(()=>toast('Secret key copied','ok')).catch(()=>{
-    // Fallback
-    const el=document.getElementById('syncSecretIn');
-    if(el){ el.select(); document.execCommand('copy'); toast('Secret key copied','ok'); }
+    const r=Math.random()*16|0;return(c==='x'?r:(r&0x3|0x8)).toString(16);
   });
 }
+function genSecret(){
+  if(!confirm('Regenerate secret key? Other devices will need the new key.')) return;
+  SYNC_CFG.secret=genUUID();
+  saveSyncConfigStore(SYNC_CFG);
+  const el=document.getElementById('syncSecretIn');
+  if(el) el.value=SYNC_CFG.secret;
+  toast('New secret key generated','inf');
+}
+function copySecret(){
+  const s=SYNC_CFG.secret; if(!s) return;
+  navigator.clipboard.writeText(s)
+    .then(()=>toast('Secret key copied','ok'))
+    .catch(()=>{ const el=document.getElementById('syncSecretIn');
+      if(el){el.select();document.execCommand('copy');toast('Secret key copied','ok');} });
+}
 async function saveSyncConfig(){
-  const urlIn=document.getElementById('syncUrlIn');
-  const url=(urlIn?.value||'').trim();
-  if(!url){ toast('Please enter your Firebase Database URL','err'); return; }
+  const url=(document.getElementById('syncUrlIn')?.value||'').trim();
+  const key=(document.getElementById('syncAnonKeyIn')?.value||'').trim();
+  if(!url||!key){ toast('Both URL and anon key are required','err'); return; }
   if(!url.startsWith('https://')){ toast('URL must start with https://','err'); return; }
-  SYNC_CFG.url=url;
+  SYNC_CFG.url=url; SYNC_CFG.anonKey=key;
   saveSyncConfigStore(SYNC_CFG);
   setSyncStatus('syncing','Connecting…');
-  // Try a push to verify it works
-  await pushToCloud(true);
+  await pushToCloud(false);
 }
 async function testSync(){
-  if(!hasSyncConfig()){ toast('Save a URL first','err'); return; }
+  if(!hasSyncConfig()){ toast('Save your credentials first','err'); return; }
   setSyncStatus('syncing','Testing…');
   try{
-    const r=await fetch(syncEndpoint(),{signal:AbortSignal.timeout(8000)});
+    const r=await fetch(sbUrl()+'?id=eq.'+encodeURIComponent(SYNC_CFG.secret),
+      {headers:sbHeaders(),signal:AbortSignal.timeout(8000)});
     if(r.ok){ setSyncStatus('synced','Connection OK ✓'); toast('Connection successful','ok'); }
-    else     { setSyncStatus('err','HTTP '+r.status); toast('Connection failed: HTTP '+r.status,'err'); }
-  }catch(e){ setSyncStatus('err','Failed: '+e.message); toast('Connection failed: '+e.message,'err'); }
+    else     { setSyncStatus('err','HTTP '+r.status); toast('HTTP '+r.status+' — check URL & key','err'); }
+  }catch(e){ setSyncStatus('err','Failed'); toast('Failed: '+e.message,'err'); }
 }
 function clearSyncConfig(){
-  if(!confirm('Disconnect cloud sync? Your local data is unaffected.')) return;
-  SYNC_CFG={url:'',secret:''};
+  if(!confirm('Disconnect cloud sync? Local data is unaffected.')) return;
+  SYNC_CFG={url:'',anonKey:'',secret:''};
   saveSyncConfigStore(SYNC_CFG);
   setSyncStatus('off','Not configured');
   buildSyncUI();
