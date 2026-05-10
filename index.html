@@ -578,14 +578,6 @@ alter table portfolio disable row level security;</code></span></li>
           <label>Supabase Anon / Public Key</label>
           <input type="text" id="syncAnonKeyIn" placeholder="eyJhbGciOiJIUzI1NiIs…" style="font-size:11px"/>
         </div>
-        <div class="fg" style="margin-bottom:10px">
-          <label>Secret Key <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--t3)">(auto-generated — keep it private, same on all devices)</span></label>
-          <div class="secret-row">
-            <input type="text" id="syncSecretIn" placeholder="auto-generated" readonly/>
-            <button class="btn copy-btn" onclick="copySecret()">Copy</button>
-            <button class="btn copy-btn" onclick="genSecret()" title="Regenerate (will break existing synced data)">↺ New</button>
-          </div>
-        </div>
         <div style="display:flex;gap:7px;flex-wrap:wrap">
           <button class="btn primary" onclick="saveSyncConfig()">Save & Connect</button>
           <button class="btn" onclick="testSync()">Test Connection</button>
@@ -1677,13 +1669,13 @@ let SYNC_PUSH_TM = null;
 function loadSyncConfig(){
   try{
     const r=localStorage.getItem('ptSync');
-    return r ? JSON.parse(r) : {url:'',anonKey:'',secret:''};
-  }catch(e){ return {url:'',anonKey:'',secret:''}; }
+    return r ? JSON.parse(r) : {url:'',anonKey:''};
+  }catch(e){ return {url:'',anonKey:''}; }
 }
 function saveSyncConfigStore(cfg){
   try{ localStorage.setItem('ptSync',JSON.stringify(cfg)); }catch(e){}
 }
-function hasSyncConfig(){ return !!(SYNC_CFG.url && SYNC_CFG.anonKey && SYNC_CFG.secret); }
+function hasSyncConfig(){ return !!(SYNC_CFG.url && SYNC_CFG.anonKey); }
 
 function sbHeaders(){
   return {
@@ -1698,7 +1690,7 @@ function sbUrl(){
 
 function syncPayload(){
   return {
-    id:         SYNC_CFG.secret,
+    id:         'main',
     data:       {assets:P.assets, history:P.history, v:P.v, lastMod:P.lastMod||Date.now()},
     updated_at: new Date().toISOString()
   };
@@ -1729,7 +1721,7 @@ async function pullFromCloud(){
   setSyncStatus('syncing','Checking cloud…');
   try{
     const r=await fetch(
-      sbUrl()+'?id=eq.'+encodeURIComponent(SYNC_CFG.secret)+'&select=data',
+      sbUrl()+'?id=eq.main&select=data',
       {headers:sbHeaders(), signal:AbortSignal.timeout(10000)}
     );
     if(!r.ok) throw new Error('HTTP '+r.status);
@@ -1781,42 +1773,17 @@ function setSyncStatus(state,msg){
 function buildSyncUI(){
   const urlIn=document.getElementById('syncUrlIn');
   const keyIn=document.getElementById('syncAnonKeyIn');
-  const secIn=document.getElementById('syncSecretIn');
   if(urlIn) urlIn.value=SYNC_CFG.url||'';
   if(keyIn) keyIn.value=SYNC_CFG.anonKey||'';
-  if(secIn){
-    if(!SYNC_CFG.secret){ SYNC_CFG.secret=genUUID(); saveSyncConfigStore(SYNC_CFG); }
-    secIn.value=SYNC_CFG.secret;
-  }
   if(!hasSyncConfig()) setSyncStatus('off','Not configured');
 }
 function syncUrlChanged(){
   SYNC_CFG.url=(document.getElementById('syncUrlIn')?.value||'').trim();
 }
-function genUUID(){
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{
-    const r=Math.random()*16|0;return(c==='x'?r:(r&0x3|0x8)).toString(16);
-  });
-}
-function genSecret(){
-  if(!confirm('Regenerate secret key? Other devices will need the new key.')) return;
-  SYNC_CFG.secret=genUUID();
-  saveSyncConfigStore(SYNC_CFG);
-  const el=document.getElementById('syncSecretIn');
-  if(el) el.value=SYNC_CFG.secret;
-  toast('New secret key generated','inf');
-}
-function copySecret(){
-  const s=SYNC_CFG.secret; if(!s) return;
-  navigator.clipboard.writeText(s)
-    .then(()=>toast('Secret key copied','ok'))
-    .catch(()=>{ const el=document.getElementById('syncSecretIn');
-      if(el){el.select();document.execCommand('copy');toast('Secret key copied','ok');} });
-}
 async function saveSyncConfig(){
   const url=(document.getElementById('syncUrlIn')?.value||'').trim();
   const key=(document.getElementById('syncAnonKeyIn')?.value||'').trim();
-  if(!url||!key){ toast('Both URL and anon key are required','err'); return; }
+  if(!url||!key){ toast('Both the Project URL and Anon Key are required','err'); return; }
   if(!url.startsWith('https://')){ toast('URL must start with https://','err'); return; }
   SYNC_CFG.url=url; SYNC_CFG.anonKey=key;
   saveSyncConfigStore(SYNC_CFG);
@@ -1827,7 +1794,7 @@ async function testSync(){
   if(!hasSyncConfig()){ toast('Save your credentials first','err'); return; }
   setSyncStatus('syncing','Testing…');
   try{
-    const r=await fetch(sbUrl()+'?id=eq.'+encodeURIComponent(SYNC_CFG.secret),
+    const r=await fetch(sbUrl()+'?id=eq.main',
       {headers:sbHeaders(),signal:AbortSignal.timeout(8000)});
     if(r.ok){ setSyncStatus('synced','Connection OK ✓'); toast('Connection successful','ok'); }
     else     { setSyncStatus('err','HTTP '+r.status); toast('HTTP '+r.status+' — check URL & key','err'); }
@@ -1835,7 +1802,7 @@ async function testSync(){
 }
 function clearSyncConfig(){
   if(!confirm('Disconnect cloud sync? Local data is unaffected.')) return;
-  SYNC_CFG={url:'',anonKey:'',secret:''};
+  SYNC_CFG={url:'',anonKey:''};
   saveSyncConfigStore(SYNC_CFG);
   setSyncStatus('off','Not configured');
   buildSyncUI();
