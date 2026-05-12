@@ -256,8 +256,32 @@ table.htbl{width:100%;border-collapse:collapse;min-width:700px;}
 .burn-err{color:var(--neg);font-size:11px;}
 .burn-loading{color:var(--ink-3);font-size:11px;font-style:italic;}
 
-/* ── Alloc chart ── */
-.alloc-pane{border:1px solid var(--rule-s);padding:24px 26px;}
+/* ── Alloc bars ── */
+.alloc-bars-wrap{display:flex;flex-direction:column;gap:13px;padding-top:6px;}
+.ab-row{display:grid;grid-template-columns:72px 1fr 42px 80px;gap:10px;align-items:center;}
+.ab-sym{font:600 11px/1 var(--mono);color:var(--ink-2);letter-spacing:.04em;}
+.ab-track{height:4px;background:var(--rule);border-radius:2px;overflow:hidden;}
+.ab-fill{height:100%;border-radius:2px;transition:width .4s ease;}
+.ab-pct{font:500 11.5px/1 var(--mono);color:var(--ink);text-align:right;}
+.ab-val{font:500 11.5px/1 var(--mono);color:var(--ink-3);text-align:right;}
+
+/* ── News card ── */
+.news-grid{display:flex;flex-direction:column;gap:0;}
+.news-item{display:grid;grid-template-columns:auto 1fr;gap:0 16px;padding:16px 0;border-bottom:1px solid var(--rule-s);}
+.news-item:last-child{border-bottom:0;}
+.news-img{width:64px;height:64px;object-fit:cover;flex-shrink:0;background:var(--surface);}
+.news-body{display:flex;flex-direction:column;gap:4px;min-width:0;}
+.news-title{font:500 13.5px/1.4 var(--sans);color:var(--ink);text-decoration:none;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.news-title:hover{color:var(--accent);}
+.news-meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.news-src{font:500 9.5px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);}
+.news-time{font:400 10.5px/1 var(--mono);color:var(--ink-4);}
+.news-cats{display:flex;gap:5px;flex-wrap:wrap;}
+.news-cat{font:500 8.5px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;padding:2px 5px;border:1px solid var(--rule);color:var(--ink-4);}
+.news-excerpt{font-size:11.5px;color:var(--ink-3);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:2px;}
+.news-loading{color:var(--ink-3);font-size:12px;font-style:italic;padding:24px 0;}
+.news-err{color:var(--neg);font-size:12px;padding:16px 0;}
+.news-refresh{font:400 9.5px/1 var(--mono);color:var(--ink-4);margin-top:0;}
 
 /* ── What-If ── */
 .wif-wrap{border:1px solid var(--rule-s);display:grid;grid-template-columns:auto 1fr;}
@@ -608,12 +632,9 @@ body.light-mode .ticker{border-bottom-color:var(--rule-s);}
       </div>
       <div class="line-pane">
         <div class="line-pane-head">
-          <span class="kpi-lbl">Weight Over Time</span>
+          <span class="kpi-lbl">Allocation Breakdown</span>
         </div>
-        <canvas id="allocChart" style="display:none"></canvas>
-        <div class="no-hist" id="noAllocHist">
-          <div>Allocation history builds over time — check back after a few refreshes.</div>
-        </div>
+        <div id="allocBars" class="alloc-bars-wrap"></div>
       </div>
     </div>
   </section>
@@ -645,6 +666,21 @@ body.light-mode .ticker{border-bottom-color:var(--rule-s);}
         <div class="wif-breakdown" id="wifBreakdown"></div>
       </div>
     </div>
+  </section>
+
+  <!-- ── VI · Market News ── -->
+  <section class="sect">
+    <div class="sect-head">
+      <div class="sect-title"><span class="sect-num">VI</span>Market News</div>
+      <div class="sect-meta">
+        <span class="sect-meta-lbl">Refreshes every</span>
+        <span class="sect-meta-val">2 h</span>
+      </div>
+    </div>
+    <div id="newsGrid" class="news-grid">
+      <div class="news-loading">Fetching latest headlines…</div>
+    </div>
+    <div class="news-refresh" id="newsRefreshLbl"></div>
   </section>
 
 </main>
@@ -834,7 +870,7 @@ function applyDark(d){
   const btn=document.getElementById('darkBtn');
   if(btn) btn.textContent=d?'🌙':'☀';
   try{localStorage.setItem('ptDark',d?'1':'0');}catch(e){}
-  renderPie(); renderLine(); renderAllocChart();
+  renderPie(); renderLine(); renderAllocBars();
 }
 function toggleDark(){applyDark(!DARK);}
 function cc(l,dk){return DARK?dk:l;}
@@ -1434,25 +1470,11 @@ function renderBurnTracker(){
     } else if(failed){
       supplyLine=`<div class="burn-err">Unable to fetch supply — retrying next refresh</div>`;
     } else {
-      const daily=getDailyBurn(a.id);
-      const weekly=getWeeklyBurn(a.id);
       supplyLine=`
         <div class="burn-supply-row">
           <div class="burn-val">${fmtSupply(cur)}</div>
         </div>
-        <div class="burn-sub">Your ${fmtQty(a.qty)} = ${cur>0?(a.qty/cur*100).toFixed(4)+'% of supply':'—'}</div>
-        <div class="burn-periods">
-          <div class="burn-period">
-            <span class="burn-p-lbl">Today</span>
-            <div class="burn-p-bar${daily!=null&&daily>0?' active':''}"><div style="width:${daily!=null&&daily>0?Math.min(100,daily/cur*1000).toFixed(1):0}%"></div></div>
-            ${fmtBurnStat(daily)}
-          </div>
-          <div class="burn-period">
-            <span class="burn-p-lbl">This Week</span>
-            <div class="burn-p-bar${weekly!=null&&weekly>0?' active':''}"><div style="width:${weekly!=null&&weekly>0?Math.min(100,weekly/cur*500).toFixed(1):0}%"></div></div>
-            ${fmtBurnStat(weekly)}
-          </div>
-        </div>`;
+        <div class="burn-sub">Your ${fmtQty(a.qty)} = ${cur>0?(a.qty/cur*100).toFixed(4)+'% of supply':'—'}</div>`;
     }
 
     return`<div class="burn-card">
@@ -1550,7 +1572,7 @@ function renderAll(){
   renderTable();
   renderPie();
   renderLine();
-  renderAllocChart();
+  renderAllocBars();
   renderTicker();
   buildWifGrid();
   const ts='Updated '+new Date().toLocaleTimeString();
@@ -1892,97 +1914,27 @@ function renderLine(){
   });
 }
 
-function renderAllocChart(){
-  const hist=P.history;
-  const noH=document.getElementById('noAllocHist');
-  const ctx=document.getElementById('allocChart');
-  const slice=hist.slice(-144); // last ~12h at 5-min intervals
-
-  if(slice.length<2){
-    if(noH) noH.style.display='flex';
-    if(ctx) ctx.style.display='none';
-    if(CHARTS.alloc){CHARTS.alloc.destroy();CHARTS.alloc=null;}
+function renderAllocBars(){
+  const el=document.getElementById('allocBars');
+  if(!el) return;
+  const tot=totalVal();
+  if(!tot||tot<=0){
+    el.innerHTML='<div style="color:var(--ink-3);font-size:12px;font-style:italic;padding:8px 0">Awaiting prices…</div>';
     return;
   }
-  if(noH) noH.style.display='none';
-  if(ctx) ctx.style.display='block';
-
-  const labels=slice.map(e=>{
-    const d=new Date(e.ts);
-    return d.toLocaleDateString('en-AU',{month:'short',day:'numeric'})+
-      ' '+d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-  });
-
-  const datasets=P.assets.map(a=>{
-    const data=slice.map(e=>{
-      // Need per-asset price snapshot (av) to compute allocation at that point in time
-      if(!e.av||e.av[a.id]==null||e.usd<=0) return null;
-      const val=a.qty*e.av[a.id];
-      return+(val/e.usd*100).toFixed(2);
-    });
-    // Skip assets that have no data at all across the slice
-    if(data.every(v=>v===null)) return null;
-    return{
-      label:'$'+a.sym,
-      data,
-      borderColor:a.color,
-      backgroundColor:'transparent',
-      borderWidth:1.8,
-      tension:0.3,
-      pointRadius:slice.length>40?0:2,
-      pointHoverRadius:4,
-      spanGaps:true
-    };
-  }).filter(Boolean);
-
-  // Compute dynamic Y-axis range from actual data
-  let minVal=100, maxVal=0;
-  datasets.forEach(ds=>ds.data.forEach(v=>{
-    if(v==null) return;
-    if(v<minVal) minVal=v; if(v>maxVal) maxVal=v;
-  }));
-  const pad=Math.max(2,(maxVal-minVal)*0.18);
-  const yMin=Math.max(0,Math.floor(minVal-pad));
-  const yMax=Math.min(100,Math.ceil(maxVal+pad));
-
-  const tc=cc('#7d93a8','#6e7681');
-  const gc=DARK?'rgba(255,255,255,.04)':'rgba(0,0,0,.04)';
-
-  if(CHARTS.alloc) CHARTS.alloc.destroy();
-  CHARTS.alloc=new Chart(ctx,{
-    type:'line',
-    data:{labels,datasets},
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      interaction:{mode:'index',intersect:false},
-      plugins:{
-        legend:{
-          display:true,
-          position:'bottom',
-          labels:{color:tc,font:{size:10},padding:12,boxWidth:12,usePointStyle:true,pointStyle:'line'}
-        },
-        tooltip:{
-          callbacks:{
-            label:c=>` ${c.dataset.label}: ${c.parsed.y!=null?c.parsed.y.toFixed(1)+'%':'—'}`
-          }
-        }
-      },
-      scales:{
-        x:{
-          display:slice.length<=60,
-          ticks:{color:tc,maxTicksLimit:7,font:{size:10}},
-          grid:{color:gc}
-        },
-        y:{
-          min:yMin,
-          max:yMax,
-          ticks:{color:tc,callback:v=>v+'%',font:{size:10.5}},
-          grid:{color:gc}
-        }
-      }
-    }
-  });
+  const anyConv=CCY==='AUD';
+  const rows=P.assets.map(a=>{
+    const v=assetVal(a);
+    const pct=tot>0?(v/tot*100):0;
+    return{a,v,pct};
+  }).sort((a,b)=>b.pct-a.pct);
+  el.innerHTML=rows.map(({a,v,pct})=>`
+    <div class="ab-row">
+      <div class="ab-sym">$${a.sym}</div>
+      <div class="ab-track"><div class="ab-fill" style="width:${pct.toFixed(1)}%;background:${a.color}"></div></div>
+      <div class="ab-pct">${pct.toFixed(1)}%</div>
+      <div class="ab-val">${fmtV(v,anyConv)}</div>
+    </div>`).join('');
 }
 
 /* ═══════════════════════════════════════════════════
@@ -2259,6 +2211,83 @@ function clearSyncConfig(){
 /* ═══════════════════════════════════════════════════
    BOOT
 ═══════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════
+   MARKET NEWS  (CryptoCompare · 2-hour cache)
+═══════════════════════════════════════════════════ */
+const NEWS_KEY='ptNews_v1';
+const NEWS_TTL=2*60*60*1000; // 2 hours
+
+function newsTimeAgo(ts){
+  const diff=Math.floor((Date.now()-ts*1000)/60000);
+  if(diff<2) return 'just now';
+  if(diff<60) return diff+'m ago';
+  const h=Math.floor(diff/60);
+  if(h<24) return h+'h ago';
+  return Math.floor(h/24)+'d ago';
+}
+
+function renderNews(articles,cachedAt){
+  const el=document.getElementById('newsGrid');
+  const lbl=document.getElementById('newsRefreshLbl');
+  if(!el) return;
+  if(!articles||!articles.length){
+    el.innerHTML='<div class="news-err">No headlines available right now.</div>';
+    return;
+  }
+  el.innerHTML=articles.slice(0,8).map(a=>{
+    const cats=(a.categories||'').split('|').filter(Boolean).slice(0,3);
+    const excerpt=(a.body||'').replace(/<[^>]+>/g,'').slice(0,160);
+    const img=a.imageurl&&!a.imageurl.includes('placeholder')
+      ?`<img class="news-img" src="${a.imageurl}" alt="" onerror="this.style.display='none'" loading="lazy">`
+      :'';
+    return`<div class="news-item">
+      ${img}
+      <div class="news-body">
+        <a class="news-title" href="${a.url}" target="_blank" rel="noopener">${a.title}</a>
+        <div class="news-meta">
+          <span class="news-src">${a.source_info?.name||a.source||'—'}</span>
+          <span class="news-time">${newsTimeAgo(a.published_on)}</span>
+          <div class="news-cats">${cats.map(c=>`<span class="news-cat">${c}</span>`).join('')}</div>
+        </div>
+        ${excerpt?`<div class="news-excerpt">${excerpt}…</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+  if(lbl&&cachedAt){
+    lbl.textContent='Last fetched '+new Date(cachedAt).toLocaleTimeString();
+  }
+}
+
+async function fetchNews(force=false){
+  const el=document.getElementById('newsGrid');
+  // Check cache
+  try{
+    const raw=localStorage.getItem(NEWS_KEY);
+    if(raw&&!force){
+      const cached=JSON.parse(raw);
+      if(Date.now()-cached.ts<NEWS_TTL){
+        renderNews(cached.data,cached.ts);
+        return;
+      }
+    }
+  }catch(e){}
+  // Fetch fresh — categories based on crypto holdings + general crypto
+  const cats=['XRP','SOL','Bitcoin','Crypto'].join(',');
+  try{
+    const r=await fetch(`https://min-api.cryptocompare.com/data/v2/news/?lang=EN&categories=${cats}&sortOrder=latest&limit=10`);
+    const j=await r.json();
+    if(j.Data&&j.Data.length){
+      const ts=Date.now();
+      try{localStorage.setItem(NEWS_KEY,JSON.stringify({ts,data:j.Data}));}catch(e){}
+      renderNews(j.Data,ts);
+    } else {
+      if(el) el.innerHTML='<div class="news-err">No news returned.</div>';
+    }
+  }catch(e){
+    if(el) el.innerHTML='<div class="news-err">Unable to fetch headlines — will retry in 2 hours.</div>';
+  }
+}
+
 document.addEventListener('DOMContentLoaded',async ()=>{
   // Restore mode preference — default is dark
   try{
@@ -2273,6 +2302,9 @@ document.addEventListener('DOMContentLoaded',async ()=>{
   // Pull from cloud first — if newer data arrives, renderAll() is called again inside
   if(hasSyncConfig()) await pullFromCloud();
   doRefresh();
+  // News — fetch on load, refresh every 2 hours
+  fetchNews();
+  setInterval(()=>fetchNews(true),NEWS_TTL);
   document.getElementById('overlay').addEventListener('keydown',e=>{
     if(e.key==='Escape') closeSettings();
   });
