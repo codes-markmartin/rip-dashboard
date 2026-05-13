@@ -168,6 +168,7 @@ main{max-width:1480px;margin:0 auto;padding:36px 28px 60px;}
 .ms-card-bar{height:2px;background:var(--rule);margin-top:6px;}
 .ms-card-bar-fill{height:100%;background:var(--accent);transition:width .4s ease;}
 .ms-card-pct{font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:.04em;}
+.ms-card-mult{font-family:var(--mono);font-size:9.5px;color:var(--ink-4);letter-spacing:.03em;margin-top:2px;}
 
 /* ── Composition row ── */
 .row-comp{display:grid;grid-template-columns:1.05fr 2.4fr;border:1px solid var(--rule-s);}
@@ -255,6 +256,10 @@ table.htbl{width:100%;border-collapse:collapse;min-width:700px;}
 .burn-p-val.loading{color:var(--ink-4);font-style:italic;font-size:11px;font-weight:400;}
 .burn-err{color:var(--neg);font-size:11px;}
 .burn-loading{color:var(--ink-3);font-size:11px;font-style:italic;}
+.burn-next-clean{display:flex;flex-direction:column;gap:3px;padding-top:10px;border-top:1px solid var(--rule-s);margin-top:4px;}
+.burn-next-lbl{font:500 9px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--ink-4);}
+.burn-next-val{font-family:var(--mono);font-size:13px;color:var(--ink-2);font-weight:500;}
+.burn-next-rem{font-family:var(--mono);font-size:10.5px;color:oklch(0.78 0.14 35);}
 
 /* ── Alloc bars ── */
 .alloc-bars-wrap{display:flex;flex-direction:column;gap:13px;padding-top:6px;}
@@ -282,6 +287,25 @@ table.htbl{width:100%;border-collapse:collapse;min-width:700px;}
 .news-loading{color:var(--ink-3);font-size:12px;font-style:italic;padding:24px 0;}
 .news-err{color:var(--neg);font-size:12px;padding:16px 0;}
 .news-refresh{font:400 9.5px/1 var(--mono);color:var(--ink-4);margin-top:0;}
+
+/* ── Growth Projection ── */
+.proj-cards{display:grid;grid-template-columns:repeat(7,1fr);gap:0;border:1px solid var(--rule-s);overflow:hidden;}
+.proj-card{padding:20px 14px 18px;border-right:1px solid var(--rule-s);display:flex;flex-direction:column;gap:6px;position:relative;}
+.proj-card:last-child{border-right:0;}
+.proj-card.proj-done{background:oklch(0.80 0.105 80 / 0.04);}
+.proj-card.proj-done::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--pos);}
+.proj-card.proj-active::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent);}
+.proj-status{font-size:9px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-5);}
+.proj-card.proj-done .proj-status{color:var(--pos);}
+.proj-card.proj-active .proj-status{color:var(--accent);}
+.proj-amt{font-family:var(--serif);font-size:19px;color:var(--ink-3);line-height:1;margin-top:4px;}
+.proj-card.proj-done .proj-amt{color:var(--ink);}
+.proj-card.proj-active .proj-amt{color:var(--accent);font-size:22px;}
+.proj-date{font:500 11.5px/1 var(--mono);color:var(--ink-2);margin-top:4px;}
+.proj-days{font:400 10px/1 var(--mono);color:var(--ink-4);letter-spacing:.03em;}
+.proj-na{font:400 10px/1.4 var(--mono);color:var(--ink-5);font-style:italic;}
+.proj-empty{color:var(--ink-3);font-size:12px;font-style:italic;padding:8px 0;}
+@media(max-width:800px){.proj-cards{grid-template-columns:repeat(4,1fr);}.proj-card:nth-child(4){border-right:0;}.proj-card:nth-child(1),.proj-card:nth-child(2),.proj-card:nth-child(3),.proj-card:nth-child(4){border-bottom:1px solid var(--rule-s);}}
 
 /* ── What-If ── */
 .wif-wrap{border:1px solid var(--rule-s);display:grid;grid-template-columns:auto 1fr;}
@@ -670,19 +694,16 @@ body.light-mode .ticker{border-bottom-color:var(--rule-s);}
     </div>
   </section>
 
-  <!-- ── VI · Market News ── -->
+  <!-- ── VI · Growth Projection ── -->
   <section class="sect">
     <div class="sect-head">
-      <div class="sect-title"><span class="sect-num">VI</span>Market News</div>
+      <div class="sect-title"><span class="sect-num">VI</span>Growth Projection</div>
       <div class="sect-meta">
-        <span class="sect-meta-lbl">Refreshes every</span>
-        <span class="sect-meta-val">2 h</span>
+        <span class="sect-meta-lbl">Based on</span>
+        <span class="sect-meta-val" id="projBasis">—</span>
       </div>
     </div>
-    <div id="newsGrid" class="news-grid">
-      <div class="news-loading">Fetching latest headlines…</div>
-    </div>
-    <div class="news-refresh" id="newsRefreshLbl"></div>
+    <div id="projGrid"></div>
   </section>
 
 </main>
@@ -1472,11 +1493,21 @@ function renderBurnTracker(){
     } else if(failed){
       supplyLine=`<div class="burn-err">Unable to fetch supply — retrying next refresh</div>`;
     } else {
+      const STEP=10_000_000;
+      const nextClean=Math.floor(cur/STEP)*STEP;
+      const toNextClean=cur-nextClean;
+      const nextCleanFmt=(nextClean/1_000_000).toFixed(0)+'M';
+      const toNextFmt=(toNextClean/1_000_000).toFixed(2)+'M';
       supplyLine=`
         <div class="burn-supply-row">
           <div class="burn-val">${fmtSupply(cur)}</div>
         </div>
-        <div class="burn-sub">Your ${fmtQty(a.qty)} = ${cur>0?(a.qty/cur*100).toFixed(4)+'% of supply':'—'}</div>`;
+        <div class="burn-sub">Your ${fmtQty(a.qty)} = ${cur>0?(a.qty/cur*100).toFixed(4)+'% of supply':'—'}</div>
+        <div class="burn-next-clean">
+          <span class="burn-next-lbl">Next clean milestone</span>
+          <span class="burn-next-val">${nextCleanFmt}</span>
+          <span class="burn-next-rem">${toNextFmt} more to burn</span>
+        </div>`;
     }
 
     return`<div class="burn-card">
@@ -1491,6 +1522,94 @@ function renderBurnTracker(){
       ${supplyLine}
     </div>`;
   }).join('');
+}
+
+/* ═══════════════════════════════════════════════════
+   GROWTH PROJECTION  (linear regression on history)
+═══════════════════════════════════════════════════ */
+function linReg(history){
+  const n=history.length;
+  if(n<2) return null;
+  const t0=history[0].ts;
+  const DAY=86400000;
+  let sx=0,sy=0,sxy=0,sx2=0;
+  for(const e of history){
+    const x=(e.ts-t0)/DAY;
+    const y=e.usd;
+    sx+=x; sy+=y; sxy+=x*y; sx2+=x*x;
+  }
+  const denom=n*sx2-sx*sx;
+  if(Math.abs(denom)<1e-12) return null;
+  const m=(n*sxy-sx*sy)/denom; // USD per day slope
+  const b=(sy-m*sx)/n;         // intercept at t0
+  return{m,b,t0};
+}
+
+function renderProjection(){
+  const el=document.getElementById('projGrid');
+  const lbl=document.getElementById('projBasis');
+  if(!el) return;
+  const hist=P.history;
+
+  if(hist.length<2){
+    el.innerHTML='<div class="proj-empty">Insufficient history — projection builds automatically over time.</div>';
+    if(lbl) lbl.textContent='—';
+    return;
+  }
+
+  const reg=linReg(hist);
+  const rate=AUDRT||1.57;
+  const audNow=totalValAUD();
+  const now=Date.now();
+  const spanDays=((hist[hist.length-1].ts-hist[0].ts)/86400000).toFixed(1);
+  if(lbl) lbl.textContent=`linear trend · ${hist.length} pts · ${spanDays < 1 ? '<1' : spanDays} day span`;
+
+  const activeIdx=MILESTONES_AUD.findIndex(ms=>audNow<ms);
+  const fmt=v=>v>=1000?'A$'+(v/1000).toFixed(0)+'K':'A$'+v;
+
+  const cards=MILESTONES_AUD.map((ms,i)=>{
+    const done=audNow>=ms;
+    const isActive=i===activeIdx;
+
+    if(done){
+      return`<div class="proj-card proj-done">
+        <div class="proj-status">✓ Reached</div>
+        <div class="proj-amt">${fmt(ms)}</div>
+      </div>`;
+    }
+
+    if(!reg||reg.m<=0){
+      return`<div class="proj-card${isActive?' proj-active':''}">
+        <div class="proj-status">${isActive?'Next milestone':'Locked'}</div>
+        <div class="proj-amt">${fmt(ms)}</div>
+        <div class="proj-na">Trend declining</div>
+      </div>`;
+    }
+
+    const msUsd=ms/rate;
+    const xDays=(msUsd-reg.b)/reg.m; // days since hist[0].ts
+    const predTs=reg.t0+xDays*86400000;
+    const daysFromNow=(predTs-now)/86400000;
+
+    if(daysFromNow<0||daysFromNow>3650){
+      return`<div class="proj-card${isActive?' proj-active':''}">
+        <div class="proj-status">${isActive?'Next milestone':'Locked'}</div>
+        <div class="proj-amt">${fmt(ms)}</div>
+        <div class="proj-na">Too far to project</div>
+      </div>`;
+    }
+
+    const days=Math.round(daysFromNow);
+    const predDate=new Date(predTs).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
+    return`<div class="proj-card${isActive?' proj-active':''}">
+      <div class="proj-status">${isActive?'Next milestone':'Projected'}</div>
+      <div class="proj-amt">${fmt(ms)}</div>
+      <div class="proj-date">${predDate}</div>
+      <div class="proj-days">${days} day${days===1?'':'s'} away</div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML=`<div class="proj-cards">${cards}</div>`;
 }
 
 /* ═══════════════════════════════════════════════════
@@ -1575,6 +1694,7 @@ function renderAll(){
   renderPie();
   renderLine();
   renderStackedChart();
+  renderProjection();
   renderTicker();
   buildWifGrid();
   const ts='Updated '+new Date().toLocaleTimeString();
@@ -1741,6 +1861,8 @@ function renderMilestones(){
 
     let statusTxt, subTxt, barHTML='', pctHTML='';
 
+    const multStr=aud>0&&!done?`${(ms/aud).toFixed(1)}× needed`:'';
+
     if(done){
       statusTxt=isMajor?'✦ Major Goal Achieved':'✓ Reached';
       subTxt='Goal achieved';
@@ -1753,7 +1875,6 @@ function renderMilestones(){
       barHTML=`<div class="ms-card-bar"><div class="ms-card-bar-fill" style="width:${pct.toFixed(1)}%"></div></div>`;
       pctHTML=`<div class="ms-card-pct">${pct.toFixed(1)}%</div>`;
     } else if(isMajor){
-      // 100K always shows progress even when locked/future
       statusTxt='✦ Ultimate Goal';
       const pct=Math.min(100,Math.max(0,(aud/ms)*100));
       subTxt=`A$${(ms-aud).toLocaleString('en-AU',{maximumFractionDigits:0})} to go`;
@@ -1769,6 +1890,7 @@ function renderMilestones(){
       <div class="ms-card-amt">${fmt(ms)}</div>
       ${subTxt?`<div class="ms-card-sub">${subTxt}</div>`:''}
       ${barHTML}${pctHTML}
+      ${multStr?`<div class="ms-card-mult">${multStr}</div>`:''}
     </div>`;
   }).join('');
 
@@ -2313,83 +2435,6 @@ function clearSyncConfig(){
 /* ═══════════════════════════════════════════════════
    BOOT
 ═══════════════════════════════════════════════════ */
-/* ═══════════════════════════════════════════════════
-   MARKET NEWS  (CryptoCompare · 2-hour cache)
-═══════════════════════════════════════════════════ */
-const NEWS_KEY='ptNews_v1';
-const NEWS_TTL=2*60*60*1000; // 2 hours
-
-function newsTimeAgo(ts){
-  const diff=Math.floor((Date.now()-ts*1000)/60000);
-  if(diff<2) return 'just now';
-  if(diff<60) return diff+'m ago';
-  const h=Math.floor(diff/60);
-  if(h<24) return h+'h ago';
-  return Math.floor(h/24)+'d ago';
-}
-
-function renderNews(articles,cachedAt){
-  const el=document.getElementById('newsGrid');
-  const lbl=document.getElementById('newsRefreshLbl');
-  if(!el) return;
-  if(!articles||!articles.length){
-    el.innerHTML='<div class="news-err">No headlines available right now.</div>';
-    return;
-  }
-  el.innerHTML=articles.slice(0,8).map(a=>{
-    const cats=(a.categories||'').split('|').filter(Boolean).slice(0,3);
-    const excerpt=(a.body||'').replace(/<[^>]+>/g,'').slice(0,160);
-    const img=a.imageurl&&!a.imageurl.includes('placeholder')
-      ?`<img class="news-img" src="${a.imageurl}" alt="" onerror="this.style.display='none'" loading="lazy">`
-      :'';
-    return`<div class="news-item">
-      ${img}
-      <div class="news-body">
-        <a class="news-title" href="${a.url}" target="_blank" rel="noopener">${a.title}</a>
-        <div class="news-meta">
-          <span class="news-src">${a.source_info?.name||a.source||'—'}</span>
-          <span class="news-time">${newsTimeAgo(a.published_on)}</span>
-          <div class="news-cats">${cats.map(c=>`<span class="news-cat">${c}</span>`).join('')}</div>
-        </div>
-        ${excerpt?`<div class="news-excerpt">${excerpt}…</div>`:''}
-      </div>
-    </div>`;
-  }).join('');
-  if(lbl&&cachedAt){
-    lbl.textContent='Last fetched '+new Date(cachedAt).toLocaleTimeString();
-  }
-}
-
-async function fetchNews(force=false){
-  const el=document.getElementById('newsGrid');
-  // Check cache
-  try{
-    const raw=localStorage.getItem(NEWS_KEY);
-    if(raw&&!force){
-      const cached=JSON.parse(raw);
-      if(Date.now()-cached.ts<NEWS_TTL){
-        renderNews(cached.data,cached.ts);
-        return;
-      }
-    }
-  }catch(e){}
-  // Fetch fresh — categories based on crypto holdings + general crypto
-  const cats=['XRP','SOL','Bitcoin','Crypto'].join(',');
-  try{
-    const r=await fetch(`https://min-api.cryptocompare.com/data/v2/news/?lang=EN&categories=${cats}&sortOrder=latest&limit=10`);
-    const j=await r.json();
-    if(j.Data&&j.Data.length){
-      const ts=Date.now();
-      try{localStorage.setItem(NEWS_KEY,JSON.stringify({ts,data:j.Data}));}catch(e){}
-      renderNews(j.Data,ts);
-    } else {
-      if(el) el.innerHTML='<div class="news-err">No news returned.</div>';
-    }
-  }catch(e){
-    if(el) el.innerHTML='<div class="news-err">Unable to fetch headlines — will retry in 2 hours.</div>';
-  }
-}
-
 document.addEventListener('DOMContentLoaded',async ()=>{
   // Restore mode preference — default is dark
   try{
@@ -2404,9 +2449,6 @@ document.addEventListener('DOMContentLoaded',async ()=>{
   // Pull from cloud first — if newer data arrives, renderAll() is called again inside
   if(hasSyncConfig()) await pullFromCloud();
   doRefresh();
-  // News — fetch on load, refresh every 2 hours
-  fetchNews();
-  setInterval(()=>fetchNews(true),NEWS_TTL);
   document.getElementById('overlay').addEventListener('keydown',e=>{
     if(e.key==='Escape') closeSettings();
   });
