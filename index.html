@@ -514,11 +514,7 @@ body.light-mode .ticker{border-bottom-color:var(--rule-s);}
         <div>History builds automatically — a new point every 5 minutes.</div>
       </div>
     </div>
-    <div class="chart-legend" id="chartLegend" style="display:none">
-      <span><span style="color:#14794a;font-size:12px">▲</span> Major upward move</span>
-      <span><span style="color:#be2030;font-size:12px">▼</span> Major downward move</span>
-      <span style="color:var(--ink-4)">· Labels show asset most responsible</span>
-    </div>
+    <div class="chart-legend" id="chartLegend" style="display:none"></div>
   </div>
 
   <!-- ── I · Milestones ── -->
@@ -632,9 +628,15 @@ body.light-mode .ticker{border-bottom-color:var(--rule-s);}
       </div>
       <div class="line-pane">
         <div class="line-pane-head">
-          <span class="kpi-lbl">Allocation Breakdown</span>
+          <span class="kpi-lbl">Asset Weight Over Time</span>
         </div>
-        <div id="allocBars" class="alloc-bars-wrap"></div>
+        <div class="hero-chart-canvas" style="height:240px">
+          <canvas id="stackChart" style="display:none"></canvas>
+          <div class="no-hist" id="noStackHist">
+            <div>History builds automatically — check back after a few refreshes.</div>
+          </div>
+        </div>
+        <div class="chart-legend" id="stackLegend" style="display:none;flex-wrap:wrap;gap:12px;margin-top:10px"></div>
       </div>
     </div>
   </section>
@@ -830,7 +832,7 @@ let LOGOS  = {};
 let CCY    = 'USD';
 let AUDRT  = null;
 let DARK   = false;
-let CHARTS = {pie:null,line:null,alloc:null};
+let CHARTS = {pie:null,line:null,alloc:null,stacked:null};
 let RT     = null;
 let CD_IV  = null;
 let CD_LEFT= REFRESH_SECS;
@@ -870,7 +872,7 @@ function applyDark(d){
   const btn=document.getElementById('darkBtn');
   if(btn) btn.textContent=d?'🌙':'☀';
   try{localStorage.setItem('ptDark',d?'1':'0');}catch(e){}
-  renderPie(); renderLine(); renderAllocBars();
+  renderPie(); renderLine(); renderStackedChart();
 }
 function toggleDark(){applyDark(!DARK);}
 function cc(l,dk){return DARK?dk:l;}
@@ -1572,7 +1574,7 @@ function renderAll(){
   renderTable();
   renderPie();
   renderLine();
-  renderAllocBars();
+  renderStackedChart();
   renderTicker();
   buildWifGrid();
   const ts='Updated '+new Date().toLocaleTimeString();
@@ -1883,9 +1885,8 @@ function renderLine(){
 
   setH('lineTitle',`Portfolio History${CCY==='AUD'?' (AUD est.)':''}`);
 
-  // Detect significant moves & build signal list
   const signals=detectSignals(slice);
-  if(legendEl) legendEl.style.display=signals.length?'flex':'none';
+  if(legendEl) legendEl.style.display='none'; // legend now lives on stacked chart
 
   if(CHARTS.line) CHARTS.line.destroy();
   const up=values[values.length-1]>=values[0];
@@ -1903,7 +1904,6 @@ function renderLine(){
       plugins:{
         legend:{display:false},
         tooltip:{callbacks:{label:c=>` ${sym()}${c.parsed.y.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})}`}},
-        // Pass signals to our custom plugin
         signalMarkers:{signals}
       },
       scales:{
@@ -1912,6 +1912,108 @@ function renderLine(){
       }
     }
   });
+}
+
+function renderStackedChart(){
+  const hist=P.history;
+  const noH=document.getElementById('noStackHist');
+  const ctx=document.getElementById('stackChart');
+  const legWrap=document.getElementById('stackLegend');
+  const slice=hist.slice(-144);
+
+  if(slice.length<2){
+    if(noH) noH.style.display='flex';
+    if(ctx) ctx.style.display='none';
+    if(legWrap) legWrap.style.display='none';
+    if(CHARTS.stacked){CHARTS.stacked.destroy();CHARTS.stacked=null;}
+    return;
+  }
+  if(noH) noH.style.display='none';
+  if(ctx) ctx.style.display='block';
+
+  const rate=CCY==='AUD'?(AUDRT||1.57):1;
+  const labels=slice.map(e=>{
+    const d=new Date(e.ts);
+    return d.toLocaleDateString('en-AU',{month:'short',day:'numeric'})+
+      ' '+d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  });
+
+  const currentTot=P.assets.reduce((s,a)=>{
+    const px=PX[a.id]; return s+(px&&!px.failed&&px.price?a.qty*px.price:0);
+  },0);
+
+  // Sort largest-avg first → sits at bottom of stack
+  const ordered=[...P.assets].sort((a,b)=>{
+    const avgA=slice.reduce((s,e)=>s+(e.av&&e.av[a.id]!=null?a.qty*e.av[a.id]:0),0)/slice.length;
+    const avgB=slice.reduce((s,e)=>s+(e.av&&e.av[b.id]!=null?b.qty*e.av[b.id]:0),0)/slice.length;
+    return avgB-avgA;
+  });
+
+  const datasets=ordered.map(a=>{
+    const data=slice.map(e=>{
+      if(e.av&&e.av[a.id]!=null) return+(a.qty*e.av[a.id]*rate).toFixed(2);
+      const px=PX[a.id];
+      if(px&&!px.failed&&px.price&&currentTot>0)
+        return+((a.qty*px.price/currentTot)*e.usd*rate).toFixed(2);
+      return 0;
+    });
+    return{
+      label:'$'+a.sym,
+      data,
+      borderColor:a.color,
+      backgroundColor:a.color+'38',
+      fill:true,
+      tension:0.3,
+      pointRadius:slice.length>40?0:2,
+      pointHoverRadius:4,
+      borderWidth:1,
+      spanGaps:true
+    };
+  });
+
+  const tc=cc('#7d93a8','#6e7681');
+  const gc=DARK?'rgba(255,255,255,.04)':'rgba(0,0,0,.04)';
+
+  if(CHARTS.stacked) CHARTS.stacked.destroy();
+  CHARTS.stacked=new Chart(ctx,{
+    type:'line',
+    data:{labels,datasets},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          callbacks:{
+            label:c=>` ${c.dataset.label}: ${sym()}${c.parsed.y!=null?c.parsed.y.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2}):'—'}`,
+            footer:items=>{
+              const total=items.reduce((s,c)=>s+(c.parsed.y||0),0);
+              return`Total: ${sym()}${Math.round(total).toLocaleString('en-AU')}`;
+            }
+          }
+        }
+      },
+      scales:{
+        x:{display:slice.length<=60,ticks:{color:tc,maxTicksLimit:7,font:{size:10}},grid:{color:gc}},
+        y:{stacked:true,ticks:{color:tc,callback:v=>sym()+Math.round(v).toLocaleString('en-AU'),font:{size:10.5}},grid:{color:gc}}
+      }
+    }
+  });
+
+  // Asset legend
+  if(legWrap){
+    const tot=totalVal();
+    legWrap.innerHTML=ordered.map(a=>{
+      const v=assetVal(a);
+      const pct=tot>0?(v/tot*100).toFixed(1):'—';
+      return`<span style="display:inline-flex;align-items:center;gap:5px">
+        <span style="width:10px;height:10px;display:inline-block;background:${a.color};opacity:0.75;flex-shrink:0"></span>
+        <span style="color:var(--ink-2);font-size:10.5px">$${a.sym}</span>
+        <span style="font-family:var(--mono);font-size:10px;color:var(--ink-4)">${pct}%</span>
+      </span>`;
+    }).join('');
+    legWrap.style.display='flex';
+  }
 }
 
 function renderAllocBars(){
