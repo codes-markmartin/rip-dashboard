@@ -747,7 +747,7 @@ body.light-mode .ticker{border-bottom-color:var(--rule-s);}
     <a href="#" onclick="openSettings();return false">Settings</a>
     &nbsp;·&nbsp; Values in <span id="ftCcy">USD</span>
     &nbsp;·&nbsp; Not financial advice
-    &nbsp;·&nbsp; <span onclick="openSuper()" style="cursor:pointer;opacity:0.30;font-size:10px;letter-spacing:.1em;user-select:none">super</span>
+    &nbsp;·&nbsp; <span id="superFooterBtn" onclick="openSuper()" style="cursor:pointer;opacity:0.30;font-size:10px;letter-spacing:.1em;user-select:none">super</span>
   </span>
 </footer>
 
@@ -758,7 +758,7 @@ body.light-mode .ticker{border-bottom-color:var(--rule-s);}
       <div>
         <div class="super-eyebrow">Retirement Portfolio</div>
         <div class="super-title">Superannuation</div>
-        <div class="super-sub">ASX Holdings · <span id="superUpdLbl">Not yet loaded</span></div>
+        <div class="super-sub">ASX Holdings · AUD · <span id="superUpdLbl">No prices entered yet</span></div>
       </div>
       <button class="super-close" onclick="closeSuper()">✕ Close</button>
     </div>
@@ -769,7 +769,6 @@ body.light-mode .ticker{border-bottom-color:var(--rule-s);}
           <th class="r">Qty</th>
           <th class="r">Cost Basis</th>
           <th class="r">Price (AUD)</th>
-          <th class="r">24h</th>
           <th class="r">Market Value</th>
           <th class="r">Gain / Loss</th>
         </tr>
@@ -777,8 +776,7 @@ body.light-mode .ticker{border-bottom-color:var(--rule-s);}
       <tbody id="superTbody"></tbody>
     </table>
     <div class="super-foot">
-      <span class="super-foot-note" id="superSrc">Prices via Stooq · ASX market · AUD</span>
-      <button class="super-refresh-btn" onclick="fetchSuperPrices()">↻ Refresh prices</button>
+      <span class="super-foot-note" id="superSrc">Edit prices above · changes save automatically</span>
     </div>
   </div>
 </div>
@@ -2505,106 +2503,127 @@ function clearSyncConfig(){
    SUPERANNUATION
 ═══════════════════════════════════════════════════ */
 const SUPER_ASSETS=[
-  {id:'s32', sym:'S32', name:'South32',  ticker:'S32', qty:860,  cost:4.385,  color:'#5a7fa8'},
-  {id:'nxt', sym:'NXT', name:'NextDC',   ticker:'NXT', qty:480,  cost:15.002, color:'#14794a'},
-  {id:'mp1', sym:'MP1', name:'Megaport', ticker:'MP1', qty:400,  cost:8.852,  color:'#8b5cf6'},
+  {id:'s32', sym:'S32', name:'South32',  qty:860,  cost:4.385,  color:'#5a7fa8'},
+  {id:'nxt', sym:'NXT', name:'NextDC',   qty:480,  cost:15.002, color:'#14794a'},
+  {id:'mp1', sym:'MP1', name:'Megaport', qty:400,  cost:8.852,  color:'#8b5cf6'},
 ];
-let SUPER_PX={};
+let SUPER_MANUAL={};  // {id: price}
+let SUPER_TS=0;       // timestamp of last price update
 let SUPER_OPEN=false;
 
-async function fetchSuperPrices(){
-  const updLbl=document.getElementById('superUpdLbl');
-  if(updLbl) updLbl.textContent='Fetching…';
-  await Promise.allSettled(SUPER_ASSETS.map(async a=>{
-    try{
-      const r=await fetch(`https://stooq.com/q/d/l/?s=${a.ticker.toLowerCase()}.au&i=d`,
-        {signal:AbortSignal.timeout(12000)});
-      if(!r.ok){SUPER_PX[a.id]={failed:true};return;}
-      const text=await r.text();
-      const lines=text.trim().split('\n').filter(l=>l.trim());
-      if(lines.length<2){SUPER_PX[a.id]={failed:true};return;}
-      const hdrs=lines[0].split(',').map(h=>h.trim().toLowerCase());
-      const ci=hdrs.indexOf('close');
-      if(ci<0){SUPER_PX[a.id]={failed:true};return;}
-      const latest=lines[lines.length-1].split(',');
-      const price=parseFloat(latest[ci]);
-      if(isNaN(price)||price<=0){SUPER_PX[a.id]={failed:true};return;}
-      let ch24=0;
-      if(lines.length>=3){
-        const prev=parseFloat(lines[lines.length-2].split(',')[ci]);
-        if(!isNaN(prev)&&prev>0) ch24=((price-prev)/prev*100);
-      }
-      SUPER_PX[a.id]={price,ch24};
-    }catch(e){SUPER_PX[a.id]={failed:true};}
-  }));
+function superTimeAgo(ts){
+  if(!ts) return null;
+  const s=Math.floor((Date.now()-ts)/1000);
+  if(s<60) return 'just now';
+  const m=Math.floor(s/60);
+  if(m<60) return `${m} minute${m>1?'s':''} ago`;
+  const h=Math.floor(m/60);
+  if(h<24) return `${h} hour${h>1?'s':''} ago`;
+  const d=Math.floor(h/24);
+  return `${d} day${d>1?'s':''} ago`;
+}
+
+function loadSuperPrices(){
+  try{
+    const raw=localStorage.getItem('superManual');
+    if(raw) SUPER_MANUAL=JSON.parse(raw);
+    SUPER_TS=parseInt(localStorage.getItem('superTS')||'0',10)||0;
+  }catch(e){}
+}
+
+function saveSuperPrices(){
+  SUPER_TS=Date.now();
+  try{
+    localStorage.setItem('superManual',JSON.stringify(SUPER_MANUAL));
+    localStorage.setItem('superTS',String(SUPER_TS));
+  }catch(e){}
+  updateSuperUpdLbl();
+}
+
+function updateSuperUpdLbl(){
+  const el=document.getElementById('superUpdLbl');
+  if(!el) return;
+  const ago=superTimeAgo(SUPER_TS);
+  el.textContent=ago?`Last updated ${ago}`:'No prices entered yet';
+}
+
+function superManualInput(id,val){
+  const n=parseFloat(val);
+  if(isNaN(n)||n<=0) delete SUPER_MANUAL[id];
+  else SUPER_MANUAL[id]=n;
+  saveSuperPrices();
   renderSuper();
-  if(updLbl) updLbl.textContent='Updated '+new Date().toLocaleTimeString();
 }
 
 function renderSuper(){
   const tbody=document.getElementById('superTbody');
   if(!tbody) return;
+  let totalMV=0, totalCost=0;
 
-  let totalMV=0,totalCost=0;
   const rows=SUPER_ASSETS.map(a=>{
-    const px=SUPER_PX[a.id];
+    const price=SUPER_MANUAL[a.id]||null;
     const cost=a.qty*a.cost;
     totalCost+=cost;
-    if(!px||px.failed){
-      return`<tr>
-        <td><div class="super-sym-cell">
-          <div class="super-orb" style="color:${a.color};border-color:${a.color}33">${a.sym[0]}</div>
-          <div><div class="super-sym">$${a.sym}</div><div class="super-name">${a.name}</div><span class="super-tag">ASX</span></div>
-        </div></td>
-        <td class="r">${a.qty.toLocaleString()}</td>
-        <td class="r"><div>A$${a.cost.toFixed(3)}</div><div class="super-cost">A$${cost.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})} total</div></td>
-        <td class="r" colspan="4" style="color:var(--ink-4);font-style:italic">Price unavailable</td>
+
+    const assetCell=`<td><div class="super-sym-cell">
+      <div class="super-orb" style="color:${a.color};border-color:${a.color}33">${a.sym[0]}</div>
+      <div><div class="super-sym">$${a.sym}</div><div class="super-name">${a.name}</div><span class="super-tag">ASX</span></div>
+    </div></td>`;
+    const costCell=`<td class="r"><div class="super-price">A$${a.cost.toFixed(3)}</div><div class="super-cost">A$${cost.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})} total</div></td>`;
+    const inputCell=`<td class="r"><input class="super-inp" type="number" step="0.001" min="0"
+      placeholder="0.000" value="${price!=null?price.toFixed(3):''}"
+      oninput="superManualInput('${a.id}',this.value)"></td>`;
+
+    if(price==null){
+      return`<tr>${assetCell}
+        <td class="r">${a.qty.toLocaleString()}</td>${costCell}
+        ${inputCell}
+        <td class="r" style="color:var(--ink-4);font-size:11px">—</td>
+        <td class="r" style="color:var(--ink-4);font-size:11px">—</td>
       </tr>`;
     }
-    const mv=a.qty*px.price;
-    totalMV+=mv;
-    const pl=mv-cost;
-    const plPct=(pl/cost*100);
-    const sign=pl>=0?'+':'';
-    const cls=pl>=0?'pos':'neg';
-    const ch24Sign=px.ch24>=0?'+':'';
-    const ch24Cls=px.ch24>=0?'pos':'neg';
-    return`<tr>
-      <td><div class="super-sym-cell">
-        <div class="super-orb" style="color:${a.color};border-color:${a.color}33">${a.sym[0]}</div>
-        <div><div class="super-sym">$${a.sym}</div><div class="super-name">${a.name}</div><span class="super-tag">ASX</span></div>
-      </div></td>
-      <td class="r">${a.qty.toLocaleString()}</td>
-      <td class="r"><div class="super-price">A$${a.cost.toFixed(3)}</div><div class="super-cost">A$${cost.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})} total</div></td>
-      <td class="r"><div class="super-price">A$${px.price.toFixed(3)}</div></td>
-      <td class="r"><span class="super-pl ${ch24Cls}">${ch24Sign}${px.ch24.toFixed(2)}%</span></td>
+
+    const mv=a.qty*price; totalMV+=mv;
+    const pl=mv-cost; const plPct=pl/cost*100;
+    const sign=pl>=0?'+':''; const cls=pl>=0?'pos':'neg';
+
+    return`<tr>${assetCell}
+      <td class="r">${a.qty.toLocaleString()}</td>${costCell}
+      ${inputCell}
       <td class="r"><div class="super-val">A$${mv.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})}</div></td>
-      <td class="r"><div class="super-pl ${cls}">${sign}A$${Math.abs(pl).toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
-        <div class="super-pl ${cls}" style="font-size:10.5px;margin-top:3px">${sign}${plPct.toFixed(2)}%</div></td>
+      <td class="r">
+        <div class="super-pl ${cls}">${sign}A$${Math.abs(pl).toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+        <div class="super-pl ${cls}" style="font-size:10.5px;margin-top:3px">${sign}${plPct.toFixed(2)}%</div>
+      </td>
     </tr>`;
   });
 
-  // Total row
-  const totalPL=totalMV-totalCost;
-  const totalSign=totalPL>=0?'+':'';
-  const totalCls=totalPL>=0?'pos':'neg';
-  const totalPct=totalCost>0?(totalPL/totalCost*100):0;
-  rows.push(`<tr class="super-total">
-    <td colspan="5" style="font:600 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)">Total Portfolio</td>
-    <td class="r"><div class="super-val">A$${totalMV.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
-      <div style="font-size:10px;color:var(--ink-4);margin-top:3px">cost A$${totalCost.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})}</div></td>
-    <td class="r"><div class="super-pl ${totalCls}">${totalSign}A$${Math.abs(totalPL).toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
-      <div class="super-pl ${totalCls}" style="font-size:10.5px;margin-top:3px">${totalSign}${totalPct.toFixed(2)}%</div></td>
-  </tr>`);
-
+  if(totalMV>0){
+    const totalPL=totalMV-totalCost;
+    const totalSign=totalPL>=0?'+':''; const totalCls=totalPL>=0?'pos':'neg';
+    const totalPct=totalCost>0?(totalPL/totalCost*100):0;
+    rows.push(`<tr class="super-total">
+      <td colspan="4" style="font:600 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)">Total</td>
+      <td class="r"><div class="super-val">A$${totalMV.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+        <div style="font-size:10px;color:var(--ink-4);margin-top:3px">cost A$${totalCost.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})}</div></td>
+      <td class="r"><div class="super-pl ${totalCls}">${totalSign}A$${Math.abs(totalPL).toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+        <div class="super-pl ${totalCls}" style="font-size:10.5px;margin-top:3px">${totalSign}${totalPct.toFixed(2)}%</div></td>
+    </tr>`);
+  }
   tbody.innerHTML=rows.join('');
+
+  // Footer button
+  const fb=document.getElementById('superFooterBtn');
+  if(fb) fb.textContent=totalMV>0?`A$${Math.round(totalMV).toLocaleString('en-AU')} (super)`:'super';
 }
 
 function openSuper(){
   SUPER_OPEN=true;
   document.getElementById('superOverlay').classList.add('open');
   document.body.style.overflow='hidden';
-  if(!Object.keys(SUPER_PX).length) fetchSuperPrices();
+  loadSuperPrices();
+  renderSuper();
+  updateSuperUpdLbl();
 }
 
 function closeSuper(){
