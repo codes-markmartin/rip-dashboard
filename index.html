@@ -199,8 +199,8 @@ main{max-width:1480px;margin:0 auto;padding:36px 28px 60px;}
 /* ── Composition row ── */
 .row-comp{display:grid;grid-template-columns:1.05fr 2.4fr;border:1px solid var(--rule-s);}
 .donut-pane{padding:24px 26px;border-right:1px solid var(--rule-s);display:flex;flex-direction:column;}
-.donut-wrap{position:relative;aspect-ratio:1;max-width:240px;margin:8px auto 14px;}
-.donut-wrap canvas{width:100%!important;height:100%!important;}
+.donut-wrap{position:relative;width:220px;height:220px;margin:8px auto 14px;flex-shrink:0;}
+.donut-wrap canvas{position:absolute;inset:0;width:100%!important;height:100%!important;}
 .donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;}
 .donut-center .dc-lbl{font-size:9.5px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);}
 .donut-center .dc-val{font-family:var(--serif);font-size:20px;margin-top:4px;}
@@ -607,7 +607,7 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0);border-color:var(--rule
   .announce-msg{font-size:11px;}
 
   /* Composition row */
-  .donut-wrap{max-width:180px;}
+  .donut-wrap{width:170px;height:170px;}
   .line-pane .hero-chart-canvas{height:160px;}
 
   /* What-if */
@@ -1967,36 +1967,91 @@ function renderProjChart(){
     if(_projChart){_projChart.destroy();_projChart=null;}
     return;
   }
-  wrap.style.display='block';
 
-  // Historical: string labels + AUD values
-  const histLabels=hist.map(h=>{
-    const d=new Date(h.ts);
-    return d.toLocaleDateString('en-AU',{day:'numeric',month:'short'});
-  });
-  const histVals=hist.map(h=>+(h.usd*rate).toFixed(2));
-
-  // Projected segment: last hist point → milestone target date
   const ms=MILESTONES_AUD[activeIdx];
   const msUsd=ms/rate;
   const stdDev=dailyReturnStdDev(hist);
   const dCentral=daysUntil(PROJ_MODEL,msUsd,hist,stdDev,0);
 
-  let projLabels=[], projVals=[];
-  if(dCentral!=null&&dCentral<3650){
-    const predTs=now+dCentral*86400000;
-    const predLabel=new Date(predTs).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
-    projLabels=[histLabels[histLabels.length-1], predLabel];
-    projVals=[histVals[histVals.length-1], ms];
+  wrap.style.display='block';
+
+  // ── Time spans ──────────────────────────────────────────────────
+  const histStartTs=hist[0].ts;
+  const histEndTs=hist[hist.length-1].ts;
+  const histDays=(histEndTs-histStartTs)/86400000||1;
+  const projDays=(dCentral!=null&&dCentral<3650)?dCentral:null;
+
+  // ── Proportional point counts ──────────────────────────────────
+  // Give each time period the same density of data points so visual
+  // widths match actual durations.
+  const TOTAL_PTS=70;
+  const histPts=projDays
+    ?Math.max(3,Math.round(TOTAL_PTS*histDays/(histDays+projDays)))
+    :TOTAL_PTS;
+  const projPts=projDays?Math.max(3,TOTAL_PTS-histPts):0;
+
+  // ── Evenly sample history ──────────────────────────────────────
+  function sampleEvenly(arr,n){
+    if(arr.length<=n) return arr;
+    const out=[];
+    for(let i=0;i<n;i++) out.push(arr[Math.round(i*(arr.length-1)/(n-1))]);
+    return out;
+  }
+  const histSampled=sampleEvenly(hist,histPts);
+
+  // ── Build projected value trajectory from model ────────────────
+  function projValAtDays(dFromLast){
+    // dFromLast: days after the last history point
+    const lastTs=histEndTs;
+    const lastUsd=hist[hist.length-1].usd;
+    if(PROJ_MODEL==='linear'){
+      const reg=linReg(hist);
+      if(!reg) return lastUsd+(msUsd-lastUsd)*(dFromLast/projDays);
+      return Math.max(0, reg.b+reg.m*((lastTs+dFromLast*86400000-reg.t0)/86400000));
+    }
+    if(PROJ_MODEL==='exp'){
+      const reg=expReg(hist);
+      if(!reg) return lastUsd*Math.pow(msUsd/Math.max(0.001,lastUsd),dFromLast/projDays);
+      const dailyRate=Math.exp(reg.b)-1;
+      return lastUsd*Math.pow(1+dailyRate,dFromLast);
+    }
+    if(PROJ_MODEL==='momentum'){
+      const m=momentumModel(hist);
+      if(!m) return lastUsd*Math.pow(msUsd/Math.max(0.001,lastUsd),dFromLast/projDays);
+      return m.currentUsd*Math.pow(1+m.dailyRate,dFromLast+(lastTs-m.ts)/86400000);
+    }
+    if(PROJ_MODEL==='cagr'){
+      const m=cagrModel(hist);
+      if(!m) return lastUsd*Math.pow(msUsd/Math.max(0.001,lastUsd),dFromLast/projDays);
+      return m.currentUsd*Math.pow(1+m.dailyRate,dFromLast+(lastTs-m.ts)/86400000);
+    }
+    return lastUsd+(msUsd-lastUsd)*(dFromLast/projDays);
   }
 
-  // Combine into a single x-axis (avoid duplicate last label)
-  const allLabels=[...histLabels];
-  if(projLabels.length>1) allLabels.push(projLabels[1]);
+  // ── Date label formatter ────────────────────────────────────────
+  const fmtLbl=ts=>{
+    const d=new Date(ts);
+    return d.toLocaleDateString('en-AU',{day:'numeric',month:'short'});
+  };
 
-  // Pad datasets to shared label length
-  const histData=[...histVals, ...(projLabels.length>1?[null]:[])];
-  const projData=[...new Array(histVals.length-1).fill(null), ...projVals];
+  // ── Assemble labels + datasets ─────────────────────────────────
+  const allLabels=histSampled.map(h=>fmtLbl(h.ts));
+  const histData=histSampled.map(h=>+(h.usd*rate).toFixed(2));
+  const projData=new Array(histPts).fill(null);
+
+  if(projDays&&projPts>=2){
+    for(let i=1;i<=projPts;i++){
+      const frac=i/projPts;
+      const dFromLast=frac*projDays;
+      const ts=histEndTs+dFromLast*86400000;
+      const valUsd=projValAtDays(dFromLast);
+      allLabels.push(fmtLbl(ts));
+      histData.push(null);
+      projData.push(+(valUsd*rate).toFixed(2));
+    }
+    // Anchor projected dataset at the last history value
+    projData[histPts-1]=histData[histPts-1];
+  }
 
   const tc=cc('#7d93a8','#6e7681');
   const gc=DARK?'rgba(255,255,255,.04)':'rgba(0,0,0,.04)';
@@ -2016,12 +2071,12 @@ function renderProjChart(){
           pointRadius:0,pointHoverRadius:3,
           borderWidth:2,spanGaps:false
         },
-        ...(projVals.length>1?[{
-          label:`→ A$${(ms/1000).toFixed(0)}K milestone`,
+        ...(projDays&&projPts>=2?[{
+          label:`→ A$${ms>=1000?(ms/1000).toFixed(0)+'K':ms} milestone`,
           data:projData,
           borderColor:'oklch(0.80 0.105 80 / 0.65)',
           backgroundColor:'transparent',
-          fill:false,tension:0,
+          fill:false,tension:0.2,
           pointRadius:projData.map((_,i)=>i===projData.length-1?5:0),
           pointBackgroundColor:'oklch(0.80 0.105 80)',
           borderWidth:2,
@@ -2590,7 +2645,7 @@ function renderPie(){
     data:{labels,datasets:[{data,
       backgroundColor:colors.map(c=>c+'22'),borderColor:colors,
       borderWidth:1.5,hoverBorderWidth:2}]},
-    options:{cutout:'66%',plugins:{
+    options:{cutout:'66%',responsive:true,maintainAspectRatio:false,plugins:{
       legend:{display:false},
       tooltip:{callbacks:{label:c=>` ${c.label}: ${fmtV(c.parsed,false)} (${(c.parsed/total*100).toFixed(1)}%)`}}
     }}
