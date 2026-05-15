@@ -578,10 +578,19 @@ body.light-mode .ticker{border-bottom-color:var(--rule-s);}
     <div class="chart-legend" id="chartLegend" style="display:none"></div>
   </div>
 
-  <!-- ── I · Milestones ── -->
+  <!-- ── I · Announcements ── -->
   <section class="sect">
     <div class="sect-head">
-      <div class="sect-title"><span class="sect-num">I</span>Milestones</div>
+      <div class="sect-title"><span class="sect-num">I</span>Announcements</div>
+      <div class="sect-meta"><span class="sect-meta-val" id="announceCount">—</span></div>
+    </div>
+    <div id="announceGrid" class="announce-grid"></div>
+  </section>
+
+  <!-- ── II · Milestones ── -->
+  <section class="sect">
+    <div class="sect-head">
+      <div class="sect-title"><span class="sect-num">II</span>Milestones</div>
       <div class="sect-meta">
         <span class="sect-meta-lbl">Currency</span>
         <span class="sect-meta-val">AUD</span>
@@ -627,7 +636,7 @@ body.light-mode .ticker{border-bottom-color:var(--rule-s);}
   <!-- ── II · Holdings ── -->
   <section class="sect">
     <div class="sect-head">
-      <div class="sect-title"><span class="sect-num">II</span>Holdings</div>
+      <div class="sect-title"><span class="sect-num">III</span>Holdings</div>
       <div class="sect-meta">
         <span class="sect-meta-lbl">Updated</span>
         <span class="sect-meta-val" id="lastUpdHoldings">—</span>
@@ -658,7 +667,7 @@ body.light-mode .ticker{border-bottom-color:var(--rule-s);}
   <!-- ── III · Portfolio Composition ── -->
   <section class="sect">
     <div class="sect-head">
-      <div class="sect-title"><span class="sect-num">III</span>Portfolio Composition</div>
+      <div class="sect-title"><span class="sect-num">IV</span>Portfolio Composition</div>
     </div>
     <div class="row-comp">
       <div class="donut-pane">
@@ -690,7 +699,7 @@ body.light-mode .ticker{border-bottom-color:var(--rule-s);}
   <!-- ── IV · What-If ── -->
   <section class="sect">
     <div class="sect-head">
-      <div class="sect-title"><span class="sect-num">IV</span>What-If Calculator</div>
+      <div class="sect-title"><span class="sect-num">V</span>What-If Calculator</div>
     </div>
     <div class="wif-wrap">
       <div class="wif-aside">
@@ -714,15 +723,6 @@ body.light-mode .ticker{border-bottom-color:var(--rule-s);}
         <div class="wif-breakdown" id="wifBreakdown"></div>
       </div>
     </div>
-  </section>
-
-  <!-- ── V · Announcements ── -->
-  <section class="sect">
-    <div class="sect-head">
-      <div class="sect-title"><span class="sect-num">V</span>Announcements</div>
-      <div class="sect-meta"><span class="sect-meta-val" id="announceCount">—</span></div>
-    </div>
-    <div id="announceGrid" class="announce-grid"></div>
   </section>
 
   <!-- ── VI · Growth Projection ── -->
@@ -2731,7 +2731,7 @@ function renderSuper(){
     const costCell=`<td class="r"><div class="super-price">A$${a.cost.toFixed(3)}</div><div class="super-cost">A$${cost.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})} total</div></td>`;
     const inputCell=`<td class="r"><input class="super-inp" type="number" step="0.001" min="0"
       placeholder="0.000" value="${price!=null?price.toFixed(3):''}"
-      oninput="superManualInput('${a.id}',this.value)"></td>`;
+      onchange="superManualInput('${a.id}',this.value)"></td>`;
 
     if(price==null){
       return`<tr>${assetCell}
