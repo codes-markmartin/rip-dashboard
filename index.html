@@ -92,6 +92,15 @@ nav{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:1
 .cd-bar-wrap{position:absolute;bottom:0;left:0;right:0;height:1px;pointer-events:none;}
 .cd-bar{height:100%;background:var(--accent);opacity:.4;transition:width 1s linear;}
 
+/* ── Scroll-reveal nav strip ── */
+.nav-scroll-reveal{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;overflow:hidden;max-height:0;opacity:0;transition:max-height .35s ease,opacity .35s ease,padding .35s ease;pointer-events:none;gap:18px;}
+.nav-scroll-reveal.active{max-height:44px;opacity:1;border-top:1px solid var(--rule-s);padding-top:8px;pointer-events:auto;}
+.nsr-total{font-family:var(--serif);font-size:20px;color:var(--ink);letter-spacing:-0.01em;white-space:nowrap;}
+.nsr-quote{font-family:var(--serif);font-style:italic;font-size:12px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* ── Projection chart ── */
+.proj-chart-wrap{margin-top:22px;height:220px;position:relative;}
+
 /* ── Scripture ── */
 .scripture{border-bottom:1px solid var(--rule-s);padding:14px 28px;display:flex;align-items:baseline;justify-content:center;gap:14px;flex-wrap:wrap;background:linear-gradient(180deg,oklch(0.80 0.105 80 / 0.025),transparent);}
 .scr-verse{font-family:var(--serif);font-style:italic;font-size:17px;color:var(--ink-2);}
@@ -665,6 +674,10 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0);border-color:var(--rule
     <button class="btn-icon" title="Settings" onclick="openSettings()">⚙</button>
   </div>
   <div class="cd-bar-wrap"><div class="cd-bar" id="cdBar"></div></div>
+  <div class="nav-scroll-reveal" id="navScrollReveal">
+    <div class="nsr-total" id="nsrTotal">—</div>
+    <div class="nsr-quote hide-sm">"If the Lord wills" · James 4:15</div>
+  </div>
 </nav>
 
 <div class="scripture">
@@ -829,10 +842,25 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0);border-color:var(--rule
     </div>
   </section>
 
-  <!-- ── IV · What-If ── -->
+  <!-- ── V · Growth Projection ── -->
   <section class="sect">
     <div class="sect-head">
-      <div class="sect-title"><span class="sect-num">V</span>What-If Calculator</div>
+      <div class="sect-title"><span class="sect-num">V</span>Growth Projection</div>
+      <div class="sect-meta">
+        <span class="sect-meta-lbl">Based on</span>
+        <span class="sect-meta-val" id="projBasis">—</span>
+      </div>
+    </div>
+    <div id="projGrid"></div>
+    <div class="proj-chart-wrap" id="projChartWrap" style="display:none">
+      <canvas id="projChart"></canvas>
+    </div>
+  </section>
+
+  <!-- ── VI · What-If ── -->
+  <section class="sect">
+    <div class="sect-head">
+      <div class="sect-title"><span class="sect-num">VI</span>What-If Calculator</div>
     </div>
     <div class="wif-wrap">
       <div class="wif-aside">
@@ -856,18 +884,6 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0);border-color:var(--rule
         <div class="wif-breakdown" id="wifBreakdown"></div>
       </div>
     </div>
-  </section>
-
-  <!-- ── VI · Growth Projection ── -->
-  <section class="sect">
-    <div class="sect-head">
-      <div class="sect-title"><span class="sect-num">VI</span>Growth Projection</div>
-      <div class="sect-meta">
-        <span class="sect-meta-lbl">Based on</span>
-        <span class="sect-meta-val" id="projBasis">—</span>
-      </div>
-    </div>
-    <div id="projGrid"></div>
   </section>
 
 </main>
@@ -1104,7 +1120,7 @@ function applyDark(d){
   const btn=document.getElementById('darkBtn');
   if(btn) btn.textContent=d?'🌙':'☀';
   try{localStorage.setItem('ptDark',d?'1':'0');}catch(e){}
-  renderPie(); renderLine(); renderStackedChart();
+  renderPie(); renderLine(); renderStackedChart(); renderProjChart();
   initBgCanvas(); // re-draw with updated theme colours
 }
 
@@ -1183,6 +1199,29 @@ function initBgCanvas(){
 }
 function toggleDark(){applyDark(!DARK);}
 function cc(l,dk){return DARK?dk:l;}
+
+/* ═══════════════════════════════════════════════════
+   SCROLL-REACTIVE NAV
+═══════════════════════════════════════════════════ */
+function initScrollNav(){
+  const hero=document.querySelector('.hero');
+  const reveal=document.getElementById('navScrollReveal');
+  if(!hero||!reveal) return;
+  const obs=new IntersectionObserver(entries=>{
+    const visible=entries[0].isIntersecting;
+    reveal.classList.toggle('active',!visible);
+    if(!visible) updateNsrTotal();
+  },{threshold:0,rootMargin:'-80px 0px 0px 0px'});
+  obs.observe(hero);
+}
+function updateNsrTotal(){
+  const el=document.getElementById('nsrTotal');
+  if(!el) return;
+  const tot=totalVal();
+  if(tot<=0){el.textContent='—';return;}
+  const anyConv=CCY==='AUD'&&P.assets.some(a=>PX[a.id]&&!PX[a.id].failed&&isConv(PX[a.id]));
+  el.textContent=fmtV(tot,anyConv);
+}
 
 /* ═══════════════════════════════════════════════════
    COUNTDOWN
@@ -1905,6 +1944,112 @@ function renderProjection(){
   }).join('');
 
   el.innerHTML=`<div class="proj-model-tabs">${tabs}</div><div class="proj-cards">${cards}</div>`;
+  renderProjChart();
+}
+
+/* ═══════════════════════════════════════════════════
+   PROJECTION CHART
+═══════════════════════════════════════════════════ */
+let _projChart=null;
+function renderProjChart(){
+  const wrap=document.getElementById('projChartWrap');
+  const canvas=document.getElementById('projChart');
+  if(!wrap||!canvas) return;
+
+  const hist=P.history;
+  const rate=AUDRT||1.57;
+  const audNow=totalValAUD();
+  const now=Date.now();
+  const activeIdx=MILESTONES_AUD.findIndex(ms=>audNow<ms);
+
+  if(hist.length<2||activeIdx<0){
+    wrap.style.display='none';
+    if(_projChart){_projChart.destroy();_projChart=null;}
+    return;
+  }
+  wrap.style.display='block';
+
+  // Historical: string labels + AUD values
+  const histLabels=hist.map(h=>{
+    const d=new Date(h.ts);
+    return d.toLocaleDateString('en-AU',{day:'numeric',month:'short'});
+  });
+  const histVals=hist.map(h=>+(h.usd*rate).toFixed(2));
+
+  // Projected segment: last hist point → milestone target date
+  const ms=MILESTONES_AUD[activeIdx];
+  const msUsd=ms/rate;
+  const stdDev=dailyReturnStdDev(hist);
+  const dCentral=daysUntil(PROJ_MODEL,msUsd,hist,stdDev,0);
+
+  let projLabels=[], projVals=[];
+  if(dCentral!=null&&dCentral<3650){
+    const predTs=now+dCentral*86400000;
+    const predLabel=new Date(predTs).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
+    projLabels=[histLabels[histLabels.length-1], predLabel];
+    projVals=[histVals[histVals.length-1], ms];
+  }
+
+  // Combine into a single x-axis (avoid duplicate last label)
+  const allLabels=[...histLabels];
+  if(projLabels.length>1) allLabels.push(projLabels[1]);
+
+  // Pad datasets to shared label length
+  const histData=[...histVals, ...(projLabels.length>1?[null]:[])];
+  const projData=[...new Array(histVals.length-1).fill(null), ...projVals];
+
+  const tc=cc('#7d93a8','#6e7681');
+  const gc=DARK?'rgba(255,255,255,.04)':'rgba(0,0,0,.04)';
+
+  if(_projChart){_projChart.destroy();_projChart=null;}
+  _projChart=new Chart(canvas,{
+    type:'line',
+    data:{
+      labels:allLabels,
+      datasets:[
+        {
+          label:'Portfolio (AUD)',
+          data:histData,
+          borderColor:'oklch(0.80 0.105 80)',
+          backgroundColor:'oklch(0.80 0.105 80 / 0.07)',
+          fill:true,tension:0.3,
+          pointRadius:0,pointHoverRadius:3,
+          borderWidth:2,spanGaps:false
+        },
+        ...(projVals.length>1?[{
+          label:`→ A$${(ms/1000).toFixed(0)}K milestone`,
+          data:projData,
+          borderColor:'oklch(0.80 0.105 80 / 0.65)',
+          backgroundColor:'transparent',
+          fill:false,tension:0,
+          pointRadius:projData.map((_,i)=>i===projData.length-1?5:0),
+          pointBackgroundColor:'oklch(0.80 0.105 80)',
+          borderWidth:2,
+          borderDash:[7,4],
+          spanGaps:false
+        }]:[])
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,animation:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:true,labels:{color:tc,font:{size:10,family:'"JetBrains Mono"',weight:'500'},boxWidth:22,padding:14}},
+        tooltip:{callbacks:{label:ctx=>{
+          const v=ctx.parsed.y;
+          if(v==null) return '';
+          return` ${ctx.dataset.label}: A$${Math.round(v).toLocaleString('en-AU')}`;
+        }}}
+      },
+      scales:{
+        x:{ticks:{color:tc,maxTicksLimit:8,font:{size:10,family:'"JetBrains Mono"'}},grid:{color:gc}},
+        y:{
+          ticks:{color:tc,font:{size:10,family:'"JetBrains Mono"'},callback:v=>'A$'+(v>=1000?(v/1000).toFixed(0)+'K':Math.round(v))},
+          grid:{color:gc}
+        }
+      }
+    }
+  });
 }
 
 /* ═══════════════════════════════════════════════════
@@ -2178,6 +2323,7 @@ function renderMetrics(){
   }
   setH('mv-total-s',total>0?`Across ${P.assets.length} assets`:'Awaiting prices…');
   setEl('heroAsOf',total>0?new Date().toLocaleTimeString():'');
+  updateNsrTotal();
   // Super value label
   const superAud=superTotalAUD();
   setEl('superTotalLbl',superAud>0?`+ A$${Math.round(superAud).toLocaleString('en-AU')} super`:'');
@@ -2244,6 +2390,14 @@ function renderMomentumCard(){
       const tip=`$${a.sym}: ${sign}${ch.toFixed(2)}%`;
       return`<div data-tip="${tip}" style="flex:${w};height:${h.toFixed(1)}px;background:${bg};opacity:0.85"></div>`;
     }).join('');
+    // Blended portfolio bar — separated by a gap, gold if positive, deep-dark if negative
+    const bs=m.score;
+    const bh=Math.min(28,Math.max(3,Math.abs(bs)*2)).toFixed(1);
+    const bbg=bs>=0?'var(--accent)':'oklch(0.12 0.003 70)';
+    const btip=`Portfolio: ${bs>=0?'+':''}${bs.toFixed(2)}% blended`;
+    barsEl.innerHTML+=
+      `<div style="flex:0 0 10px;background:transparent;pointer-events:none;border-left:1px solid var(--rule-s);margin-left:4px"></div>`+
+      `<div data-tip="${btip}" style="flex:0 0 6px;height:${bh}px;background:${bbg};align-self:flex-end;border:1px solid var(--rule);cursor:default;position:relative"></div>`;
   }
 
   // Breadth breakdown
@@ -3036,6 +3190,7 @@ function closeSuper(){
 
 document.addEventListener('DOMContentLoaded',async ()=>{
   initBgCanvas(); // start background contour animation immediately
+  initScrollNav(); // scroll-reactive nav strip
   loadNotifiedMs();
   loadSuperPrices(); // pre-load so ticker shows super prices immediately
   // Request notification permission (non-blocking — only asks once)
