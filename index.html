@@ -84,6 +84,7 @@ nav{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:1
 .sync-dot.synced{background:var(--pos);animation:breathe 3s ease-in-out infinite;}
 .sync-dot.syncing{background:var(--accent);animation:breathe 1s ease-in-out infinite;}
 .sync-dot.err{background:var(--neg);}
+.sync-dot.off{background:var(--ink-4);}
 .cd-bar-wrap{position:absolute;bottom:0;left:0;right:0;height:1px;pointer-events:none;}
 .cd-bar{height:100%;background:var(--accent);opacity:.4;transition:width 1s linear;}
 
@@ -371,10 +372,9 @@ table.htbl{width:100%;border-collapse:collapse;min-width:700px;}
 
 /* ── Sync settings ── */
 .sync-section{background:var(--raised);border:1px solid var(--rule);padding:13px 14px;margin-bottom:12px;}
-.sync-section-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;}
+.sync-section-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
 .sync-hd-title{font-size:11px;font-weight:700;color:var(--ink);}
-.sync-hd-badge{font-size:9px;padding:1px 6px;font-weight:700;background:var(--pos-bg);color:var(--pos);}
-.sync-desc{font-size:11px;color:var(--ink-3);margin-bottom:10px;line-height:1.5;margin-top:5px;}
+.sync-desc{font-size:11px;color:var(--ink-3);margin-bottom:10px;line-height:1.5;}
 .sync-steps{list-style:none;padding:0;margin:0 0 12px;display:flex;flex-direction:column;gap:5px;}
 .sync-steps li{display:flex;gap:8px;font-size:11px;color:var(--ink-2);line-height:1.4;}
 .sync-steps li .step-n{width:17px;height:17px;border-radius:50%;background:var(--ink);color:var(--bg);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
@@ -464,6 +464,21 @@ body.light-mode .burn-card::before{background:linear-gradient(90deg,oklch(0.50 0
 body.light-mode .ticker{border-bottom-color:var(--rule-s);}
 
 /* ── Responsive ── */
+/* ── Chart range toggle ── */
+.chart-range-btns{display:flex;gap:5px;}
+.cr-btn{background:none;border:1px solid var(--rule);color:var(--ink-4);font:500 9px/1 var(--sans);letter-spacing:.12em;padding:3px 9px;cursor:pointer;text-transform:uppercase;transition:all .12s;}
+.cr-btn.active,.cr-btn:hover{border-color:var(--accent);color:var(--accent);}
+/* ── Milestone toast ── */
+.ms-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--accent);color:var(--bg);padding:11px 24px;font:600 13px/1.4 var(--sans);z-index:999;opacity:0;transition:opacity .35s,transform .35s;pointer-events:none;white-space:nowrap;box-shadow:0 8px 32px oklch(0 0 0/.45);}
+.ms-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+/* ── Mobile improvements ── */
+@media(max-width:700px){
+  .hero-chart-canvas{height:200px;}
+  .super-tbl{font-size:12px;}
+  .super-page{padding:28px 14px 50px;}
+  .super-hd{flex-direction:column;gap:10px;align-items:flex-start;}
+  .super-close{align-self:flex-end;}
+}
 @media(max-width:1100px){
   .hero{gap:18px;}
   .kpis{grid-template-columns:repeat(2,1fr);}
@@ -563,7 +578,13 @@ body.light-mode .ticker{border-bottom-color:var(--rule-s);}
   <div class="hero-chart-wrap">
     <div class="hero-chart-head">
       <span style="font-size:9.5px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3)" id="lineTitle">Portfolio History</span>
-      <span style="font-family:var(--mono);font-size:10px;color:var(--ink-3)" id="lastUpd"></span>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div class="chart-range-btns">
+          <button class="cr-btn active" id="crBtn7d" onclick="setChartRange('7d')">7D</button>
+          <button class="cr-btn" id="crBtnAll" onclick="setChartRange('all')">All</button>
+        </div>
+        <span style="font-family:var(--mono);font-size:10px;color:var(--ink-3)" id="lastUpd"></span>
+      </div>
     </div>
     <div class="hero-chart-canvas">
       <canvas id="lineChart" style="display:none;"></canvas>
@@ -832,35 +853,11 @@ body.light-mode .ticker{border-bottom-color:var(--rule-s);}
       <div class="sync-section">
         <div class="sync-section-hd">
           <span class="sync-hd-title">☁ Cloud Sync — Supabase</span>
-          <span class="sync-hd-badge">FREE</span>
         </div>
-        <p class="sync-desc" style="margin-top:5px">
-          Sync across all your devices using Supabase's free database. One-time setup.
-        </p>
-        <ol class="sync-steps">
-          <li><span class="step-n">1</span><span>Go to <a href="https://supabase.com" target="_blank">supabase.com</a> → <strong>Start your project</strong> → New project (free)</span></li>
-          <li><span class="step-n">2</span><span>Once provisioned, go to <strong>SQL Editor</strong> and run this query:<br/>
-            <code style="display:block;margin-top:4px;font-size:9.5px;background:var(--b);padding:5px 7px;border-radius:4px;line-height:1.6;white-space:pre-wrap;word-break:break-all">create table if not exists portfolio (id text primary key, data jsonb, updated_at timestamptz default now());
-alter table portfolio disable row level security;</code></span></li>
-          <li><span class="step-n">3</span><span>Go to <strong>Project Settings → API</strong> → copy your <strong>Project URL</strong> and <strong>anon / public</strong> key → paste below</span></li>
-        </ol>
-        <div class="fg" style="margin-bottom:8px">
-          <label>Supabase Project URL</label>
-          <input type="url" id="syncUrlIn" placeholder="https://xxxxxxxxxxxx.supabase.co"
-            value="" oninput="syncUrlChanged()"/>
-        </div>
-        <div class="fg" style="margin-bottom:8px">
-          <label>Supabase Anon / Public Key</label>
-          <input type="text" id="syncAnonKeyIn" placeholder="eyJhbGciOiJIUzI1NiIs…" style="font-size:11px"/>
-        </div>
-        <div style="display:flex;gap:7px;flex-wrap:wrap">
-          <button class="btn primary" onclick="saveSyncConfig()">Save & Connect</button>
-          <button class="btn" onclick="testSync()">Test Connection</button>
-          <button class="btn" style="color:var(--neg)" onclick="clearSyncConfig()">Disconnect</button>
-        </div>
-        <div class="sync-status-row" id="syncStatusRow" style="display:none">
+        <p class="sync-desc">Syncs asset quantities, manual prices, and super prices across all your devices automatically.</p>
+        <div class="sync-status-row" id="syncStatusRow" style="display:flex">
           <div class="sync-dot" id="syncModalDot"></div>
-          <span id="syncModalTxt"></span>
+          <span id="syncModalTxt">Connecting…</span>
         </div>
       </div>
 
@@ -917,6 +914,45 @@ let LOGOS  = {};
 let CCY    = 'USD';
 let AUDRT  = null;
 let DARK   = false;
+let CHART_RANGE = '7d'; // '7d' | 'all'
+let NOTIFIED_MS = new Set(); // milestone thresholds already toasted
+
+function setChartRange(r){
+  CHART_RANGE=r;
+  document.getElementById('crBtn7d')?.classList.toggle('active',r==='7d');
+  document.getElementById('crBtnAll')?.classList.toggle('active',r==='all');
+  renderLine();
+}
+
+
+function showMilestoneToast(label){
+  const el=document.createElement('div');
+  el.className='ms-toast';
+  el.textContent=`🎉 Milestone reached: ${label}`;
+  document.body.appendChild(el);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('show')));
+  setTimeout(()=>{el.classList.remove('show');setTimeout(()=>el.remove(),400);},5500);
+  if(typeof Notification!=='undefined'&&Notification.permission==='granted'){
+    try{new Notification('Storehouse',{body:`Portfolio crossed ${label}! 🎉`});}catch(e){}
+  }
+}
+
+function checkMilestoneAlerts(){
+  const aud=totalValAUD();
+  if(aud<=0) return;
+  const fmt=v=>v>=1000?'A$'+(v/1000).toFixed(0)+'K':'A$'+v;
+  MILESTONES_AUD.forEach(ms=>{
+    if(aud>=ms&&!NOTIFIED_MS.has(ms)){
+      NOTIFIED_MS.add(ms);
+      try{localStorage.setItem('notifiedMs',JSON.stringify([...NOTIFIED_MS]));}catch(e){}
+      showMilestoneToast(fmt(ms));
+    }
+  });
+}
+
+function loadNotifiedMs(){
+  try{NOTIFIED_MS=new Set(JSON.parse(localStorage.getItem('notifiedMs')||'[]'));}catch(e){}
+}
 let CHARTS = {pie:null,line:null,alloc:null,stacked:null};
 let RT     = null;
 let CD_IV  = null;
@@ -944,7 +980,6 @@ function loadP(){
 }
 function saveP(){
   try{ localStorage.setItem('ptv10',JSON.stringify(P)); }catch(e){}
-  if(hasSyncConfig()) schedulePush();
 }
 
 /* ═══════════════════════════════════════════════════
@@ -1765,6 +1800,11 @@ function renderAll(){
   setEl('lastUpd',ts);
   setEl('lastUpdHoldings',ts);
   document.getElementById('tblNote').style.display=CCY==='AUD'?'block':'none';
+  // Tab title
+  const tv=totalVal();
+  if(tv>0) document.title=`Storehouse — ${sym()}${Math.round(tv).toLocaleString('en-AU')}`;
+  // Milestone alerts
+  checkMilestoneAlerts();
 }
 
 function renderMetrics(){
@@ -2051,7 +2091,8 @@ function renderLine(){
   const noH=document.getElementById('noHist');
   const ctx=document.getElementById('lineChart');
   const legendEl=document.getElementById('chartLegend');
-  const slice=hist.slice(-144);
+  const cutoff=CHART_RANGE==='7d'?Date.now()-7*24*3600000:0;
+  const slice=hist.filter(e=>e.ts>=cutoff);
 
   if(slice.length<2){
     noH.style.display='flex'; ctx.style.display='none';
@@ -2231,7 +2272,7 @@ function renderAllocBars(){
 function renderTicker(){
   const el=document.getElementById('tickerTrack');
   if(!el) return;
-  const items=P.assets.map(a=>{
+  const mainItems=P.assets.map(a=>{
     const px=PX[a.id];
     const p=px&&!px.failed?dp(px):null;
     const ch=px&&!px.failed?px.ch24:null;
@@ -2241,8 +2282,17 @@ function renderTicker(){
       (ch!=null?`<span class="t-ch ${ch>=0?'pos':'neg'}">${ch>=0?'+':''}${ch.toFixed(2)}%</span>`:'')+
       `</span>`;
   }).join('');
+  // Super assets (only shown if a manual price has been set)
+  const superItems=SUPER_ASSETS
+    .filter(a=>SUPER_MANUAL[a.id]!=null)
+    .map(a=>`<span class="ticker-item">`+
+      `<span class="t-sym" style="opacity:.65">$${a.sym}</span>`+
+      `<span class="t-px">A$${SUPER_MANUAL[a.id].toFixed(3)}</span>`+
+      `<span class="t-ch" style="color:var(--ink-4)">super</span>`+
+      `</span>`).join('');
+  const all=mainItems+superItems;
   // Duplicate for seamless CSS marquee loop (animation translates -50%)
-  el.innerHTML=items+items;
+  el.innerHTML=all+all;
 }
 
 /* ═══════════════════════════════════════════════════
@@ -2297,12 +2347,14 @@ function updateA(id,field,raw){
     if(a.manual) PX[id]={price:a.manual,priceAud:null,ch24:0,mcap:0,source:'Manual'};
   } else a[field]=isNaN(v)?0:v;
   saveP();renderAll();
+  schedulePush(); // sync qty / manual price change
 }
 function removeAsset(id){
   if(!confirm('Remove this asset?')) return;
   P.assets=P.assets.filter(a=>a.id!==id);
   delete PX[id];delete SPK[id];delete LOGOS[id];
   saveP();buildSettings();toast('Asset removed','inf');renderAll();
+  schedulePush(); // sync asset removal
 }
 function toggleNF(){
   const t=document.getElementById('n-type').value;
@@ -2325,6 +2377,7 @@ function addAsset(){
   P.assets.push(a);saveP();buildSettings();
   ['n-sym','n-name','n-ca','n-cgid','n-ticker','n-qty'].forEach(i=>{const e=document.getElementById(i);if(e)e.value='';});
   toast('$'+sym_+' added — fetching price…','ok');doRefresh();
+  schedulePush(); // sync new asset
 }
 function clearHist(){
   if(!confirm('Clear all history?')) return;
@@ -2350,150 +2403,128 @@ function toast(msg,type='inf'){
 /* ═══════════════════════════════════════════════════
    CLOUD SYNC  (Supabase — PostgREST)
 ═══════════════════════════════════════════════════ */
-let SYNC_CFG    = loadSyncConfig();
-let SYNC_PUSH_TM = null;
+/* ═══════════════════════════════════════════════════
+   SUPABASE SYNC
+   Syncs: asset quantities, manual prices, super prices
+   Table: storehouse (id text PK, payload jsonb, updated_at timestamptz)
+   ═══════════════════════════════════════════════════ */
+const SB_URL = 'https://evfstosdfplixwxtksyg.supabase.co';
+const SB_KEY = 'sb_publishable_wpY2QftBtcIZBvaCS_bhqQ_1a5Y1kY3';
+let SB = {url: SB_URL, key: SB_KEY};
+let SB_PUSH_TM = null;
+// Tracks when manual data was last changed locally (used to resolve conflicts)
+let MANUAL_MOD = (()=>{ try{ return parseInt(localStorage.getItem('ptManualMod')||'0',10)||0; }catch(e){ return 0; } })();
 
-function loadSyncConfig(){
-  try{
-    const r=localStorage.getItem('ptSync');
-    return r ? JSON.parse(r) : {url:'',anonKey:''};
-  }catch(e){ return {url:'',anonKey:''}; }
-}
-function saveSyncConfigStore(cfg){
-  try{ localStorage.setItem('ptSync',JSON.stringify(cfg)); }catch(e){}
-}
-function hasSyncConfig(){ return !!(SYNC_CFG.url && SYNC_CFG.anonKey); }
+function sbReady(){ return !!(SB.url && SB.key); }
+function sbHdrs(){ return {'Content-Type':'application/json','apikey':SB.key,'Authorization':'Bearer '+SB.key}; }
+function sbBase(){ return SB.url.replace(/\/+$/,'')+'/rest/v1/storehouse'; }
 
-function sbHeaders(){
+function buildSyncPayload(){
   return {
-    'Content-Type':  'application/json',
-    'apikey':        SYNC_CFG.anonKey,
-    'Authorization': 'Bearer '+SYNC_CFG.anonKey
-  };
-}
-function sbUrl(){
-  return SYNC_CFG.url.replace(/\/+$/,'')+'/rest/v1/portfolio';
-}
-
-function syncPayload(){
-  return {
-    id:         'main',
-    data:       {assets:P.assets, history:P.history, v:P.v, lastMod:P.lastMod||Date.now()},
+    id: 'main',
+    payload: {
+      // Per-asset manually set values only (qty + manual price override)
+      assets: P.assets.map(a=>({ id:a.id, qty:a.qty, manual:a.manual??null })),
+      superPrices: SUPER_MANUAL,
+      superTs: SUPER_TS,
+      updatedAt: MANUAL_MOD
+    },
     updated_at: new Date().toISOString()
   };
 }
 
-async function pushToCloud(silent=false){
-  if(!hasSyncConfig()) return;
-  setSyncStatus('syncing','Syncing…');
+async function sbPush(silent=false){
+  if(!sbReady()) return;
+  setSbStatus('syncing');
   try{
-    P.lastMod=Date.now();
-    const r=await fetch(sbUrl(),{
+    const r=await fetch(sbBase(),{
       method:'POST',
-      headers:{...sbHeaders(),'Prefer':'resolution=merge-duplicates,return=minimal'},
-      body:JSON.stringify(syncPayload()),
-      signal:AbortSignal.timeout(10000)
+      headers:{...sbHdrs(),'Prefer':'resolution=merge-duplicates,return=minimal'},
+      body:JSON.stringify(buildSyncPayload()),
+      signal:AbortSignal.timeout(12000)
     });
-    if(!r.ok){ const t=await r.text(); throw new Error('HTTP '+r.status+' '+t); }
-    setSyncStatus('synced','Synced '+new Date().toLocaleTimeString());
-    if(!silent) toast('Portfolio synced to cloud','ok');
+    if(!r.ok){ const t=await r.text(); throw new Error('HTTP '+r.status+': '+t.slice(0,120)); }
+    setSbStatus('ok','Synced '+new Date().toLocaleTimeString());
+    if(!silent) toast('Synced to cloud ✓','ok');
   }catch(e){
-    setSyncStatus('err','Sync failed');
+    setSbStatus('err','Sync failed');
     if(!silent) toast('Sync failed: '+e.message,'err');
   }
 }
 
-async function pullFromCloud(){
-  if(!hasSyncConfig()) return false;
-  setSyncStatus('syncing','Checking cloud…');
+async function sbPull(){
+  if(!sbReady()) return;
+  setSbStatus('syncing');
   try{
-    const r=await fetch(
-      sbUrl()+'?id=eq.main&select=data',
-      {headers:sbHeaders(), signal:AbortSignal.timeout(10000)}
-    );
+    const r=await fetch(sbBase()+'?id=eq.main&select=payload',{
+      headers:sbHdrs(), signal:AbortSignal.timeout(12000)
+    });
     if(!r.ok) throw new Error('HTTP '+r.status);
     const rows=await r.json();
-    if(!rows||!rows.length||!rows[0].data){
-      setSyncStatus('synced','Cloud empty — will push on next save');
-      return false;
+    if(!rows||!rows.length||!rows[0].payload){
+      setSbStatus('ok','Cloud empty — will push on next change');
+      return;
     }
-    const d=rows[0].data;
-    const cloudMod=d.lastMod||0;
-    const localMod=P.lastMod||0;
-    if(cloudMod > localMod){
-      P.assets  = d.assets;
-      P.history = d.history||[];
-      P.v       = d.v||10;
-      P.lastMod = cloudMod;
-      saveP();
-      setSyncStatus('synced','Pulled from cloud '+new Date().toLocaleTimeString());
-      toast('Portfolio pulled from cloud','inf');
-      renderAll();
-      return true;
+    const d=rows[0].payload;
+    const cloudMod=d.updatedAt||0;
+    // Only apply if cloud data is newer than our last local manual change
+    if(cloudMod<=MANUAL_MOD){ setSbStatus('ok','Up to date'); return; }
+    let changed=false;
+    // Apply asset quantities and manual prices from cloud
+    if(Array.isArray(d.assets)){
+      for(const ca of d.assets){
+        const a=P.assets.find(x=>x.id===ca.id);
+        if(!a) continue; // don't auto-add assets from cloud (user manages list locally)
+        if(a.qty!==ca.qty){ a.qty=ca.qty; changed=true; }
+        const cm=ca.manual??null;
+        if(a.manual!==cm){
+          a.manual=cm;
+          if(cm) PX[a.id]={price:cm,priceAud:null,ch24:0,mcap:0,source:'Manual'};
+          changed=true;
+        }
+      }
+      if(changed) saveP();
     }
-    setSyncStatus('synced','Up to date');
-    return false;
+    // Apply super prices
+    if((d.superTs||0)>SUPER_TS){
+      SUPER_MANUAL=d.superPrices||{};
+      SUPER_TS=d.superTs;
+      try{
+        localStorage.setItem('superManual',JSON.stringify(SUPER_MANUAL));
+        localStorage.setItem('superTS',String(SUPER_TS));
+      }catch(e){}
+      changed=true;
+    }
+    // Mark local as matching cloud
+    MANUAL_MOD=cloudMod;
+    try{ localStorage.setItem('ptManualMod',String(MANUAL_MOD)); }catch(e){}
+    setSbStatus('ok','Pulled '+new Date().toLocaleTimeString());
+    if(changed) renderAll();
   }catch(e){
-    setSyncStatus('err','Pull failed');
-    return false;
+    setSbStatus('err','Pull failed — check credentials');
   }
 }
 
+// Call this whenever a user makes a manual change
 function schedulePush(){
-  clearTimeout(SYNC_PUSH_TM);
-  SYNC_PUSH_TM=setTimeout(()=>pushToCloud(true),1500);
+  if(!sbReady()) return;
+  MANUAL_MOD=Date.now();
+  try{ localStorage.setItem('ptManualMod',String(MANUAL_MOD)); }catch(e){}
+  clearTimeout(SB_PUSH_TM);
+  SB_PUSH_TM=setTimeout(()=>sbPush(true),2000);
 }
 
-function setSyncStatus(state,msg){
-  ['syncDot','syncModalDot'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el) el.className='sync-dot '+state;
-  });
-  const txt=document.getElementById('syncTxt');
-  if(txt) txt.textContent=msg;
-  const row=document.getElementById('syncStatusRow');
-  const mtxt=document.getElementById('syncModalTxt');
-  if(row) row.style.display='flex';
-  if(mtxt) mtxt.textContent=msg;
+function setSbStatus(state, msg=''){
+  const cls=state==='ok'?'synced':state==='syncing'?'syncing':state==='err'?'err':'off';
+  const lbl=state==='ok'?(msg||'Synced'):state==='syncing'?'Syncing…':state==='err'?'Sync error':'No sync';
+  ['syncDot','syncModalDot'].forEach(id=>{ const el=document.getElementById(id); if(el) el.className='sync-dot '+cls; });
+  const txt=document.getElementById('syncTxt'); if(txt) txt.textContent=lbl;
+  if(msg){ const row=document.getElementById('syncStatusRow'); const mt=document.getElementById('syncModalTxt'); if(row) row.style.display='flex'; if(mt) mt.textContent=msg; }
 }
 
 function buildSyncUI(){
-  const urlIn=document.getElementById('syncUrlIn');
-  const keyIn=document.getElementById('syncAnonKeyIn');
-  if(urlIn) urlIn.value=SYNC_CFG.url||'';
-  if(keyIn) keyIn.value=SYNC_CFG.anonKey||'';
-  if(!hasSyncConfig()) setSyncStatus('off','Not configured');
-}
-function syncUrlChanged(){
-  SYNC_CFG.url=(document.getElementById('syncUrlIn')?.value||'').trim();
-}
-async function saveSyncConfig(){
-  const url=(document.getElementById('syncUrlIn')?.value||'').trim();
-  const key=(document.getElementById('syncAnonKeyIn')?.value||'').trim();
-  if(!url||!key){ toast('Both the Project URL and Anon Key are required','err'); return; }
-  if(!url.startsWith('https://')){ toast('URL must start with https://','err'); return; }
-  SYNC_CFG.url=url; SYNC_CFG.anonKey=key;
-  saveSyncConfigStore(SYNC_CFG);
-  setSyncStatus('syncing','Connecting…');
-  await pushToCloud(false);
-}
-async function testSync(){
-  if(!hasSyncConfig()){ toast('Save your credentials first','err'); return; }
-  setSyncStatus('syncing','Testing…');
-  try{
-    const r=await fetch(sbUrl()+'?id=eq.main',
-      {headers:sbHeaders(),signal:AbortSignal.timeout(8000)});
-    if(r.ok){ setSyncStatus('synced','Connection OK ✓'); toast('Connection successful','ok'); }
-    else     { setSyncStatus('err','HTTP '+r.status); toast('HTTP '+r.status+' — check URL & key','err'); }
-  }catch(e){ setSyncStatus('err','Failed'); toast('Failed: '+e.message,'err'); }
-}
-function clearSyncConfig(){
-  if(!confirm('Disconnect cloud sync? Local data is unaffected.')) return;
-  SYNC_CFG={url:'',anonKey:''};
-  saveSyncConfigStore(SYNC_CFG);
-  setSyncStatus('off','Not configured');
-  buildSyncUI();
-  toast('Cloud sync disconnected','inf');
+  // Credentials are hardcoded — just reflect current status
+  setSbStatus('ok');
 }
 
 /* ═══════════════════════════════════════════════════
@@ -2538,6 +2569,7 @@ function saveSuperPrices(){
     localStorage.setItem('superTS',String(SUPER_TS));
   }catch(e){}
   updateSuperUpdLbl();
+  schedulePush(); // sync super price change
 }
 
 function updateSuperUpdLbl(){
@@ -2633,18 +2665,23 @@ function closeSuper(){
 }
 
 document.addEventListener('DOMContentLoaded',async ()=>{
+  loadNotifiedMs();
+  loadSuperPrices(); // pre-load so ticker shows super prices immediately
+  // Request notification permission (non-blocking — only asks once)
+  if(typeof Notification!=='undefined'&&Notification.permission==='default'){
+    Notification.requestPermission().catch(()=>{});
+  }
   // Restore mode preference — default is dark
   try{
     const stored=localStorage.getItem('ptDark');
     if(stored==='0') applyDark(false); // restore light
     // else stays dark (DARK=true already set above)
   }catch(e){}
-  // Set initial sync status
-  if(hasSyncConfig()) setSyncStatus('syncing','Checking cloud…');
-  else setSyncStatus('off','No sync');
+  // Sync status
+  setSbStatus(sbReady()?'syncing':'off');
   renderAll();
-  // Pull from cloud first — if newer data arrives, renderAll() is called again inside
-  if(hasSyncConfig()) await pullFromCloud();
+  // Pull from Supabase on load — merges super prices + burn log from other devices
+  if(sbReady()) await sbPull();
   doRefresh();
   document.getElementById('overlay').addEventListener('keydown',e=>{
     if(e.key==='Escape') closeSettings();
