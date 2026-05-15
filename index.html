@@ -227,41 +227,6 @@ table.htbl{width:100%;border-collapse:collapse;min-width:700px;}
 .txt-err{color:var(--neg);font-size:11px;cursor:pointer;border-bottom:1px dashed var(--neg);}
 .mono{font-family:var(--mono);font-variant-numeric:tabular-nums;}.dim{color:var(--ink-3);}
 
-/* ── Burn tracker ── */
-.burn-grid{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--rule-s);}
-.burn-card{padding:24px 26px;border-right:1px solid var(--rule-s);display:flex;flex-direction:column;gap:14px;position:relative;}
-.burn-card:last-child{border-right:0;}
-.burn-card::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,oklch(0.70 0.17 25),oklch(0.80 0.105 80),transparent);}
-.burn-hd{display:flex;align-items:flex-start;gap:14px;}
-.burn-orb{width:34px;height:34px;border:1px solid var(--rule);display:grid;place-items:center;font:600 12px/1 var(--mono);flex-shrink:0;overflow:hidden;}
-.burn-orb img{width:22px;height:22px;object-fit:contain;}
-.burn-meta{flex:1;}
-.burn-sym{font:600 13.5px/1.1 var(--sans);color:var(--ink);}
-.burn-type{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin-top:4px;}
-.burn-lbl{font-size:9.5px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);}
-.burn-supply-row{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;}
-.burn-val{font-family:var(--serif);font-size:34px;letter-spacing:-0.018em;color:var(--ink);}
-.burn-sub{font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:.04em;}
-.burn-stake{font-size:11.5px;color:var(--ink-3);}
-.burn-stake strong{color:var(--accent);font-family:var(--mono);font-weight:500;font-size:11px;letter-spacing:.04em;}
-.burn-periods{display:flex;flex-direction:column;gap:8px;padding-top:12px;border-top:1px solid var(--rule-s);}
-.burn-period{display:grid;grid-template-columns:68px 1fr auto;gap:14px;align-items:center;}
-.burn-p-lbl{font:500 9.5px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);}
-.burn-p-bar{height:2px;background:var(--rule);position:relative;}
-.burn-p-bar>div{position:absolute;inset:0 auto 0 0;}
-.burn-p-bar.active>div{background:linear-gradient(90deg,oklch(0.70 0.17 25),oklch(0.80 0.105 80));}
-.burn-p-val{font:500 12px/1 var(--mono);white-space:nowrap;}
-.burn-p-val.burning{color:oklch(0.78 0.14 35);}
-.burn-p-val.minting{color:var(--pos);}
-.burn-p-val.flat{color:var(--ink-4);}
-.burn-p-val.loading{color:var(--ink-4);font-style:italic;font-size:11px;font-weight:400;}
-.burn-err{color:var(--neg);font-size:11px;}
-.burn-loading{color:var(--ink-3);font-size:11px;font-style:italic;}
-.burn-next-clean{display:flex;flex-direction:column;gap:3px;padding-top:10px;border-top:1px solid var(--rule-s);margin-top:4px;}
-.burn-next-lbl{font:500 9px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--ink-4);}
-.burn-next-val{font-family:var(--mono);font-size:13px;color:var(--ink-2);font-weight:500;}
-.burn-next-rem{font-family:var(--mono);font-size:10.5px;color:oklch(0.78 0.14 35);}
-
 /* ── Alloc bars ── */
 .alloc-bars-wrap{display:flex;flex-direction:column;gap:13px;padding-top:6px;}
 .ab-row{display:grid;grid-template-columns:72px 1fr 42px 80px;gap:10px;align-items:center;}
@@ -306,7 +271,28 @@ table.htbl{width:100%;border-collapse:collapse;min-width:700px;}
 .proj-days{font:400 10px/1 var(--mono);color:var(--ink-4);letter-spacing:.03em;}
 .proj-na{font:400 10px/1.4 var(--mono);color:var(--ink-5);font-style:italic;}
 .proj-empty{color:var(--ink-3);font-size:12px;font-style:italic;padding:8px 0;}
+.proj-scenarios{display:flex;gap:6px;margin-top:3px;flex-wrap:wrap;}
+.proj-best{font:500 9px/1.3 var(--mono);color:var(--pos);}
+.proj-worst{font:500 9px/1.3 var(--mono);color:var(--neg);}
+.proj-model-tabs{display:flex;gap:0;border:1px solid var(--rule-s);margin-bottom:14px;overflow:hidden;align-self:flex-start;}
+.proj-tab{background:none;border:0;border-right:1px solid var(--rule-s);color:var(--ink-3);padding:6px 13px;font:500 10px/1 var(--mono);letter-spacing:.08em;cursor:pointer;transition:all .12s;text-transform:uppercase;}
+.proj-tab:last-child{border-right:0;}
+.proj-tab.active{background:var(--ink);color:var(--bg);}
 @media(max-width:800px){.proj-cards{grid-template-columns:repeat(4,1fr);}.proj-card:nth-child(4){border-right:0;}.proj-card:nth-child(1),.proj-card:nth-child(2),.proj-card:nth-child(3),.proj-card:nth-child(4){border-bottom:1px solid var(--rule-s);}}
+
+/* ── Announcements ── */
+.announce-grid{display:flex;flex-direction:column;gap:0;border:1px solid var(--rule-s);}
+.announce-item{display:flex;align-items:flex-start;gap:14px;padding:14px 18px;border-bottom:1px solid var(--rule-s);}
+.announce-item:last-child{border-bottom:0;}
+.announce-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+.announce-body{flex:1;}
+.announce-title{font-size:12.5px;font-weight:600;color:var(--ink);line-height:1.3;}
+.announce-sub{font-size:11px;color:var(--ink-3);margin-top:3px;}
+.announce-time{font:400 10px/1 var(--mono);color:var(--ink-4);white-space:nowrap;flex-shrink:0;margin-top:2px;}
+.announce-empty{color:var(--ink-3);font-size:12px;font-style:italic;padding:14px 18px;}
+.announce-pos{border-left:2px solid var(--pos);}
+.announce-neg{border-left:2px solid var(--neg);}
+.announce-neutral{border-left:2px solid var(--rule);}
 
 /* ── What-If ── */
 .wif-wrap{border:1px solid var(--rule-s);display:grid;grid-template-columns:auto 1fr;}
@@ -460,7 +446,6 @@ body.light-mode{
 }
 body.light-mode .ms-card.ms-done{background:oklch(0.56 0.120 72 / 0.06);}
 body.light-mode .ms-card.ms-active{background:oklch(0.56 0.120 72 / 0.10);}
-body.light-mode .burn-card::before{background:linear-gradient(90deg,oklch(0.50 0.180 22),oklch(0.56 0.120 72),transparent);}
 body.light-mode .ticker{border-bottom-color:var(--rule-s);}
 
 /* ── Responsive ── */
@@ -486,8 +471,6 @@ body.light-mode .ticker{border-bottom-color:var(--rule-s);}
   .kpi:nth-child(3){padding-left:0;border-top:1px solid var(--rule-s);padding-top:24px;}
   .row-comp{grid-template-columns:1fr;}
   .donut-pane{border-right:0;border-bottom:1px solid var(--rule-s);}
-  .burn-grid{grid-template-columns:1fr;}
-  .burn-card{border-right:0;border-bottom:1px solid var(--rule-s);}
   .wif-wrap{grid-template-columns:1fr;}
   .wif-aside{border-right:0;border-bottom:1px solid var(--rule-s);}
   .ms-cards{grid-template-columns:repeat(4,1fr);}
@@ -565,7 +548,7 @@ body.light-mode .ticker{border-bottom-color:var(--rule-s);}
         <span class="hero-lbl">Total Portfolio</span>
         <span class="hero-asof" id="heroAsOf"></span>
       </div>
-      <div class="hero-figure" id="mv-total">—</div>
+      <div class="hero-figure" id="mv-total">—</div><span id="superTotalLbl" style="font:400 11px/1 var(--mono);color:var(--ink-4);margin-left:10px;letter-spacing:.04em;vertical-align:middle"></span>
       <div class="hero-delta-row">
         <div class="hero-d-num" id="mv-hero-chg">—</div>
         <div id="mv-hero-chip"></div>
@@ -672,25 +655,10 @@ body.light-mode .ticker{border-bottom-color:var(--rule-s);}
     </div>
   </section>
 
-  <!-- ── III · Deflationary Supply ── -->
+  <!-- ── III · Portfolio Composition ── -->
   <section class="sect">
     <div class="sect-head">
-      <div class="sect-title"><span class="sect-num">III</span>Deflationary Supply</div>
-      <div class="sect-meta">
-        <span class="sect-meta-lbl">Updated</span>
-        <span class="sect-meta-val" id="supplyUpdLbl">—</span>
-      </div>
-    </div>
-    <div class="burn-grid" id="burnTracker">
-      <div class="burn-card"><div class="burn-loading">Fetching supply data…</div></div>
-      <div class="burn-card"><div class="burn-loading">Fetching supply data…</div></div>
-    </div>
-  </section>
-
-  <!-- ── IV · Portfolio Composition ── -->
-  <section class="sect">
-    <div class="sect-head">
-      <div class="sect-title"><span class="sect-num">IV</span>Portfolio Composition</div>
+      <div class="sect-title"><span class="sect-num">III</span>Portfolio Composition</div>
     </div>
     <div class="row-comp">
       <div class="donut-pane">
@@ -719,10 +687,10 @@ body.light-mode .ticker{border-bottom-color:var(--rule-s);}
     </div>
   </section>
 
-  <!-- ── V · What-If ── -->
+  <!-- ── IV · What-If ── -->
   <section class="sect">
     <div class="sect-head">
-      <div class="sect-title"><span class="sect-num">V</span>What-If Calculator</div>
+      <div class="sect-title"><span class="sect-num">IV</span>What-If Calculator</div>
     </div>
     <div class="wif-wrap">
       <div class="wif-aside">
@@ -746,6 +714,15 @@ body.light-mode .ticker{border-bottom-color:var(--rule-s);}
         <div class="wif-breakdown" id="wifBreakdown"></div>
       </div>
     </div>
+  </section>
+
+  <!-- ── V · Announcements ── -->
+  <section class="sect">
+    <div class="sect-head">
+      <div class="sect-title"><span class="sect-num">V</span>Announcements</div>
+      <div class="sect-meta"><span class="sect-meta-val" id="announceCount">—</span></div>
+    </div>
+    <div id="announceGrid" class="announce-grid"></div>
   </section>
 
   <!-- ── VI · Growth Projection ── -->
@@ -907,8 +884,6 @@ const DEFAULTS = {
 let P      = loadP();
 let PX     = {};
 let SPK    = {};
-let SUP    = {};  // supply data: { [assetId]: { supply, decimals, status } }
-let BURN_LOG = loadBurnLog(); // daily/weekly burn snapshots per token
 let WIF    = {};
 let LOGOS  = {};
 let CCY    = 'USD';
@@ -916,6 +891,10 @@ let AUDRT  = null;
 let DARK   = false;
 let CHART_RANGE = '7d'; // '7d' | 'all'
 let NOTIFIED_MS = new Set(); // milestone thresholds already toasted
+let PROJ_MODEL = 'linear'; // active projection model: 'linear'|'exp'|'momentum'|'cagr'
+let ANNOUNCEMENTS = []; // {key, icon, title, sub, time, type}
+let PREV_FX = null; // previous AUD rate for FX move detection
+let LAST_MS_PCT = (()=>{ try{return parseFloat(localStorage.getItem('ptLastMsPct')||'0')||0;}catch(e){return 0;} })();
 
 function setChartRange(r){
   CHART_RANGE=r;
@@ -1033,6 +1012,12 @@ function totalValAUD(){
     if(!px||px.failed||px.price===null) return s;
     const ap=px.priceAud!=null?px.priceAud:px.price*(AUDRT||1.57);
     return s+a.qty*ap;
+  },0);
+}
+function superTotalAUD(){
+  return SUPER_ASSETS.reduce((s,a)=>{
+    const p=SUPER_MANUAL[a.id];
+    return s+(p?a.qty*p:0);
   },0);
 }
 function change24(){
@@ -1313,7 +1298,6 @@ async function fetchAllPrices(){
     }
   });
   fetchSparklines().then(()=>renderTable());
-  fetchTokenSupplies().then(()=>renderBurnTracker());
   if(anyOk){
     recordHistory();
     setStatus('ok','Updated '+new Date().toLocaleTimeString());
@@ -1468,164 +1452,27 @@ function recordHistory(){
 }
 
 /* ═══════════════════════════════════════════════════
-   TOKEN SUPPLY  (derived from DexScreener marketCap)
-   marketCap / price = circulating supply — no extra
-   API call needed since we already have both values.
+   GROWTH PROJECTION  (multi-model)
 ═══════════════════════════════════════════════════ */
-function fetchTokenSupplies(){
-  // Synchronous — uses PX data already fetched by fetchAllPrices()
-  const solTokens=P.assets.filter(a=>a.type==='solana_token'&&a.ca);
-  solTokens.forEach(a=>{
-    const px=PX[a.id];
-    if(px&&!px.failed&&px.price>0&&px.mcap>0){
-      const derivedSupply=px.mcap/px.price;
-      SUP[a.id]={supply:derivedSupply, status:'ok', ts:Date.now()};
-      recordBurnSnap(a.id, derivedSupply);
-    } else {
-      SUP[a.id]={supply:null, status:'fail', ts:Date.now()};
+
+// Compute std-dev of daily returns from history (used for best/worst bands)
+function dailyReturnStdDev(hist){
+  if(hist.length<3) return 0;
+  const rets=[];
+  for(let i=1;i<hist.length;i++){
+    const prev=hist[i-1],curr=hist[i];
+    if(prev.usd>0&&curr.usd>0){
+      const dayFrac=(curr.ts-prev.ts)/86400000;
+      if(dayFrac>0) rets.push((curr.usd-prev.usd)/(prev.usd*dayFrac));
     }
-  });
-  return Promise.resolve(); // keep async interface consistent
-}
-
-function fmtSupply(n){
-  if(n==null||isNaN(n)) return '—';
-  if(n>=1e9)  return (n/1e9).toLocaleString('en-AU',{minimumFractionDigits:3,maximumFractionDigits:3})+'B';
-  if(n>=1e6)  return (n/1e6).toLocaleString('en-AU',{minimumFractionDigits:3,maximumFractionDigits:3})+'M';
-  if(n>=1e3)  return (n/1e3).toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})+'K';
-  return n.toLocaleString('en-AU',{maximumFractionDigits:2});
-}
-
-/* ═══════════════════════════════════════════════════
-   BURN LOG  — daily & weekly supply tracking
-   Brisbane = UTC+10, no daylight saving (AEST year-round)
-═══════════════════════════════════════════════════ */
-const BRISBANE_MS = 10 * 3600 * 1000;
-
-function loadBurnLog(){
-  try{ const r=localStorage.getItem('ptBurnLog'); return r?JSON.parse(r):{}; }catch(e){ return {}; }
-}
-function saveBurnLog(){
-  try{ localStorage.setItem('ptBurnLog',JSON.stringify(BURN_LOG)); }catch(e){}
-}
-
-// Returns UTC ms of midnight at the start of today in Brisbane
-function startOfBrisbaneDay(nowMs){
-  const bd=new Date(nowMs+BRISBANE_MS);
-  const midBrisUtc=Date.UTC(bd.getUTCFullYear(),bd.getUTCMonth(),bd.getUTCDate());
-  return midBrisUtc-BRISBANE_MS;
-}
-
-// Returns UTC ms of Monday midnight Brisbane for the current week
-// (week resets Sunday 11:59:59 PM → Monday 00:00:00 AEST)
-function startOfBrisbaneWeek(nowMs){
-  const bd=new Date(nowMs+BRISBANE_MS);
-  const dow=bd.getUTCDay(); // 0=Sun,1=Mon,...,6=Sat
-  const daysSinceMon=(dow===0)?6:(dow-1);
-  const todayBrisUtc=Date.UTC(bd.getUTCFullYear(),bd.getUTCMonth(),bd.getUTCDate());
-  const monBrisUtc=todayBrisUtc-daysSinceMon*86400000;
-  return monBrisUtc-BRISBANE_MS;
-}
-
-// Append a supply snapshot; prune entries older than 8 days
-function recordBurnSnap(id,supply){
-  if(!supply||supply<=0) return;
-  if(!BURN_LOG[id]) BURN_LOG[id]=[];
-  BURN_LOG[id].push({ts:Date.now(),supply});
-  const cutoff=Date.now()-8*86400000;
-  BURN_LOG[id]=BURN_LOG[id].filter(s=>s.ts>=cutoff);
-  saveBurnLog();
-}
-
-// Accumulated burn since sinceTs — sums all positive supply drops across consecutive
-// refresh intervals where the LATER snap falls within the period.
-// Returns null when no interval data exists yet for the period (shows "Tracking…").
-function getAccumBurn(id,sinceTs){
-  const snaps=(BURN_LOG[id]||[]).slice().sort((a,b)=>a.ts-b.ts);
-  if(snaps.length<2) return null;
-  let totalBurn=0, hasData=false;
-  for(let i=1;i<snaps.length;i++){
-    // Include any interval whose end-point falls within the period
-    if(snaps[i].ts<sinceTs) continue;
-    const delta=snaps[i-1].supply-snaps[i].supply; // positive = tokens removed
-    if(delta>0) totalBurn+=delta;
-    hasData=true;
   }
-  return hasData?totalBurn:null;
+  if(rets.length<2) return 0;
+  const mean=rets.reduce((s,r)=>s+r,0)/rets.length;
+  const variance=rets.reduce((s,r)=>s+(r-mean)**2,0)/rets.length;
+  return Math.sqrt(variance);
 }
 
-function getDailyBurn(id) { return getAccumBurn(id,startOfBrisbaneDay(Date.now())); }
-function getWeeklyBurn(id){ return getAccumBurn(id,startOfBrisbaneWeek(Date.now())); }
-
-function fmtBurnStat(b){
-  if(b==null) return `<span class="burn-p-val loading">Tracking…</span>`;
-  if(b<0)     return `<span class="burn-p-val minting">+${fmtSupply(Math.abs(b))} minted</span>`;
-  if(b===0)   return `<span class="burn-p-val flat">No change</span>`;
-  return `<span class="burn-p-val burning">▼ ${fmtSupply(b)}</span>`;
-}
-
-function renderBurnTracker(){
-  const el=document.getElementById('burnTracker');
-  const updLbl=document.getElementById('supplyUpdLbl');
-  if(!el) return;
-
-  const solTokens=P.assets.filter(a=>a.type==='solana_token'&&a.ca);
-  if(!solTokens.length){el.innerHTML='';return;}
-
-  const anyOk=solTokens.some(a=>SUP[a.id]?.status==='ok');
-  if(updLbl) updLbl.textContent=anyOk?'Updated '+new Date().toLocaleTimeString():'Fetching…';
-
-  el.innerHTML=solTokens.map(a=>{
-    const sup=SUP[a.id];
-    const logo=LOGOS[a.id];
-    const orb=logo
-      ?`<img src="${logo}" alt="${a.sym[0]}" onerror="this.style.display='none';this.insertAdjacentText('afterend','${a.sym[0]}')">`
-      :a.sym[0];
-
-    const cur=sup?.supply;
-    const loading=!sup;
-    const failed=sup?.status==='fail';
-
-    let supplyLine;
-    if(loading){
-      supplyLine=`<div class="burn-loading">Fetching supply data…</div>`;
-    } else if(failed){
-      supplyLine=`<div class="burn-err">Unable to fetch supply — retrying next refresh</div>`;
-    } else {
-      const STEP=10_000_000;
-      const nextClean=Math.floor(cur/STEP)*STEP;
-      const toNextClean=cur-nextClean;
-      const nextCleanFmt=(nextClean/1_000_000).toFixed(0)+'M';
-      const toNextFmt=(toNextClean/1_000_000).toFixed(2)+'M';
-      supplyLine=`
-        <div class="burn-supply-row">
-          <div class="burn-val">${fmtSupply(cur)}</div>
-        </div>
-        <div class="burn-sub">Your ${fmtQty(a.qty)} = ${cur>0?(a.qty/cur*100).toFixed(4)+'% of supply':'—'}</div>
-        <div class="burn-next-clean">
-          <span class="burn-next-lbl">Next clean milestone</span>
-          <span class="burn-next-val">${nextCleanFmt}</span>
-          <span class="burn-next-rem">${toNextFmt} more to burn</span>
-        </div>`;
-    }
-
-    return`<div class="burn-card">
-      <div class="burn-hd">
-        <div class="burn-orb" style="background:${a.color}18;color:${a.color}">${orb}</div>
-        <div class="burn-meta">
-          <div class="burn-sym">$${a.sym}</div>
-          <div class="burn-type">Deflationary · Solana SPL</div>
-        </div>
-      </div>
-      <span class="burn-lbl">Circulating Supply</span>
-      ${supplyLine}
-    </div>`;
-  }).join('');
-}
-
-/* ═══════════════════════════════════════════════════
-   GROWTH PROJECTION  (linear regression on history)
-═══════════════════════════════════════════════════ */
+// Linear regression — returns {m (USD/day), b (intercept), t0}
 function linReg(history){
   const n=history.length;
   if(n<2) return null;
@@ -1639,9 +1486,122 @@ function linReg(history){
   }
   const denom=n*sx2-sx*sx;
   if(Math.abs(denom)<1e-12) return null;
-  const m=(n*sxy-sx*sy)/denom; // USD per day slope
-  const b=(sy-m*sx)/n;         // intercept at t0
+  const m=(n*sxy-sx*sy)/denom;
+  const b=(sy-m*sx)/n;
   return{m,b,t0};
+}
+
+// Exponential regression — fits log(y) = a + b*x, returns {a, b, t0}
+function expReg(history){
+  const valid=history.filter(e=>e.usd>0);
+  if(valid.length<2) return null;
+  const t0=valid[0].ts;
+  const DAY=86400000;
+  const n=valid.length;
+  let sx=0,sy=0,sxy=0,sx2=0;
+  for(const e of valid){
+    const x=(e.ts-t0)/DAY;
+    const y=Math.log(e.usd);
+    sx+=x; sy+=y; sxy+=x*y; sx2+=x*x;
+  }
+  const denom=n*sx2-sx*sx;
+  if(Math.abs(denom)<1e-12) return null;
+  const b=(n*sxy-sx*sy)/denom; // growth rate per day (log scale)
+  const a=(sy-b*sx)/n;
+  return{a,b,t0};
+}
+
+// 7-day momentum — average daily growth rate over last 7 data days
+function momentumModel(history){
+  const now=Date.now();
+  const cutoff=now-7*86400000;
+  const recent=history.filter(e=>e.ts>=cutoff);
+  if(recent.length<2) return null;
+  const first=recent[0], last=recent[recent.length-1];
+  if(first.usd<=0||last.usd<=0) return null;
+  const days=(last.ts-first.ts)/86400000;
+  if(days<0.01) return null;
+  const dailyRate=Math.pow(last.usd/first.usd,1/days)-1;
+  return{dailyRate,currentUsd:last.usd,ts:last.ts};
+}
+
+// All-time CAGR — from first to last history point
+function cagrModel(history){
+  if(history.length<2) return null;
+  const first=history[0], last=history[history.length-1];
+  if(first.usd<=0||last.usd<=0) return null;
+  const years=(last.ts-first.ts)/(365.25*86400000);
+  if(years<0.0001) return null;
+  const annualRate=Math.pow(last.usd/first.usd,1/years)-1;
+  const dailyRate=Math.pow(1+annualRate,1/365.25)-1;
+  return{dailyRate,currentUsd:last.usd,ts:last.ts,years};
+}
+
+// Given a model and a target USD value, compute days-until arrival
+// modelType: 'linear'|'exp'|'momentum'|'cagr'
+// stdDev: daily return std dev for bands
+// bandDir: 0=central, 1=best, -1=worst
+function daysUntil(modelType, targetUsd, hist, stdDev, bandDir=0){
+  const now=Date.now();
+  if(targetUsd<=0) return null;
+
+  if(modelType==='linear'){
+    const reg=linReg(hist);
+    if(!reg) return null;
+    const mAdj = reg.m * (1 + bandDir * stdDev * Math.sqrt(86400000)); // approximate
+    // Use band-adjusted slope: add/subtract stdDev * currentUsd per day
+    const curUsd = hist[hist.length-1]?.usd || 0;
+    const mBand = reg.m + bandDir * stdDev * curUsd;
+    if(mBand<=0) return null;
+    // linear: targetUsd = reg.b + mBand * x; x = (targetUsd - current) / mBand + daysFromStart
+    const nowDays=(now-reg.t0)/86400000;
+    const xDays=(targetUsd-reg.b)/mBand;
+    const daysFromNow=xDays-nowDays;
+    return isFinite(daysFromNow)&&daysFromNow>0?daysFromNow:null;
+  }
+
+  if(modelType==='exp'){
+    const reg=expReg(hist);
+    if(!reg) return null;
+    const curUsd = hist[hist.length-1]?.usd || 0;
+    const logDailyRate = reg.b;
+    const dailyRate = Math.exp(logDailyRate) - 1;
+    const adjRate = dailyRate + bandDir * stdDev;
+    if(adjRate<=0) return null;
+    // currentUsd * (1+adjRate)^days = targetUsd
+    const lastTs=hist[hist.length-1].ts;
+    const lastUsd=hist[hist.length-1].usd;
+    if(lastUsd<=0) return null;
+    const daysFromLast=Math.log(targetUsd/lastUsd)/Math.log(1+adjRate);
+    const daysFromNow=daysFromLast-(now-lastTs)/86400000;
+    return isFinite(daysFromNow)&&daysFromNow>0?daysFromNow:null;
+  }
+
+  if(modelType==='momentum'){
+    const m=momentumModel(hist);
+    if(!m) return null;
+    const adjRate=m.dailyRate + bandDir * stdDev;
+    if(adjRate<=0) return null;
+    const daysFromLast=Math.log(targetUsd/m.currentUsd)/Math.log(1+adjRate);
+    const daysFromNow=daysFromLast-(now-m.ts)/86400000;
+    return isFinite(daysFromNow)&&daysFromNow>0?daysFromNow:null;
+  }
+
+  if(modelType==='cagr'){
+    const m=cagrModel(hist);
+    if(!m) return null;
+    const adjRate=m.dailyRate + bandDir * stdDev;
+    if(adjRate<=0) return null;
+    const daysFromLast=Math.log(targetUsd/m.currentUsd)/Math.log(1+adjRate);
+    const daysFromNow=daysFromLast-(now-m.ts)/86400000;
+    return isFinite(daysFromNow)&&daysFromNow>0?daysFromNow:null;
+  }
+  return null;
+}
+
+function setProjModel(m){
+  PROJ_MODEL=m;
+  renderProjection();
 }
 
 function renderProjection(){
@@ -1656,15 +1616,23 @@ function renderProjection(){
     return;
   }
 
-  const reg=linReg(hist);
   const rate=AUDRT||1.57;
   const audNow=totalValAUD();
   const now=Date.now();
   const spanDays=((hist[hist.length-1].ts-hist[0].ts)/86400000).toFixed(1);
-  if(lbl) lbl.textContent=`linear trend · ${hist.length} pts · ${spanDays < 1 ? '<1' : spanDays} day span`;
-
+  const stdDev=dailyReturnStdDev(hist);
   const activeIdx=MILESTONES_AUD.findIndex(ms=>audNow<ms);
   const fmt=v=>v>=1000?'A$'+(v/1000).toFixed(0)+'K':'A$'+v;
+
+  const MODEL_NAMES={linear:'Linear',exp:'Exponential',momentum:'7-Day Momentum',cagr:'CAGR'};
+  if(lbl) lbl.textContent=`${MODEL_NAMES[PROJ_MODEL]||PROJ_MODEL} · ${hist.length} pts · ${spanDays<1?'<1':spanDays} day span`;
+
+  // Model tabs
+  const tabs=['linear','exp','momentum','cagr'].map(m=>
+    `<button class="proj-tab${PROJ_MODEL===m?' active':''}" onclick="setProjModel('${m}')">${
+      {linear:'Linear',exp:'Exp',momentum:'7D Mom',cagr:'CAGR'}[m]
+    }</button>`
+  ).join('');
 
   const cards=MILESTONES_AUD.map((ms,i)=>{
     const done=audNow>=ms;
@@ -1677,38 +1645,46 @@ function renderProjection(){
       </div>`;
     }
 
-    if(!reg||reg.m<=0){
-      return`<div class="proj-card${isActive?' proj-active':''}">
-        <div class="proj-status">${isActive?'Next milestone':'Locked'}</div>
-        <div class="proj-amt">${fmt(ms)}</div>
-        <div class="proj-na">Trend declining</div>
-      </div>`;
-    }
-
     const msUsd=ms/rate;
-    const xDays=(msUsd-reg.b)/reg.m; // days since hist[0].ts
-    const predTs=reg.t0+xDays*86400000;
-    const daysFromNow=(predTs-now)/86400000;
+    const dCentral=daysUntil(PROJ_MODEL,msUsd,hist,stdDev,0);
+    const dBest=daysUntil(PROJ_MODEL,msUsd,hist,stdDev,1);
+    const dWorst=daysUntil(PROJ_MODEL,msUsd,hist,stdDev,-1);
 
-    if(daysFromNow<0||daysFromNow>3650){
+    if(dCentral==null||dCentral>3650){
       return`<div class="proj-card${isActive?' proj-active':''}">
-        <div class="proj-status">${isActive?'Next milestone':'Locked'}</div>
+        <div class="proj-status">${isActive?'Next milestone':'Projected'}</div>
         <div class="proj-amt">${fmt(ms)}</div>
         <div class="proj-na">Too far to project</div>
       </div>`;
     }
 
-    const days=Math.round(daysFromNow);
+    const days=Math.round(dCentral);
+    const predTs=now+dCentral*86400000;
     const predDate=new Date(predTs).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
+
+    let scenHtml='';
+    if(dBest!=null&&dWorst!=null){
+      const bestDate=new Date(now+dBest*86400000).toLocaleDateString('en-AU',{day:'numeric',month:'short'});
+      const worstDate=new Date(now+dWorst*86400000).toLocaleDateString('en-AU',{day:'numeric',month:'short'});
+      scenHtml=`<div class="proj-scenarios">
+        <span class="proj-best">▲ ${bestDate}</span>
+        <span class="proj-worst">▼ ${worstDate}</span>
+      </div>`;
+    } else if(dBest!=null){
+      const bestDate=new Date(now+dBest*86400000).toLocaleDateString('en-AU',{day:'numeric',month:'short'});
+      scenHtml=`<div class="proj-scenarios"><span class="proj-best">▲ ${bestDate}</span></div>`;
+    }
+
     return`<div class="proj-card${isActive?' proj-active':''}">
       <div class="proj-status">${isActive?'Next milestone':'Projected'}</div>
       <div class="proj-amt">${fmt(ms)}</div>
       <div class="proj-date">${predDate}</div>
       <div class="proj-days">${days} day${days===1?'':'s'} away</div>
+      ${scenHtml}
     </div>`;
   }).join('');
 
-  el.innerHTML=`<div class="proj-cards">${cards}</div>`;
+  el.innerHTML=`<div class="proj-model-tabs">${tabs}</div><div class="proj-cards">${cards}</div>`;
 }
 
 /* ═══════════════════════════════════════════════════
@@ -1784,6 +1760,153 @@ function clearWif(){
 }
 
 /* ═══════════════════════════════════════════════════
+   ANNOUNCEMENTS
+═══════════════════════════════════════════════════ */
+function addAnnouncement(key, icon, title, sub, type){
+  if(ANNOUNCEMENTS.some(a=>a.key===key)) return; // dedup
+  const time=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  ANNOUNCEMENTS.unshift({key,icon,title,sub,time,type});
+  if(ANNOUNCEMENTS.length>24) ANNOUNCEMENTS=ANNOUNCEMENTS.slice(0,24);
+}
+
+function renderAnnouncements(){
+  const el=document.getElementById('announceGrid');
+  const countEl=document.getElementById('announceCount');
+  if(!el) return;
+
+  const now=Date.now();
+
+  // ── 1. Major asset price move (24h >= 10%) ──
+  P.assets.forEach(a=>{
+    const px=PX[a.id];
+    if(!px||px.failed||px.ch24==null) return;
+    const ch=px.ch24;
+    if(Math.abs(ch)>=10){
+      const dir=ch>0;
+      const key=`price_24h_${a.id}_${Math.sign(ch)}_${Math.floor(now/3600000)}`;
+      addAnnouncement(
+        key,
+        dir?'🚀':'📉',
+        `$${a.sym} ${dir?'surged':'dropped'} ${Math.abs(ch).toFixed(1)}% in 24h`,
+        `Current price: ${fmtP(dp(px),isConv(px))} · 24h move`,
+        dir?'pos':'neg'
+      );
+    }
+    // Intra-day sparkline checks
+    const spk=SPK[a.id];
+    if(spk&&spk.length>=24){
+      [1,3,6,12].forEach(h=>{
+        const idx=Math.max(0,spk.length-1-h);
+        const pOld=spk[idx], pNew=spk[spk.length-1];
+        if(pOld>0){
+          const chH=(pNew-pOld)/pOld*100;
+          if(Math.abs(chH)>=8){
+            const dir=chH>0;
+            const key=`price_${h}h_${a.id}_${Math.sign(chH)}_${Math.floor(now/3600000)}`;
+            addAnnouncement(
+              key,
+              dir?'⚡':'⚠️',
+              `$${a.sym} ${dir?'up':'down'} ${Math.abs(chH).toFixed(1)}% in ${h}h`,
+              `Intraday move detected via sparkline data`,
+              dir?'pos':'neg'
+            );
+          }
+        }
+      });
+    }
+  });
+
+  // ── 2. Weighting flip ──
+  if(P.history.length>=2){
+    const prevSnap=P.history[P.history.length-2];
+    if(prevSnap&&prevSnap.av){
+      const sortedNow=[...P.assets].sort((a,b)=>{
+        const va=assetVal(a), vb=assetVal(b); return vb-va;
+      });
+      const sortedPrev=[...P.assets].sort((a,b)=>{
+        const pa=prevSnap.av[a.id]||0, pb=prevSnap.av[b.id]||0;
+        return (b.qty*pb)-(a.qty*pa);
+      });
+      // Check each adjacent pair in current ordering vs prev ordering
+      for(let i=0;i<sortedNow.length-1;i++){
+        const curr1=sortedNow[i], curr2=sortedNow[i+1];
+        const prevIdx1=sortedPrev.findIndex(a=>a.id===curr1.id);
+        const prevIdx2=sortedPrev.findIndex(a=>a.id===curr2.id);
+        if(prevIdx1>prevIdx2&&prevIdx1>=0&&prevIdx2>=0){
+          const key=`flip_${curr1.id}_${curr2.id}_${Math.floor(now/3600000)}`;
+          addAnnouncement(
+            key, '🔄',
+            `$${curr1.sym} has overtaken $${curr2.sym} in portfolio value`,
+            `Rank flip detected in last refresh interval`,
+            'neutral'
+          );
+        }
+      }
+    }
+  }
+
+  // ── 3. FX move > 1.5% ──
+  if(PREV_FX!=null&&AUDRT!=null){
+    const fxChg=Math.abs((AUDRT-PREV_FX)/PREV_FX*100);
+    if(fxChg>=1.5){
+      const dir=AUDRT>PREV_FX;
+      const key=`fx_${Math.sign(AUDRT-PREV_FX)}_${Math.floor(now/3600000)}`;
+      addAnnouncement(
+        key, '💱',
+        `AUD ${dir?'strengthened':'weakened'} ${fxChg.toFixed(2)}%`,
+        `Rate: ${AUDRT.toFixed(4)} USD/AUD · Affects AUD portfolio value`,
+        dir?'pos':'neg'
+      );
+    }
+  }
+  if(AUDRT!=null) PREV_FX=AUDRT;
+
+  // ── 4. Milestone progress boundary ──
+  const audNow=totalValAUD();
+  if(audNow>0){
+    const activeIdx=MILESTONES_AUD.findIndex(ms=>audNow<ms);
+    if(activeIdx>0){
+      const prevMs=MILESTONES_AUD[activeIdx-1];
+      const nextMs=MILESTONES_AUD[activeIdx];
+      const pct=(audNow-prevMs)/(nextMs-prevMs)*100;
+      const boundary=Math.floor(pct/5)*5;
+      if(boundary>0&&boundary!==Math.floor(LAST_MS_PCT/5)*5){
+        const fmtMs=v=>v>=1000?'A$'+(v/1000).toFixed(0)+'K':'A$'+v;
+        const key=`ms_pct_${activeIdx}_${boundary}`;
+        addAnnouncement(
+          key, '🎯',
+          `${boundary}% of the way to ${fmtMs(nextMs)}`,
+          `Milestone progress update · ${(nextMs-audNow).toLocaleString('en-AU',{maximumFractionDigits:0})} AUD to go`,
+          pct>LAST_MS_PCT?'pos':'neg'
+        );
+        LAST_MS_PCT=pct;
+        try{localStorage.setItem('ptLastMsPct',String(pct));}catch(e){}
+      }
+    }
+  }
+
+  // ── Render ──
+  const shown=ANNOUNCEMENTS.slice(0,8);
+  const N=shown.length;
+  if(countEl) setEl('announceCount',N===0?'All clear':`${N} alert${N===1?'':'s'}`);
+
+  if(!N){
+    el.innerHTML=`<div class="announce-empty">No announcements yet — checking for significant events…</div>`;
+    return;
+  }
+
+  el.innerHTML=shown.map(a=>`
+    <div class="announce-item announce-${a.type}">
+      <div class="announce-icon">${a.icon}</div>
+      <div class="announce-body">
+        <div class="announce-title">${a.title}</div>
+        ${a.sub?`<div class="announce-sub">${a.sub}</div>`:''}
+      </div>
+      <div class="announce-time">${a.time}</div>
+    </div>`).join('');
+}
+
+/* ═══════════════════════════════════════════════════
    RENDER
 ═══════════════════════════════════════════════════ */
 function renderAll(){
@@ -1793,6 +1916,7 @@ function renderAll(){
   renderPie();
   renderLine();
   renderStackedChart();
+  renderAnnouncements();
   renderProjection();
   renderTicker();
   buildWifGrid();
@@ -1832,6 +1956,9 @@ function renderMetrics(){
   }
   setH('mv-total-s',total>0?`Across ${P.assets.length} assets`:'Awaiting prices…');
   setEl('heroAsOf',total>0?new Date().toLocaleTimeString():'');
+  // Super value label
+  const superAud=superTotalAUD();
+  setEl('superTotalLbl',superAud>0?`+ A$${Math.round(superAud).toLocaleString('en-AU')} super`:'');
 
   // Hero delta row
   if(ch.$!==0){
@@ -2680,7 +2807,7 @@ document.addEventListener('DOMContentLoaded',async ()=>{
   // Sync status
   setSbStatus(sbReady()?'syncing':'off');
   renderAll();
-  // Pull from Supabase on load — merges super prices + burn log from other devices
+  // Pull from Supabase on load — merges super prices from other devices
   if(sbReady()) await sbPull();
   doRefresh();
   document.getElementById('overlay').addEventListener('keydown',e=>{
