@@ -46,12 +46,16 @@
 /* ── Base ── */
 html,body{background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;}
 body{min-height:100vh;font-size:13px;line-height:1.5;letter-spacing:.005em;}
+/* Background canvas sits at z-index:0; content layers above it */
+#bgCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+main,footer,.scripture{position:relative;z-index:1;}
 ::selection{background:var(--accent-bg);color:var(--ink);}
 ::-webkit-scrollbar{width:6px;height:6px;}::-webkit-scrollbar-thumb{background:var(--rule);}
 
 /* ── Ticker ── */
 .ticker{border-bottom:1px solid var(--rule-s);background:var(--bg);display:flex;align-items:center;height:30px;overflow:hidden;font-family:var(--mono);font-size:10.5px;position:sticky;top:0;z-index:210;}
-.ticker-lbl{padding:0 14px;height:100%;display:flex;align-items:center;border-right:1px solid var(--rule-s);color:var(--accent);letter-spacing:.18em;font-size:9.5px;text-transform:uppercase;flex-shrink:0;}
+.ticker-lbl{padding:0 14px;height:100%;display:flex;align-items:center;border-right:1px solid var(--rule-s);color:var(--accent);letter-spacing:.18em;font-size:9.5px;text-transform:uppercase;flex-shrink:0;position:relative;z-index:2;background:var(--bg);}
+body.light-mode .ticker-lbl{background:var(--bg);}
 .ticker-track{display:flex;gap:34px;padding:0 18px;white-space:nowrap;animation:ticker 80s linear infinite;}
 .ticker-item{display:inline-flex;gap:8px;align-items:baseline;}
 .ticker-item .t-sym{color:var(--ink-2);font-weight:500;}
@@ -292,22 +296,21 @@ table.htbl{width:100%;border-collapse:collapse;min-width:700px;}
 .proj-tab.active{background:var(--ink);color:var(--bg);}
 @media(max-width:800px){.proj-cards{grid-template-columns:repeat(4,1fr);}.proj-card:nth-child(4){border-right:0;}.proj-card:nth-child(1),.proj-card:nth-child(2),.proj-card:nth-child(3),.proj-card:nth-child(4){border-bottom:1px solid var(--rule-s);}}
 
-/* ── Announcements — terminal style ── */
-.announce-grid{background:oklch(0.105 0.008 250);border:1px solid oklch(0.20 0.008 250);font-family:var(--mono);padding:16px 20px;display:flex;flex-direction:column;gap:0;overflow:hidden;}
-.announce-item{display:flex;align-items:baseline;gap:0;padding:2px 0;border:0;line-height:1.65;font-size:11.5px;flex-wrap:nowrap;}
-.announce-ts{color:oklch(0.42 0.04 250);margin-right:10px;white-space:nowrap;flex-shrink:0;font-size:10.5px;letter-spacing:.03em;}
+/* ── Announcements — themed log panel ── */
+.announce-grid{background:var(--bg-2);border:1px solid var(--rule-s);font-family:var(--mono);padding:14px 18px;display:flex;flex-direction:column;gap:0;overflow:hidden;}
+.announce-item{display:flex;align-items:baseline;gap:0;padding:3px 0;border:0;line-height:1.65;font-size:11.5px;flex-wrap:nowrap;}
+.announce-ts{color:var(--ink-4);margin-right:10px;white-space:nowrap;flex-shrink:0;font-size:10.5px;letter-spacing:.03em;}
 .announce-prefix{margin-right:9px;flex-shrink:0;font-size:10.5px;font-weight:700;letter-spacing:.06em;min-width:64px;}
-.announce-pos .announce-prefix{color:oklch(0.70 0.17 155);}
-.announce-neg .announce-prefix{color:oklch(0.63 0.19 25);}
-.announce-neutral .announce-prefix{color:oklch(0.60 0.08 255);}
-.announce-msg{color:oklch(0.88 0.006 250);min-width:0;}
-.announce-sep{color:oklch(0.32 0.006 250);margin:0 9px;flex-shrink:0;}
-.announce-detail{color:oklch(0.52 0.006 250);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.announce-cursor{display:inline-block;width:7px;height:12px;background:oklch(0.70 0.17 155);margin-left:5px;vertical-align:middle;animation:termBlink .9s step-end infinite;}
+.announce-pos .announce-prefix{color:var(--pos);}
+.announce-neg .announce-prefix{color:var(--neg);}
+.announce-neutral .announce-prefix{color:var(--ink-3);}
+.announce-msg{color:var(--ink-2);min-width:0;}
+.announce-sep{color:var(--ink-5);margin:0 9px;flex-shrink:0;}
+.announce-detail{color:var(--ink-4);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.announce-cursor{display:inline-block;width:7px;height:11px;background:var(--pos);margin-left:5px;vertical-align:middle;animation:termBlink .9s step-end infinite;}
 @keyframes termBlink{0%,100%{opacity:1;}50%{opacity:0;}}
-.announce-empty{color:oklch(0.48 0.04 250);font-size:11.5px;padding:3px 0;}
-.announce-empty::before{content:'> ';color:oklch(0.70 0.17 155);}
-body.light-mode .announce-grid{background:oklch(0.13 0.008 250);border-color:oklch(0.22 0.010 250);}
+.announce-empty{color:var(--ink-4);font-size:11.5px;padding:3px 0;}
+.announce-empty::before{content:'> ';color:var(--pos);}
 
 /* ── What-If ── */
 .wif-wrap{border:1px solid var(--rule-s);display:grid;grid-template-columns:auto 1fr;}
@@ -1102,6 +1105,81 @@ function applyDark(d){
   if(btn) btn.textContent=d?'🌙':'☀';
   try{localStorage.setItem('ptDark',d?'1':'0');}catch(e){}
   renderPie(); renderLine(); renderStackedChart();
+  initBgCanvas(); // re-draw with updated theme colours
+}
+
+/* ═══════════════════════════════════════════════════
+   BACKGROUND — animated contour canvas
+═══════════════════════════════════════════════════ */
+let _bgRaf=null;
+function initBgCanvas(){
+  // Create or reuse canvas
+  let cv=document.getElementById('bgCanvas');
+  if(!cv){
+    cv=document.createElement('canvas');
+    cv.id='bgCanvas';
+    document.body.insertBefore(cv,document.body.firstChild);
+  }
+  // Cancel any running animation loop
+  if(_bgRaf){ cancelAnimationFrame(_bgRaf); _bgRaf=null; }
+
+  const ctx=cv.getContext('2d');
+  const isLight=document.body.classList.contains('light-mode');
+  cv.style.opacity=isLight?0.055:0.075;
+
+  let W=0,H=0,lastNow=0,drift=0;
+
+  function resize(){
+    W=window.innerWidth; H=window.innerHeight;
+    cv.width=W; cv.height=H;
+  }
+
+  function draw(now){
+    if(now-lastNow<33){ _bgRaf=requestAnimationFrame(draw); return; }
+    lastNow=now;
+
+    // drift grows forever — the only modulo is over the full grid height
+    // so the wrap happens on a single off-screen line, never a visible one
+    drift+=0.38;
+
+    ctx.clearRect(0,0,W,H);
+    ctx.strokeStyle=isLight?'#000':'#fff';
+    ctx.lineWidth=1.0;
+
+    const spacing=52;
+    const N=Math.ceil(H/spacing)+3;
+    const cycle=N*spacing; // full grid height — one complete seamless loop
+
+    // Wave phases grow with drift (never reset) → zero discontinuity ever
+    const ph1=drift*0.095;
+    const ph2=drift*0.057;
+
+    for(let i=0;i<N;i++){
+      // Line position: advances 0.38px/frame. Only line wrapping off-screen
+      // ever makes a large jump — visible lines move smoothly every frame.
+      const baseY=(i*spacing+drift%cycle)%cycle-spacing;
+
+      // Amplitude stable per line-slot (fraction of grid), not absolute Y
+      const f=i/N;
+      const amp1=18+Math.sin(f*Math.PI*3.5)*6;
+      const amp2= 9+Math.cos(f*Math.PI*2.3)*3;
+
+      ctx.beginPath();
+      for(let x=0;x<=W;x+=5){
+        const y=baseY
+          +Math.sin(x*0.0024+ph1)*amp1
+          +Math.sin(x*0.0055+ph2)*amp2;
+        x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+    }
+
+    _bgRaf=requestAnimationFrame(draw);
+  }
+
+  resize();
+  window.addEventListener('resize',resize);
+  _bgRaf=requestAnimationFrame(draw);
 }
 function toggleDark(){applyDark(!DARK);}
 function cc(l,dk){return DARK?dk:l;}
@@ -2957,6 +3035,7 @@ function closeSuper(){
 }
 
 document.addEventListener('DOMContentLoaded',async ()=>{
+  initBgCanvas(); // start background contour animation immediately
   loadNotifiedMs();
   loadSuperPrices(); // pre-load so ticker shows super prices immediately
   // Request notification permission (non-blocking — only asks once)
