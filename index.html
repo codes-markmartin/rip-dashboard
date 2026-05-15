@@ -1303,19 +1303,19 @@ function change24(){
 }
 
 // Returns 'explosive' | 'positive' | 'normal'
-// explosive = ≥5% gain over last 12 hours of recorded history
-// positive  = any positive 24h change
+// explosive = ≥25% gain over last 12 hours of recorded history
+// positive  = ≥10% gain over last 24 hours
 function portfolioMood(){
   if(P.history.length>=2){
     const cut=Date.now()-12*3600000;
     const slice=P.history.filter(h=>h.ts>=cut);
     if(slice.length>=2&&slice[0].usd>0){
       const ch12=(slice[slice.length-1].usd-slice[0].usd)/slice[0].usd*100;
-      if(ch12>=5) return 'explosive';
+      if(ch12>=25) return 'explosive';
     }
   }
   const ch=change24();
-  if(ch.pct>0) return 'positive';
+  if(ch.pct>=10) return 'positive';
   return 'normal';
 }
 
