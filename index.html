@@ -476,19 +476,13 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0);border-color:var(--rule
 /* ── Milestone toast ── */
 .ms-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--accent);color:var(--bg);padding:11px 24px;font:600 13px/1.4 var(--sans);z-index:999;opacity:0;transition:opacity .35s,transform .35s;pointer-events:none;white-space:nowrap;box-shadow:0 8px 32px oklch(0 0 0/.45);}
 .ms-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-/* ── Mobile improvements ── */
-@media(max-width:700px){
-  .hero-chart-canvas{height:200px;}
-  .super-tbl{font-size:12px;}
-  .super-page{padding:28px 14px 50px;}
-  .super-hd{flex-direction:column;gap:10px;align-items:flex-start;}
-  .super-close{align-self:flex-end;}
-}
+
+/* ── Tablet ≤1100px ── */
 @media(max-width:1100px){
   .hero{gap:18px;}
   .kpis{grid-template-columns:repeat(2,1fr);}
-  .kpi:nth-child(2){border-right:0;padding-right:0;}
-  .kpi:nth-child(3){padding-left:0;border-top:1px solid var(--rule-s);padding-top:24px;}
+  .kpi:nth-child(2){border-right:0;}
+  .kpi:nth-child(3){grid-column:1/-1;border-top:1px solid var(--rule-s);}
   .row-comp{grid-template-columns:1fr;}
   .donut-pane{border-right:0;border-bottom:1px solid var(--rule-s);}
   .wif-wrap{grid-template-columns:1fr;}
@@ -497,14 +491,130 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0);border-color:var(--rule
   .ms-card:nth-child(4){border-right:0;}
   .ms-card:nth-child(1),.ms-card:nth-child(2),.ms-card:nth-child(3),.ms-card:nth-child(4){border-bottom:1px solid var(--rule-s);}
 }
+
+/* ── Mobile ≤700px ── */
 @media(max-width:700px){
-  nav{padding:14px 16px;grid-template-columns:1fr auto;}
-  main{padding:24px 16px 40px;}
+  nav{padding:12px 16px;grid-template-columns:1fr auto;}
+  main{padding:20px 14px 40px;}
   .hero-figure{font-size:52px;}
   .hero-figure .ccy{font-size:24px;}
   .hero-figure .cents{font-size:28px;}
   .sect-title{font-size:22px;}
   .brand-sub,.fx-rate,.hide-sm{display:none;}
+  .hero-chart-canvas{height:200px;}
+  .super-tbl{font-size:12px;}
+  .super-page{padding:28px 14px 50px;}
+  .super-hd{flex-direction:column;gap:10px;align-items:flex-start;}
+  .super-close{align-self:flex-end;}
+}
+
+/* ── iPhone ≤480px — everything scaled down, desktop layout preserved ── */
+@media(max-width:480px){
+  /* Nav — keep brand + essential controls only */
+  nav{padding:9px 12px;grid-template-columns:1fr auto;gap:0;}
+  .brand-name{font-size:15px;}
+  .brand-mark{width:22px;height:22px;}
+  .brand-mark svg{width:12px;height:12px;}
+  .brand-sub,.fx-rate,.hide-sm,.sync-pill{display:none!important;}
+  .nav-right{gap:6px;}
+  .btn-icon{width:28px;height:28px;font-size:12px;}
+  .fx-pill button{padding:5px 8px;font-size:10px;}
+
+  /* Scripture — tighter */
+  .scripture{padding:9px 14px;gap:8px;}
+  .scr-verse{font-size:13.5px;}
+
+  /* Main container */
+  main{padding:12px 10px 36px;}
+
+  /* Hero card */
+  .hero{padding:16px 14px 12px;margin-top:12px;}
+  .hero-lbl{font-size:9px;}
+  .hero-figure{font-size:42px;line-height:.92;}
+  .hero-figure .ccy{font-size:18px;margin-right:3px;}
+  .hero-figure .cents{font-size:20px;}
+  .hero-delta-row{gap:8px;margin-top:10px;flex-wrap:wrap;}
+  .hero-d-num{font-size:12px;}
+
+  /* KPI strip — single column stack */
+  .kpis{grid-template-columns:1fr!important;}
+  .kpi{padding:14px 16px!important;border-right:0!important;border-top:0;border-bottom:1px solid var(--rule-s);}
+  .kpi:nth-child(3){grid-column:auto!important;border-top:0;}
+  .kpi:last-child{border-bottom:0;}
+  .kpi-lbl{margin-bottom:8px;font-size:9px;}
+  .kpi-figure{font-size:22px!important;}
+  .kpi-sub{font-size:10.5px;margin-top:5px;}
+  .mom-bars{height:20px;}
+  .risk-track-wrap{margin-top:8px;}
+
+  /* Chart */
+  .hero-chart-wrap{padding:12px 14px 16px;}
+  .hero-chart-canvas{height:150px;}
+  .hero-chart-head{flex-wrap:wrap;gap:6px;}
+
+  /* Sections */
+  .sect{padding:14px 12px 16px;margin-top:12px;}
+  .sect-head{padding-bottom:10px;margin-bottom:12px;flex-wrap:wrap;gap:6px;}
+  .sect-title{font-size:18px;gap:8px;}
+  .sect-num{font-size:9.5px;}
+
+  /* Milestones track */
+  .ms-track-wrap{margin-bottom:14px;}
+  .ms-track{margin:6px 0 8px;}
+  .ms-label{font-size:7.5px;}
+
+  /* Milestone cards — 2 columns */
+  .ms-cards{grid-template-columns:repeat(2,1fr)!important;}
+  .ms-card{padding:12px 10px 10px;gap:5px;}
+  .ms-card:nth-child(2){border-right:0!important;}
+  .ms-card:nth-child(3),.ms-card:nth-child(4),.ms-card:nth-child(5),.ms-card:nth-child(6),.ms-card:nth-child(7){border-top:1px solid var(--rule-s);}
+  .ms-card:nth-child(4),.ms-card:nth-child(6){border-right:0!important;}
+  .ms-card-status{font-size:8px;letter-spacing:.12em;}
+  .ms-card-amt{font-size:15px!important;margin-top:2px;}
+  .ms-card-sub{font-size:8.5px;}
+  .ms-card-pct{font-size:9px;}
+  .ms-card-mult{font-size:8.5px;}
+
+  /* Holdings table */
+  .tbl-wrap{margin:0 -12px;}
+  .htbl th,.htbl td{padding:12px 10px;}
+  .a-orb{width:28px;height:28px;font-size:10px;}
+  .a-orb img{width:16px;height:16px;}
+  .a-sym{font-size:12px;}
+  .a-name-row{font-size:9.5px;}
+  .px-cell{font-size:12px;}
+  .val-cell{font-size:14px;}
+
+  /* Announcements */
+  .announce-grid{padding:10px 12px;}
+  .announce-item{flex-wrap:wrap;row-gap:0;}
+  .announce-detail{display:none;}
+  .announce-sep{display:none;}
+  .announce-ts{font-size:9.5px;}
+  .announce-prefix{font-size:9.5px;min-width:52px;}
+  .announce-msg{font-size:11px;}
+
+  /* Composition row */
+  .donut-wrap{max-width:180px;}
+  .line-pane .hero-chart-canvas{height:160px;}
+
+  /* What-if */
+  .wif-aside{padding:14px 16px;}
+  .wif-aside h3{font-size:18px;}
+  .wif-result{padding:14px 16px;gap:14px;}
+  .wif-res-val{font-size:22px;}
+
+  /* Growth projection — 2 columns */
+  .proj-cards{grid-template-columns:repeat(2,1fr)!important;}
+  .proj-card:nth-child(2n){border-right:0!important;}
+  .proj-card:nth-child(n+3){border-top:1px solid var(--rule-s);}
+  .proj-amt{font-size:15px;}
+  .proj-card.proj-active .proj-amt{font-size:18px;}
+  .proj-model-tabs{flex-wrap:wrap;}
+  .proj-tab{padding:5px 10px;font-size:9px;}
+
+  /* Footer */
+  footer{padding:16px 14px;font-size:9.5px;flex-direction:column;gap:6px;}
 }
 </style>
 </head>
