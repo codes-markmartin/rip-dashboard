@@ -98,7 +98,7 @@ nav{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:1
 main{max-width:1480px;margin:0 auto;padding:36px 28px 60px;}
 
 /* ── Hero ── */
-.hero{padding:22px 0 20px;border-bottom:1px solid var(--rule-s);display:flex;align-items:flex-end;justify-content:space-between;gap:32px;flex-wrap:wrap;}
+.hero{padding:26px 28px 22px;border:1px solid var(--rule);border-bottom:1px solid var(--rule-s);border-radius:3px 3px 0 0;background:var(--surface);display:flex;align-items:flex-end;justify-content:space-between;gap:32px;flex-wrap:wrap;margin-top:20px;}
 .hero-meta{display:flex;gap:18px;align-items:baseline;margin-bottom:14px;}
 .hero-lbl{font-size:10px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);}
 .hero-asof{color:var(--ink-3);font:500 10.5px/1 var(--mono);letter-spacing:.04em;}
@@ -111,15 +111,14 @@ main{max-width:1480px;margin:0 auto;padding:36px 28px 60px;}
 .hero-d-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;font:500 12px/1 var(--mono);}
 .hero-d-chip.pos{background:var(--pos-bg);color:var(--pos);}.hero-d-chip.neg{background:var(--neg-bg);color:var(--neg);}
 /* Full-width chart panel */
-.hero-chart-wrap{border:1px solid var(--rule-s);border-top:0;padding:16px 22px 20px;display:flex;flex-direction:column;gap:10px;}
+.hero-chart-wrap{border:1px solid var(--rule);border-top:1px solid var(--rule-s);border-radius:0 0 3px 3px;background:var(--surface);padding:18px 28px 24px;display:flex;flex-direction:column;gap:10px;box-shadow:0 8px 32px oklch(0 0 0/.50),0 2px 8px oklch(0 0 0/.22);}
 .hero-chart-head{display:flex;justify-content:space-between;align-items:baseline;}
 .hero-chart-canvas{height:300px;position:relative;}
 
 /* ── KPI strip ── */
-.kpis{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--rule-s);}
-.kpi{padding:24px 26px 24px 0;border-right:1px solid var(--rule-s);}
-.kpi:not(:first-child){padding-left:26px;}
-.kpi:last-child{border-right:0;padding-right:0;}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--rule-s);background:var(--surface);border-left:1px solid var(--rule);border-right:1px solid var(--rule);}
+.kpi{padding:24px 28px;border-right:1px solid var(--rule-s);}
+.kpi:last-child{border-right:0;}
 .kpi-lbl{font-size:9.5px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);margin-bottom:14px;display:block;}
 .kpi-val{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
 .kpi-figure{font-family:var(--serif);font-size:34px;line-height:1;letter-spacing:-0.018em;}
@@ -139,7 +138,7 @@ main{max-width:1480px;margin:0 auto;padding:36px 28px 60px;}
 .risk-reading{font:500 11px/1 var(--mono);color:var(--accent);letter-spacing:.04em;}
 
 /* ── Section heads ── */
-.sect{margin-top:40px;}
+.sect{margin-top:22px;background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:28px 28px 32px;box-shadow:0 6px 28px oklch(0 0 0/.52),0 1px 4px oklch(0 0 0/.22);}
 .sect-head{display:flex;align-items:flex-end;justify-content:space-between;padding-bottom:14px;border-bottom:1px solid var(--rule);margin-bottom:18px;}
 .sect-title{font-family:var(--serif);font-size:28px;letter-spacing:-0.012em;color:var(--ink);display:flex;align-items:baseline;gap:14px;}
 .sect-num{font-family:var(--mono);font-size:10.5px;color:var(--ink-4);letter-spacing:.18em;}
@@ -148,10 +147,21 @@ main{max-width:1480px;margin:0 auto;padding:36px 28px 60px;}
 .sect-meta-val{font-family:var(--mono);font-size:11px;color:var(--ink-2);}
 
 /* ── Milestone cards ── */
+.ms-track-wrap{margin-bottom:20px;}
+.ms-track{height:3px;background:var(--rule);position:relative;margin:8px 0 10px;border-radius:2px;}
+.ms-track-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .4s ease;}
+.ms-track-dot{position:absolute;top:50%;transform:translate(-50%,-50%);width:8px;height:8px;border-radius:50%;background:var(--rule-s);border:2px solid var(--bg);transition:background .3s;}
+.ms-track-dot.reached{background:var(--pos);border-color:var(--bg);}
+.ms-track-dot.active-d{background:var(--accent);border-color:var(--bg);box-shadow:0 0 0 2px oklch(0.80 0.105 80/.25);}
+.ms-labels{position:relative;height:16px;overflow:visible;}
+.ms-label{position:absolute;font:500 8.5px/1 var(--mono);color:var(--ink-5);letter-spacing:.03em;transform:translateX(-50%);white-space:nowrap;}
+.ms-label:first-child{transform:none;left:0!important;}
+.ms-label:last-child{transform:none;right:0;left:auto!important;}
+.ms-label.reached{color:var(--pos);}
+.ms-label.active-l{color:var(--accent);}
 .ms-cards{display:grid;grid-template-columns:repeat(7,1fr);gap:0;border:1px solid var(--rule-s);overflow:hidden;}
 .ms-card{padding:20px 14px 18px;border-right:1px solid var(--rule-s);display:flex;flex-direction:column;gap:7px;position:relative;transition:background .12s;}
 .ms-card:last-child{border-right:0;}
-.ms-card.ms-locked{opacity:0.35;}
 .ms-card.ms-done{background:oklch(0.80 0.105 80 / 0.04);}
 .ms-card.ms-active{background:oklch(0.80 0.105 80 / 0.07);}
 .ms-card.ms-active::before,.ms-card.ms-major.ms-done::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent);}
@@ -159,17 +169,19 @@ main{max-width:1480px;margin:0 auto;padding:36px 28px 60px;}
 .ms-card.ms-done .ms-card-status{color:var(--pos);}
 .ms-card.ms-active .ms-card-status{color:var(--accent);}
 .ms-card.ms-major .ms-card-status{color:var(--accent);}
-.ms-card-amt{font-family:var(--serif);font-size:19px;color:var(--ink-3);line-height:1;margin-top:4px;}
+.ms-card-amt{font-family:var(--serif);font-size:19px;color:var(--ink-4);line-height:1;margin-top:4px;}
 .ms-card.ms-done .ms-card-amt{color:var(--ink);}
 .ms-card.ms-active .ms-card-amt{color:var(--accent);}
-.ms-card.ms-major .ms-card-amt{font-size:22px;}
+.ms-card.ms-major .ms-card-amt{font-size:22px;color:var(--ink-3);}
+.ms-card.ms-major.ms-active .ms-card-amt{color:var(--accent);}
 .ms-card-sub{font:500 9.5px/1.3 var(--mono);color:var(--ink-4);letter-spacing:.02em;}
 .ms-card.ms-done .ms-card-sub{color:var(--pos);}
 .ms-card.ms-active .ms-card-sub{color:var(--ink-2);}
 .ms-card-bar{height:2px;background:var(--rule);margin-top:6px;}
 .ms-card-bar-fill{height:100%;background:var(--accent);transition:width .4s ease;}
 .ms-card-pct{font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:.04em;}
-.ms-card-mult{font-family:var(--mono);font-size:9.5px;color:var(--ink-4);letter-spacing:.03em;margin-top:2px;}
+.ms-card-mult{font-family:var(--mono);font-size:9.5px;color:var(--ink-5);letter-spacing:.03em;margin-top:2px;}
+.ms-card.ms-active .ms-card-mult{color:var(--ink-3);}
 
 /* ── Composition row ── */
 .row-comp{display:grid;grid-template-columns:1.05fr 2.4fr;border:1px solid var(--rule-s);}
@@ -280,19 +292,22 @@ table.htbl{width:100%;border-collapse:collapse;min-width:700px;}
 .proj-tab.active{background:var(--ink);color:var(--bg);}
 @media(max-width:800px){.proj-cards{grid-template-columns:repeat(4,1fr);}.proj-card:nth-child(4){border-right:0;}.proj-card:nth-child(1),.proj-card:nth-child(2),.proj-card:nth-child(3),.proj-card:nth-child(4){border-bottom:1px solid var(--rule-s);}}
 
-/* ── Announcements ── */
-.announce-grid{display:flex;flex-direction:column;gap:0;border:1px solid var(--rule-s);}
-.announce-item{display:flex;align-items:flex-start;gap:14px;padding:14px 18px;border-bottom:1px solid var(--rule-s);}
-.announce-item:last-child{border-bottom:0;}
-.announce-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
-.announce-body{flex:1;}
-.announce-title{font-size:12.5px;font-weight:600;color:var(--ink);line-height:1.3;}
-.announce-sub{font-size:11px;color:var(--ink-3);margin-top:3px;}
-.announce-time{font:400 10px/1 var(--mono);color:var(--ink-4);white-space:nowrap;flex-shrink:0;margin-top:2px;}
-.announce-empty{color:var(--ink-3);font-size:12px;font-style:italic;padding:14px 18px;}
-.announce-pos{border-left:2px solid var(--pos);}
-.announce-neg{border-left:2px solid var(--neg);}
-.announce-neutral{border-left:2px solid var(--rule);}
+/* ── Announcements — terminal style ── */
+.announce-grid{background:oklch(0.105 0.008 250);border:1px solid oklch(0.20 0.008 250);font-family:var(--mono);padding:16px 20px;display:flex;flex-direction:column;gap:0;overflow:hidden;}
+.announce-item{display:flex;align-items:baseline;gap:0;padding:2px 0;border:0;line-height:1.65;font-size:11.5px;flex-wrap:nowrap;}
+.announce-ts{color:oklch(0.42 0.04 250);margin-right:10px;white-space:nowrap;flex-shrink:0;font-size:10.5px;letter-spacing:.03em;}
+.announce-prefix{margin-right:9px;flex-shrink:0;font-size:10.5px;font-weight:700;letter-spacing:.06em;min-width:64px;}
+.announce-pos .announce-prefix{color:oklch(0.70 0.17 155);}
+.announce-neg .announce-prefix{color:oklch(0.63 0.19 25);}
+.announce-neutral .announce-prefix{color:oklch(0.60 0.08 255);}
+.announce-msg{color:oklch(0.88 0.006 250);min-width:0;}
+.announce-sep{color:oklch(0.32 0.006 250);margin:0 9px;flex-shrink:0;}
+.announce-detail{color:oklch(0.52 0.006 250);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.announce-cursor{display:inline-block;width:7px;height:12px;background:oklch(0.70 0.17 155);margin-left:5px;vertical-align:middle;animation:termBlink .9s step-end infinite;}
+@keyframes termBlink{0%,100%{opacity:1;}50%{opacity:0;}}
+.announce-empty{color:oklch(0.48 0.04 250);font-size:11.5px;padding:3px 0;}
+.announce-empty::before{content:'> ';color:oklch(0.70 0.17 155);}
+body.light-mode .announce-grid{background:oklch(0.13 0.008 250);border-color:oklch(0.22 0.010 250);}
 
 /* ── What-If ── */
 .wif-wrap{border:1px solid var(--rule-s);display:grid;grid-template-columns:auto 1fr;}
@@ -447,6 +462,11 @@ body.light-mode{
 body.light-mode .ms-card.ms-done{background:oklch(0.56 0.120 72 / 0.06);}
 body.light-mode .ms-card.ms-active{background:oklch(0.56 0.120 72 / 0.10);}
 body.light-mode .ticker{border-bottom-color:var(--rule-s);}
+/* Light mode elevation — cards lift above the near-white bg */
+body.light-mode .sect{background:oklch(1 0 0);border-color:var(--rule-s);box-shadow:0 2px 14px oklch(0 0 0/.09),0 1px 3px oklch(0 0 0/.06);}
+body.light-mode .hero{background:oklch(1 0 0);border-color:var(--rule-s);}
+body.light-mode .kpis{background:oklch(1 0 0);border-color:var(--rule-s);}
+body.light-mode .hero-chart-wrap{background:oklch(1 0 0);border-color:var(--rule-s);box-shadow:0 4px 18px oklch(0 0 0/.10),0 1px 4px oklch(0 0 0/.06);}
 
 /* ── Responsive ── */
 /* ── Chart range toggle ── */
@@ -557,6 +577,40 @@ body.light-mode .ticker{border-bottom-color:var(--rule-s);}
     </div>
   </div>
 
+  <!-- ── KPI strip ── -->
+  <section class="kpis">
+    <div class="kpi">
+      <span class="kpi-lbl">24h Change</span>
+      <div class="kpi-val">
+        <div class="kpi-figure" id="mv-chg">—</div>
+      </div>
+      <div class="kpi-sub" id="mv-chg-s">Awaiting data</div>
+    </div>
+    <div class="kpi" id="mv-mom-card">
+      <span class="kpi-lbl">Momentum</span>
+      <div class="kpi-val">
+        <div class="kpi-figure" id="mv-mom-val" style="font-size:22px">—</div>
+      </div>
+      <div class="kpi-sub" id="mv-mom-sub">Awaiting prices</div>
+      <div class="mom-bars" id="mv-mom-bars"></div>
+      <div id="mv-mom-split" style="font-size:10px;margin-top:6px;color:var(--ink-3);font-family:var(--mono)"></div>
+    </div>
+    <div class="kpi">
+      <span class="kpi-lbl">Concentration Risk</span>
+      <div class="kpi-val">
+        <div class="kpi-figure" id="mv-risk" style="font-size:22px">—</div>
+      </div>
+      <div class="kpi-sub" id="mv-risk-s">—</div>
+      <div class="risk-track-wrap" id="riskTrackWrap" style="display:none">
+        <div class="risk-track">
+          <div class="risk-zones"><span></span><span></span><span></span></div>
+          <div class="risk-pip" id="riskPip" style="left:50%"></div>
+        </div>
+        <span class="risk-reading" id="riskReading"></span>
+      </div>
+    </div>
+  </section>
+
   <!-- ── Portfolio History Chart — full width ── -->
   <div class="hero-chart-wrap">
     <div class="hero-chart-head">
@@ -597,40 +651,6 @@ body.light-mode .ticker{border-bottom-color:var(--rule-s);}
       </div>
     </div>
     <div id="milestoneGrid"></div>
-  </section>
-
-  <!-- ── KPI strip ── -->
-  <section class="kpis">
-    <div class="kpi">
-      <span class="kpi-lbl">24h Change</span>
-      <div class="kpi-val">
-        <div class="kpi-figure" id="mv-chg">—</div>
-      </div>
-      <div class="kpi-sub" id="mv-chg-s">Awaiting data</div>
-    </div>
-    <div class="kpi" id="mv-mom-card">
-      <span class="kpi-lbl">Momentum</span>
-      <div class="kpi-val">
-        <div class="kpi-figure" id="mv-mom-val" style="font-size:22px">—</div>
-      </div>
-      <div class="kpi-sub" id="mv-mom-sub">Awaiting prices</div>
-      <div class="mom-bars" id="mv-mom-bars"></div>
-      <div id="mv-mom-split" style="font-size:10px;margin-top:6px;color:var(--ink-3);font-family:var(--mono)"></div>
-    </div>
-    <div class="kpi">
-      <span class="kpi-lbl">Concentration Risk</span>
-      <div class="kpi-val">
-        <div class="kpi-figure" id="mv-risk" style="font-size:22px">—</div>
-      </div>
-      <div class="kpi-sub" id="mv-risk-s">—</div>
-      <div class="risk-track-wrap" id="riskTrackWrap" style="display:none">
-        <div class="risk-track">
-          <div class="risk-zones"><span></span><span></span><span></span></div>
-          <div class="risk-pip" id="riskPip" style="left:50%"></div>
-        </div>
-        <span class="risk-reading" id="riskReading"></span>
-      </div>
-    </div>
   </section>
 
   <!-- ── II · Holdings ── -->
@@ -1414,8 +1434,20 @@ async function fetchSparklines(){
   }
 }
 function sparklineSVG(id){
-  const pts=SPK[id];
-  if(!pts||pts.length<2) return`<span style="color:var(--t4);font-size:11px">—</span>`;
+  // Build sparkline from local history (last 7 days) — no external fetch
+  const cutoff=Date.now()-7*24*3600*1000;
+  const pts=P.history
+    .filter(h=>h.ts>=cutoff&&h.av&&h.av[id]!=null)
+    .map(h=>h.av[id]);
+  if(pts.length<2){
+    // Fallback: use SPK if available (crypto from CoinGecko, stocks from Finnhub)
+    const spk=SPK[id];
+    if(!spk||spk.length<2) return`<span style="color:var(--t4);font-size:11px">—</span>`;
+    return _buildSparkSVG(spk);
+  }
+  return _buildSparkSVG(pts);
+}
+function _buildSparkSVG(pts){
   const W=60,H=22,n=pts.length;
   const mn=Math.min(...pts),mx=Math.max(...pts),rng=mx-mn||1;
   const coords=pts.map((v,i)=>`${((i/(n-1))*W).toFixed(1)},${(H-((v-mn)/rng)*(H-4)-2).toFixed(1)}`).join(' ');
@@ -1891,19 +1923,21 @@ function renderAnnouncements(){
   if(countEl) setEl('announceCount',N===0?'All clear':`${N} alert${N===1?'':'s'}`);
 
   if(!N){
-    el.innerHTML=`<div class="announce-empty">No announcements yet — checking for significant events…</div>`;
+    el.innerHTML=`<div class="announce-empty">No significant events detected — monitoring markets…</div>`;
     return;
   }
 
-  el.innerHTML=shown.map(a=>`
-    <div class="announce-item announce-${a.type}">
-      <div class="announce-icon">${a.icon}</div>
-      <div class="announce-body">
-        <div class="announce-title">${a.title}</div>
-        ${a.sub?`<div class="announce-sub">${a.sub}</div>`:''}
-      </div>
-      <div class="announce-time">${a.time}</div>
-    </div>`).join('');
+  el.innerHTML=shown.map((a,i)=>{
+    const pfx=a.type==='pos'?'[ OK  ]':a.type==='neg'?'[ WARN ]':'[ INFO ]';
+    const isLast=i===shown.length-1;
+    return`<div class="announce-item announce-${a.type}">
+      <span class="announce-ts">${a.time}</span>
+      <span class="announce-prefix">${pfx}</span>
+      <span class="announce-msg">${a.title}</span>
+      ${a.sub?`<span class="announce-sep">·</span><span class="announce-detail">${a.sub}</span>`:''}
+      ${isLast?'<span class="announce-cursor"></span>':''}
+    </div>`;
+  }).join('');
 }
 
 /* ═══════════════════════════════════════════════════
@@ -2073,30 +2107,49 @@ function renderMilestones(){
   if(!el) return;
   const fmt=v=>v>=1000?'A$'+(v/1000).toFixed(0)+'K':'A$'+v;
   const MAJOR=100000;
-
-  // Find the "active" milestone — the next one not yet reached
   const activeIdx=MILESTONES_AUD.findIndex(ms=>aud<ms);
-  // All milestones before activeIdx are done; activeIdx is next; rest are locked
 
+  // ── Progress track ──────────────────────────────────────────
+  const trackPct=Math.min(100,(aud/MAJOR)*100);
+  const dots=MILESTONES_AUD.map((ms,i)=>{
+    const pct=(ms/MAJOR)*100;
+    const reached=aud>=ms;
+    const isActive=i===activeIdx;
+    const cls=reached?' reached':isActive?' active-d':'';
+    return`<div class="ms-track-dot${cls}" style="left:${pct}%"></div>`;
+  }).join('');
+  const labels=MILESTONES_AUD.map((ms,i)=>{
+    const pct=(ms/MAJOR)*100;
+    const reached=aud>=ms;
+    const isActive=i===activeIdx;
+    const cls=reached?' reached':isActive?' active-l':'';
+    return`<span class="ms-label${cls}" style="left:${pct}%">${fmt(ms)}</span>`;
+  }).join('');
+  const trackHTML=`<div class="ms-track-wrap">
+    <div class="ms-track">
+      <div class="ms-track-fill" style="width:${trackPct.toFixed(2)}%"></div>
+      ${dots}
+    </div>
+    <div class="ms-labels">${labels}</div>
+  </div>`;
+
+  // ── Cards ───────────────────────────────────────────────────
   const cards=MILESTONES_AUD.map((ms,i)=>{
     const done=aud>=ms;
-    const isActive=i===activeIdx;       // the very next one to reach
-    const isLocked=!done&&!isActive;    // beyond next
+    const isActive=i===activeIdx;
     const isMajor=ms===MAJOR;
 
     let cls='ms-card';
     if(done)          cls+=' ms-done'+(isMajor?' ms-major':'');
     else if(isActive) cls+=(isMajor?' ms-active ms-major':' ms-active');
-    else if(isMajor)  cls+=' ms-major';
+    else if(isMajor)  cls+=' ms-major ms-locked-major';
     else              cls+=' ms-locked';
 
-    let statusTxt, subTxt, barHTML='', pctHTML='';
-
-    const multStr=aud>0&&!done?`${(ms/aud).toFixed(1)}× needed`:'';
+    let statusTxt, subTxt='', barHTML='', pctHTML='';
+    const multStr=aud>0&&!done?`${(ms/aud).toFixed(1)}×`:'';
 
     if(done){
-      statusTxt=isMajor?'✦ Major Goal Achieved':'✓ Reached';
-      subTxt='Goal achieved';
+      statusTxt=isMajor?'✦ Achieved':'✓ Reached';
     } else if(isActive){
       statusTxt=isMajor?'✦ Ultimate Goal':'Next milestone';
       const toGo=ms-aud;
@@ -2112,8 +2165,7 @@ function renderMilestones(){
       barHTML=`<div class="ms-card-bar"><div class="ms-card-bar-fill" style="width:${pct.toFixed(1)}%"></div></div>`;
       pctHTML=`<div class="ms-card-pct">${pct.toFixed(1)}%</div>`;
     } else {
-      statusTxt='Locked';
-      subTxt='';
+      statusTxt='Upcoming';
     }
 
     return`<div class="${cls}">
@@ -2121,11 +2173,11 @@ function renderMilestones(){
       <div class="ms-card-amt">${fmt(ms)}</div>
       ${subTxt?`<div class="ms-card-sub">${subTxt}</div>`:''}
       ${barHTML}${pctHTML}
-      ${multStr?`<div class="ms-card-mult">${multStr}</div>`:''}
+      ${multStr?`<div class="ms-card-mult">${multStr} needed</div>`:''}
     </div>`;
   }).join('');
 
-  el.innerHTML=`<div class="ms-cards">${cards}</div>`;
+  el.innerHTML=trackHTML+`<div class="ms-cards">${cards}</div>`;
 }
 
 function renderTable(){
@@ -2661,9 +2713,9 @@ function buildSyncUI(){
    SUPERANNUATION
 ═══════════════════════════════════════════════════ */
 const SUPER_ASSETS=[
-  {id:'s32', sym:'S32', name:'South32',  qty:860,  cost:4.385,  color:'#5a7fa8'},
-  {id:'nxt', sym:'NXT', name:'NextDC',   qty:480,  cost:15.002, color:'#14794a'},
-  {id:'mp1', sym:'MP1', name:'Megaport', qty:400,  cost:8.852,  color:'#8b5cf6'},
+  {id:'nxt', sym:'NXT', name:'NextDC',     qty:480,  cost:15.002, color:'#14794a'},
+  {id:'mp1', sym:'MP1', name:'Megaport',   qty:400,  cost:8.852,  color:'#8b5cf6'},
+  {id:'dro', sym:'DRO', name:'Droneshield',qty:1081, cost:3.31,   color:'#c0392b'},
 ];
 let SUPER_MANUAL={};  // {id: price}
 let SUPER_TS=0;       // timestamp of last price update
@@ -2686,6 +2738,9 @@ function loadSuperPrices(){
     const raw=localStorage.getItem('superManual');
     if(raw) SUPER_MANUAL=JSON.parse(raw);
     SUPER_TS=parseInt(localStorage.getItem('superTS')||'0',10)||0;
+    // Strip prices for any assets no longer in SUPER_ASSETS
+    const validIds=new Set(SUPER_ASSETS.map(a=>a.id));
+    Object.keys(SUPER_MANUAL).forEach(k=>{ if(!validIds.has(k)) delete SUPER_MANUAL[k]; });
   }catch(e){}
 }
 
