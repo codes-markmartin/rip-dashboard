@@ -1738,16 +1738,19 @@ function recordHistory(){
   },0);
   if(usdTotal<=0) return;
 
-  // Snapshot per-asset prices for later move attribution
-  const av={};
+  // Snapshot per-asset prices AND quantities for accurate historical replay
+  const av={}, qty={};
   P.assets.forEach(a=>{
     const px=PX[a.id];
     if(px&&!px.failed&&px.price!=null) av[a.id]=px.price;
+    qty[a.id]=a.qty; // always record current quantity
   });
 
-  const entry={ts:Date.now(),usd:usdTotal,av};
+  const entry={ts:Date.now(),usd:usdTotal,av,qty};
   const last=P.history[P.history.length-1];
-  if(last&&(entry.ts-last.ts)<300000) P.history[P.history.length-1]=entry;
+  // Dedup: replace the last entry if it's within 5 min, UNLESS it's been locked
+  // (locked = it's a closing snapshot before a qty change — must not be overwritten)
+  if(last&&!last._locked&&(entry.ts-last.ts)<300000) P.history[P.history.length-1]=entry;
   else P.history.push(entry);
   if(P.history.length>2016) P.history=P.history.slice(-2016);
   saveP();
@@ -2800,18 +2803,22 @@ function renderStackedChart(){
   },0);
 
   // Sort largest-avg first → sits at bottom of stack
+  // Use historical qty (e.qty) when available, fall back to current qty for old entries
   const ordered=[...P.assets].sort((a,b)=>{
-    const avgA=slice.reduce((s,e)=>s+(e.av&&e.av[a.id]!=null?a.qty*e.av[a.id]:0),0)/slice.length;
-    const avgB=slice.reduce((s,e)=>s+(e.av&&e.av[b.id]!=null?b.qty*e.av[b.id]:0),0)/slice.length;
+    const avgA=slice.reduce((s,e)=>{const q=e.qty?.[a.id]??a.qty;return s+(e.av&&e.av[a.id]!=null?q*e.av[a.id]:0);},0)/slice.length;
+    const avgB=slice.reduce((s,e)=>{const q=e.qty?.[b.id]??b.qty;return s+(e.av&&e.av[b.id]!=null?q*e.av[b.id]:0);},0)/slice.length;
     return avgB-avgA;
   });
 
   const datasets=ordered.map(a=>{
     const data=slice.map(e=>{
-      if(e.av&&e.av[a.id]!=null) return+(a.qty*e.av[a.id]*rate).toFixed(2);
+      // Use the qty recorded at the time of this snapshot; fall back to current qty for
+      // history entries that pre-date the qty-snapshot feature (graceful degradation)
+      const hQty=e.qty?.[a.id]??a.qty;
+      if(e.av&&e.av[a.id]!=null) return+(hQty*e.av[a.id]*rate).toFixed(2);
       const px=PX[a.id];
       if(px&&!px.failed&&px.price&&currentTot>0)
-        return+((a.qty*px.price/currentTot)*e.usd*rate).toFixed(2);
+        return+((hQty*px.price/currentTot)*e.usd*rate).toFixed(2);
       return 0;
     });
     return{
@@ -2972,10 +2979,21 @@ function buildSettings(){ buildSyncUI();
 function updateA(id,field,raw){
   const a=P.assets.find(x=>x.id===id);if(!a) return;
   const v=parseFloat(raw);
-  if(field==='manual'){
+  if(field==='qty'){
+    // Stamp a "closing" snapshot with the OLD quantity before updating,
+    // so history has a clean break-point at the moment of the purchase.
+    // Force a fresh entry (bypass the 5-min dedup) by temporarily back-dating.
+    const lastEntry=P.history[P.history.length-1];
+    if(lastEntry) lastEntry._locked=true; // prevent overwrite on next recordHistory
+    recordHistory(); // records with current (pre-change) qty
+    if(lastEntry) delete lastEntry._locked;
+    a[field]=isNaN(v)?0:v;
+  } else if(field==='manual'){
     a.manual=(!raw||v<=0)?null:v;
     if(a.manual) PX[id]={price:a.manual,priceAud:null,ch24:0,mcap:0,source:'Manual'};
-  } else a[field]=isNaN(v)?0:v;
+  } else {
+    a[field]=isNaN(v)?0:v;
+  }
   saveP();renderAll();
   schedulePush(); // sync qty / manual price change
 }
