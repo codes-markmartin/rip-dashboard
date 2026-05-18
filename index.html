@@ -412,9 +412,34 @@ table.htbl{width:100%;border-collapse:collapse;min-width:700px;}
 .mkt-ch{font:400 9.5px/1 var(--mono);margin-top:2px;text-align:right;}
 .mkt-ch.pos{color:var(--pos);}.mkt-ch.neg{color:var(--neg);}
 .mkt-loading{font-size:10px;color:var(--ink-4);font-style:italic;padding:12px 4px;}
-@media(max-width:700px){.market-panel{display:none;}}
+/* Market panel — mobile: full-width 2×2 grid below portfolio value */
+@media(max-width:700px){
+  .market-panel{
+    width:100%;min-width:unset;align-self:auto;
+    margin-top:16px;padding-top:14px;
+    border-top:1px solid var(--card-border-sub);
+    justify-content:flex-start;
+  }
+  #marketRows{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--card-border-sub);}
+  .mkt-row{border:0!important;background:var(--surface);padding:8px 10px;}
+  .mkt-row:hover{background:var(--bg-2);}
+  .mkt-logo{width:18px;height:18px;}
+  .mkt-logo img{width:14px;height:14px;}
+  .mkt-sym{font-size:10px;}
+  .mkt-cap{font-size:8px;}
+  .mkt-px{font-size:10px;}
+  .mkt-ch{font-size:8.5px;}
+}
+@media(max-width:480px){
+  .market-panel{margin-top:12px;padding-top:10px;}
+  .market-panel-head{font-size:8px;}
+  .mkt-row{padding:7px 8px;gap:7px;}
+  .mkt-sym{font-size:9.5px;}
+  .mkt-px{font-size:9.5px;}
+}
 body.light-mode .mkt-row{background:oklch(0 0 0/.03);}
 body.light-mode .mkt-row:hover{background:oklch(0 0 0/.06);}
+
 
 /* ── Sync settings ── */
 .sync-section{background:var(--raised);border:1px solid var(--rule);padding:13px 14px;margin-bottom:12px;}
@@ -554,129 +579,288 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0);box-shadow:0 4px 18px o
   .ms-card:nth-child(1),.ms-card:nth-child(2),.ms-card:nth-child(3),.ms-card:nth-child(4){border-bottom:1px solid var(--rule-s);}
 }
 
-/* ── Mobile ≤700px ── */
+/* ══════════════════════════════════════════════════════════════
+   MOBILE  ≤700px  — Market Mirror–style native app layout
+   Philosophy: full-bleed, no card chrome, list-row assets,
+   horizontal scroll market strip, app-feel sections
+══════════════════════════════════════════════════════════════ */
 @media(max-width:700px){
-  nav{padding:12px 16px;grid-template-columns:1fr auto;}
-  main{padding:20px 14px 40px;}
-  .hero-figure{font-size:52px;}
-  .hero-figure .ccy{font-size:24px;}
-  .hero-figure .cents{font-size:28px;}
-  .sect-title{font-size:22px;}
-  .brand-sub,.fx-rate,.hide-sm{display:none;}
-  .hero-chart-canvas{height:200px;}
-  .super-tbl{font-size:12px;}
-  .super-page{padding:28px 14px 50px;}
-  .super-hd{flex-direction:column;gap:10px;align-items:flex-start;}
-  .super-close{align-self:flex-end;}
-}
 
-/* ── iPhone ≤480px — everything scaled down, desktop layout preserved ── */
-@media(max-width:480px){
-  /* Nav — keep brand + essential controls only */
-  nav{padding:9px 12px;grid-template-columns:1fr auto;gap:0;}
-  .brand-name{font-size:15px;}
-  .brand-mark{width:22px;height:22px;}
-  .brand-mark svg{width:12px;height:12px;}
+  /* ── Global shell ── */
+  html,body{overflow-x:hidden;}
+  main{padding:0 0 80px;max-width:100%;}
+
+  /* ── Ticker — ultra-compact, stays readable ── */
+  .ticker{height:26px;font-size:9.5px;}
+  .ticker-lbl{padding:0 10px;font-size:8.5px;}
+  .ticker-track{gap:22px;padding:0 12px;}
+
+  /* ── Nav — minimal app bar ── */
+  nav{
+    padding:10px 16px;
+    grid-template-columns:1fr auto;
+    gap:8px;
+    border-bottom:1px solid var(--rule-s);
+  }
   .brand-sub,.fx-rate,.hide-sm,.sync-pill{display:none!important;}
-  .nav-right{gap:6px;}
-  .btn-icon{width:28px;height:28px;font-size:12px;}
-  .fx-pill button{padding:5px 8px;font-size:10px;}
+  .nav-right{gap:8px;}
+  .brand-name{font-size:17px;}
+  .brand-mark{width:26px;height:26px;}
+  .nav-scroll-reveal{max-height:0!important;opacity:0!important;pointer-events:none!important;}
 
-  /* Scripture — tighter */
-  .scripture{padding:9px 14px;gap:8px;}
-  .scr-verse{font-size:13.5px;}
+  /* ── Scripture banner — collapsed, single line ── */
+  .scripture{
+    padding:8px 16px;
+    border-bottom:1px solid var(--rule-s);
+    background:none;
+    justify-content:flex-start;
+    gap:8px;
+  }
+  .scr-verse{font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(100vw - 100px);}
+  .scr-ref{display:none;}
 
-  /* Main container */
-  main{padding:12px 10px 36px;}
+  /* ── Hero — app-style portfolio card ── */
+  .hero{
+    flex-direction:column;
+    align-items:flex-start;
+    padding:20px 16px 16px;
+    margin-top:0;
+    border-radius:0;
+    border-left:0;border-right:0;border-top:0;
+    gap:0;
+    background:var(--surface);
+  }
+  .hero-meta{margin-bottom:8px;gap:10px;}
+  .hero-lbl{font-size:9px;letter-spacing:.22em;}
+  .hero-figure{font-size:54px;line-height:.9;letter-spacing:-0.03em;}
+  .hero-figure .ccy{font-size:24px;margin-right:4px;}
+  .hero-figure .cents{font-size:28px;}
+  .hero-delta-row{margin-top:12px;gap:10px;}
+  .hero-d-num{font-size:13px;}
+  #superTotalRow{margin-top:6px;}
 
-  /* Hero card */
-  .hero{padding:16px 14px 12px;margin-top:12px;}
-  .hero-lbl{font-size:9px;}
-  .hero-figure{font-size:42px;line-height:.92;}
-  .hero-figure .ccy{font-size:18px;margin-right:3px;}
-  .hero-figure .cents{font-size:20px;}
-  .hero-delta-row{gap:8px;margin-top:10px;flex-wrap:wrap;}
-  .hero-d-num{font-size:12px;}
+  /* ── Market panel — horizontal scroll strip ── */
+  .market-panel{
+    width:100%;min-width:unset;align-self:auto;
+    margin-top:14px;
+    padding-top:12px;
+    border-top:1px solid var(--rule-s);
+    flex-direction:column;
+    gap:4px;
+  }
+  .market-panel-head{font-size:8px;letter-spacing:.22em;margin-bottom:4px;}
+  #marketRows{
+    display:flex;
+    flex-direction:row;
+    overflow-x:auto;
+    gap:6px;
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+    background:transparent;
+    padding-bottom:2px;
+  }
+  #marketRows::-webkit-scrollbar{display:none;}
+  .mkt-row{
+    flex:0 0 auto;
+    width:88px;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    gap:4px;
+    padding:8px 6px;
+    border:1px solid var(--card-border-sub)!important;
+    border-radius:6px;
+    background:var(--bg-2)!important;
+  }
+  .mkt-row:hover{background:var(--raised)!important;}
+  .mkt-logo{width:20px;height:20px;margin:0 auto 2px;}
+  .mkt-logo img{width:16px;height:16px;}
+  .mkt-info{width:100%;}
+  .mkt-sym{font-size:10px;font-weight:700;}
+  .mkt-cap{font-size:7.5px;margin-top:1px;}
+  .mkt-price{text-align:center;width:100%;}
+  .mkt-px{font-size:10px;font-weight:600;}
+  .mkt-ch{font-size:8.5px;text-align:center;}
 
-  /* KPI strip — single column stack */
-  .kpis{grid-template-columns:1fr!important;}
-  .kpi{padding:14px 16px!important;border-right:0!important;border-top:0;border-bottom:1px solid var(--rule-s);}
-  .kpi:nth-child(3){grid-column:auto!important;border-top:0;}
-  .kpi:last-child{border-bottom:0;}
-  .kpi-lbl{margin-bottom:8px;font-size:9px;}
-  .kpi-figure{font-size:22px!important;}
-  .kpi-sub{font-size:10.5px;margin-top:5px;}
-  .mom-bars{height:20px;}
-  .risk-track-wrap{margin-top:8px;}
-
-  /* Chart */
-  .hero-chart-wrap{padding:12px 14px 16px;}
-  .hero-chart-canvas{height:150px;}
+  /* ── Hero chart — tighter ── */
+  .hero-chart-wrap{
+    border-radius:0;
+    border-left:0;border-right:0;
+    padding:14px 16px 18px;
+    margin-top:1px;
+  }
+  .hero-chart-canvas{height:180px;}
   .hero-chart-head{flex-wrap:wrap;gap:6px;}
 
-  /* Sections */
-  .sect{padding:14px 12px 16px;margin-top:12px;}
-  .sect-head{padding-bottom:10px;margin-bottom:12px;flex-wrap:wrap;gap:6px;}
-  .sect-title{font-size:18px;gap:8px;}
-  .sect-num{font-size:9.5px;}
+  /* ── KPI strip — horizontal scroll cards ── */
+  .kpis{
+    display:flex!important;
+    flex-direction:row;
+    overflow-x:auto;
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+    border-left:0;border-right:0;border-radius:0;
+    border-top:1px solid var(--card-border-sub);
+    border-bottom:1px solid var(--card-border-sub);
+    gap:0;
+  }
+  .kpis::-webkit-scrollbar{display:none;}
+  .kpi{
+    flex:0 0 auto;
+    min-width:180px;
+    padding:16px 16px 14px;
+    border-right:1px solid var(--rule-s)!important;
+    border-bottom:0!important;
+  }
+  .kpi:last-child{border-right:0!important;}
+  .kpi-lbl{font-size:8.5px;margin-bottom:10px;}
+  .kpi-figure{font-size:26px!important;}
+  .kpi-sub{font-size:10px;margin-top:6px;}
+  .mom-bars{height:22px;}
 
-  /* Milestones track */
-  .ms-track-wrap{margin-bottom:14px;}
+  /* ── Sections — app-style, minimal chrome ── */
+  .sect{
+    padding:0;
+    margin-top:1px;
+    border-radius:0;
+    border-left:0;border-right:0;
+    box-shadow:none;
+  }
+  .sect-head{
+    padding:14px 16px 12px;
+    margin-bottom:0;
+    border-bottom:1px solid var(--rule-s);
+    flex-wrap:wrap;
+    gap:4px;
+  }
+  .sect-title{font-size:16px;gap:8px;letter-spacing:-0.008em;}
+  .sect-num{display:none;}
+  .sect-meta-lbl{font-size:8.5px;}
+  .sect-meta-val{font-size:10px;}
+
+  /* ── Holdings — full-bleed native list rows ── */
+  .tbl-wrap{overflow-x:hidden;margin:0;}
+  table.htbl{min-width:0;width:100%;display:block;}
+  .htbl thead{display:none;}
+  .htbl tbody{display:block;width:100%;}
+  .htbl tbody tr{
+    display:flex;
+    align-items:center;
+    padding:10px 16px;
+    border-bottom:1px solid var(--rule-s)!important;
+    gap:0;
+    min-height:60px;
+  }
+  .htbl tbody tr:last-child td{border-bottom:0;}
+  .htbl td{
+    padding:0!important;
+    border:0!important;
+    white-space:normal;
+  }
+  /* Asset name cell — flex grows */
+  .htbl td:nth-child(1){flex:1;min-width:0;}
+  /* Price */
+  .htbl td:nth-child(2){display:none;}
+  /* 24h chip */
+  .htbl td:nth-child(3){flex-shrink:0;margin-left:8px;}
+  /* Qty — hidden */
+  .htbl td:nth-child(4){display:none;}
+  /* Value — right side */
+  .htbl td:nth-child(5){flex-shrink:0;margin-left:10px;text-align:right;}
+  /* 7-day sparkline */
+  .htbl td:nth-child(6){flex-shrink:0;margin-left:10px;}
+  /* Weight bar — hidden */
+  .htbl td:nth-child(7){display:none;}
+
+  /* Asset cell inner */
+  .a-cell{min-width:0;gap:10px;}
+  .a-orb{width:36px;height:36px;flex-shrink:0;border-radius:50%!important;}
+  .a-orb img{width:20px;height:20px;}
+  .a-sym{font-size:13px;font-weight:700;}
+  .a-name-row{font-size:9.5px;gap:6px;margin-top:2px;}
+  .val-cell{font-size:15px;display:block;}
+  .px-cell{font-size:12px;}
+  .chip{padding:2px 6px;font-size:10px;}
+
+  /* ── Milestones ── */
+  .ms-track-wrap{padding:0 16px;margin-bottom:12px;}
   .ms-track{margin:6px 0 8px;}
   .ms-label{font-size:7.5px;}
-
-  /* Milestone cards — 2 columns */
-  .ms-cards{grid-template-columns:repeat(2,1fr)!important;}
-  .ms-card{padding:12px 10px 10px;gap:5px;}
+  .ms-cards{grid-template-columns:repeat(2,1fr)!important;margin:0;}
+  .ms-card{padding:12px 12px 10px;gap:4px;}
   .ms-card:nth-child(2){border-right:0!important;}
   .ms-card:nth-child(3),.ms-card:nth-child(4),.ms-card:nth-child(5),.ms-card:nth-child(6),.ms-card:nth-child(7){border-top:1px solid var(--rule-s);}
   .ms-card:nth-child(4),.ms-card:nth-child(6){border-right:0!important;}
-  .ms-card-status{font-size:8px;letter-spacing:.12em;}
+  .ms-card-status{font-size:7.5px;}
   .ms-card-amt{font-size:15px!important;margin-top:2px;}
   .ms-card-sub{font-size:8.5px;}
   .ms-card-pct{font-size:9px;}
-  .ms-card-mult{font-size:8.5px;}
+  .ms-card-mult{font-size:8px;}
 
-  /* Holdings table */
-  .tbl-wrap{margin:0 -12px;}
-  .htbl th,.htbl td{padding:12px 10px;}
-  .a-orb{width:28px;height:28px;font-size:10px;}
-  .a-orb img{width:16px;height:16px;}
-  .a-sym{font-size:12px;}
-  .a-name-row{font-size:9.5px;}
-  .px-cell{font-size:12px;}
-  .val-cell{font-size:14px;}
+  /* ── Announcements — compact log ── */
+  .announce-grid{padding:8px 16px;border-radius:0;}
+  .announce-item{flex-wrap:nowrap;font-size:10.5px;padding:4px 0;}
+  .announce-detail,.announce-sep{display:none;}
+  .announce-ts{font-size:9px;min-width:38px;}
+  .announce-prefix{min-width:46px;font-size:9px;}
+  .announce-msg{font-size:10.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
-  /* Announcements */
-  .announce-grid{padding:10px 12px;}
-  .announce-item{flex-wrap:wrap;row-gap:0;}
-  .announce-detail{display:none;}
-  .announce-sep{display:none;}
-  .announce-ts{font-size:9.5px;}
-  .announce-prefix{font-size:9.5px;min-width:52px;}
-  .announce-msg{font-size:11px;}
-
-  /* Composition row */
-  .donut-wrap{width:170px;height:170px;}
+  /* ── Portfolio composition ── */
+  .row-comp{grid-template-columns:1fr;border:0;}
+  .donut-pane{border-right:0;border-bottom:1px solid var(--rule-s);padding:16px;}
+  .donut-wrap{width:160px;height:160px;}
+  .line-pane{padding:16px;}
   .line-pane .hero-chart-canvas{height:160px;}
 
-  /* What-if */
-  .wif-aside{padding:14px 16px;}
-  .wif-aside h3{font-size:18px;}
-  .wif-result{padding:14px 16px;gap:14px;}
-  .wif-res-val{font-size:22px;}
-
-  /* Growth projection — 2 columns */
+  /* ── Growth projection ── */
+  .proj-model-tabs{flex-wrap:wrap;align-self:stretch;}
+  .proj-tab{padding:5px 10px;font-size:9px;flex:1;text-align:center;}
   .proj-cards{grid-template-columns:repeat(2,1fr)!important;}
+  .proj-card{padding:12px 12px 10px;}
   .proj-card:nth-child(2n){border-right:0!important;}
   .proj-card:nth-child(n+3){border-top:1px solid var(--rule-s);}
   .proj-amt{font-size:15px;}
   .proj-card.proj-active .proj-amt{font-size:18px;}
-  .proj-model-tabs{flex-wrap:wrap;}
-  .proj-tab{padding:5px 10px;font-size:9px;}
+  .proj-chart-wrap{height:180px;}
 
-  /* Footer */
-  footer{padding:16px 14px;font-size:9.5px;flex-direction:column;gap:6px;}
+  /* ── What-If ── */
+  .wif-wrap{grid-template-columns:1fr;}
+  .wif-aside{border-right:0;border-bottom:1px solid var(--rule-s);padding:14px 16px;}
+  .wif-aside h3{font-size:18px;}
+  .wif-result{padding:14px 16px;gap:12px;}
+  .wif-res-val{font-size:20px;}
+  .wif-res-delta{font-size:14px;}
+
+  /* ── Super overlay ── */
+  .super-tbl{font-size:11px;}
+  .super-page{padding:20px 14px 50px;}
+  .super-hd{flex-direction:column;gap:10px;align-items:flex-start;}
+  .super-close{align-self:flex-end;}
+
+  /* ── Footer ── */
+  footer{padding:16px 16px;font-size:9.5px;flex-direction:column;gap:5px;}
+
+  /* ── Section inner padding restore ── */
+  .sect > *:not(.sect-head){padding-left:16px;padding-right:16px;}
+  .tbl-wrap{padding-left:0!important;padding-right:0!important;}
+  .announce-grid{padding-left:16px!important;padding-right:16px!important;}
+  .ms-track-wrap{padding-left:16px;padding-right:16px;}
+  .proj-chart-wrap{margin-left:16px;margin-right:16px;}
+  .xi-note{padding-left:0;padding-right:0;}
+}
+
+/* ── Narrow phones ≤420px — scale down further ── */
+@media(max-width:420px){
+  .hero-figure{font-size:44px;}
+  .hero-figure .ccy{font-size:20px;}
+  .hero-figure .cents{font-size:22px;}
+  .mkt-row{width:78px;padding:7px 5px;}
+  .mkt-sym{font-size:9.5px;}
+  .mkt-px{font-size:9.5px;}
+  .kpi{min-width:160px;}
+  .kpi-figure{font-size:22px!important;}
+  .sect-title{font-size:15px;}
+  footer{font-size:9px;}
 }
 </style>
 </head>
@@ -3589,7 +3773,6 @@ document.addEventListener('DOMContentLoaded',async ()=>{
   renderAll();
   // Pull from Supabase on load — merges super prices from other devices
   if(sbReady()) await sbPull();
-  // Start market overview fetch immediately (independent of main prices)
   fetchMarketOverview();
   doRefresh();
   document.getElementById('overlay').addEventListener('keydown',e=>{
