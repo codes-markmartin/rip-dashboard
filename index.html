@@ -388,6 +388,33 @@ table.htbl{width:100%;border-collapse:collapse;min-width:700px;}
 .super-foot-note{font-size:10.5px;color:var(--ink-4);font-family:var(--mono);}
 .super-refresh-btn{background:none;border:1px solid var(--rule);color:var(--ink-3);padding:6px 12px;font:500 9.5px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;cursor:pointer;transition:all .13s;}
 .super-refresh-btn:hover{border-color:var(--ink-3);color:var(--ink);}
+/* ── Super chart (inside overlay) ── */
+.super-chart-section{margin-top:32px;border-top:1px solid var(--rule-s);padding-top:24px;}
+.super-chart-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;}
+.super-chart-lbl{font-size:9.5px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);}
+.super-chart-pts{font:400 10px/1 var(--mono);color:var(--ink-4);}
+.super-chart-wrap{height:200px;position:relative;}
+.super-chart-empty{text-align:center;padding:40px 0;color:var(--ink-4);font-size:11.5px;font-style:italic;}
+/* ── Market overview panel (hero right side) ── */
+.market-panel{display:flex;flex-direction:column;gap:0;min-width:188px;align-self:stretch;justify-content:flex-end;}
+.market-panel-head{font-size:9px;font-weight:500;letter-spacing:.20em;text-transform:uppercase;color:var(--ink-4);margin-bottom:8px;}
+.mkt-row{display:flex;align-items:center;gap:9px;padding:7px 10px;border:1px solid var(--card-border-sub);border-bottom:0;background:oklch(0 0 0/.08);transition:background .12s;}
+.mkt-row:last-child{border-bottom:1px solid var(--card-border-sub);}
+.mkt-row:hover{background:oklch(0 0 0/.15);}
+.mkt-logo{width:22px;height:22px;border-radius:50%;overflow:hidden;flex-shrink:0;display:grid;place-items:center;background:var(--bg-2);}
+.mkt-logo img{width:18px;height:18px;object-fit:contain;}
+.mkt-logo-fb{font:700 9px/1 var(--mono);color:var(--ink-3);}
+.mkt-info{flex:1;min-width:0;}
+.mkt-sym{font:600 11px/1 var(--sans);color:var(--ink);letter-spacing:.01em;}
+.mkt-cap{font:400 9px/1 var(--mono);color:var(--ink-4);margin-top:2px;white-space:nowrap;}
+.mkt-price{text-align:right;flex-shrink:0;}
+.mkt-px{font:500 11.5px/1 var(--mono);color:var(--ink);letter-spacing:-0.01em;}
+.mkt-ch{font:400 9.5px/1 var(--mono);margin-top:2px;text-align:right;}
+.mkt-ch.pos{color:var(--pos);}.mkt-ch.neg{color:var(--neg);}
+.mkt-loading{font-size:10px;color:var(--ink-4);font-style:italic;padding:12px 4px;}
+@media(max-width:700px){.market-panel{display:none;}}
+body.light-mode .mkt-row{background:oklch(0 0 0/.03);}
+body.light-mode .mkt-row:hover{background:oklch(0 0 0/.06);}
 
 /* ── Sync settings ── */
 .sync-section{background:var(--raised);border:1px solid var(--rule);padding:13px 14px;margin-bottom:12px;}
@@ -717,12 +744,20 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0);box-shadow:0 4px 18px o
         <span class="hero-lbl">Total Portfolio</span>
         <span class="hero-asof" id="heroAsOf"></span>
       </div>
-      <div class="hero-figure" id="mv-total">—</div><span id="superTotalLbl" style="font:400 11px/1 var(--mono);color:var(--ink-4);margin-left:10px;letter-spacing:.04em;vertical-align:middle"></span>
+      <div class="hero-figure" id="mv-total">—</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:4px;" id="superTotalRow">
+        <span id="superTotalLbl" style="font:400 11px/1 var(--mono);color:var(--ink-4);letter-spacing:.04em;vertical-align:middle"></span>
+      </div>
       <div class="hero-delta-row">
         <div class="hero-d-num" id="mv-hero-chg">—</div>
         <div id="mv-hero-chip"></div>
         <span style="font-size:11px;color:var(--ink-3)" id="mv-total-s">Awaiting prices</span>
       </div>
+    </div>
+    <!-- ── Market Overview panel ── -->
+    <div class="market-panel" id="marketPanel">
+      <div class="market-panel-head">Market Overview</div>
+      <div id="marketRows"><div class="mkt-loading">Fetching market data…</div></div>
     </div>
   </div>
 
@@ -948,6 +983,19 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0);box-shadow:0 4px 18px o
     <div class="super-foot">
       <span class="super-foot-note" id="superSrc">Edit prices above · changes save automatically</span>
     </div>
+    <!-- ── Super chart section ── -->
+    <div class="super-chart-section" id="superChartSection" style="display:none">
+      <div class="super-chart-head">
+        <span class="super-chart-lbl">Portfolio Value Over Time</span>
+        <span class="super-chart-pts" id="superChartPts"></span>
+      </div>
+      <div class="super-chart-wrap">
+        <canvas id="superChart"></canvas>
+        <div class="super-chart-empty" id="superChartEmpty" style="display:none">
+          Update prices above to build the chart — each save adds a data point.
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1067,6 +1115,9 @@ let PROJ_MODEL = 'linear'; // active projection model: 'linear'|'exp'|'momentum'
 let ANNOUNCEMENTS = []; // {key, icon, title, sub, time, type}
 let PREV_FX = null; // previous AUD rate for FX move detection
 let LAST_MS_PCT = (()=>{ try{return parseFloat(localStorage.getItem('ptLastMsPct')||'0')||0;}catch(e){return 0;} })();
+let MARKET = {}; // {btc,eth,sol,xrp} → {price,ch24,mcap,logo,name}
+let SUPER_HISTORY = []; // [{ts, total, prices:{nxt,mp1,dro}}] — persisted in localStorage
+let _superChart = null;
 
 function setChartRange(r){
   CHART_RANGE=r;
@@ -1144,6 +1195,7 @@ function applyDark(d){
   if(btn) btn.textContent=d?'🌙':'☀';
   try{localStorage.setItem('ptDark',d?'1':'0');}catch(e){}
   renderPie(); renderLine(); renderStackedChart(); renderProjChart();
+  if(SUPER_OPEN) renderSuperChart();
   initBgCanvas(); // re-draw with updated theme colours
 }
 
@@ -1573,7 +1625,7 @@ async function doRefresh(){
   clearTimeout(RT);
   setStatus('busy','Fetching…');
   startCountdown();
-  await Promise.all([fetchAUDRate(),fetchAllPrices()]);
+  await Promise.all([fetchAUDRate(),fetchAllPrices(),fetchMarketOverview()]);
 }
 async function fetchAllPrices(){
   const results=await Promise.allSettled(P.assets.map(a=>getPrice(a)));
@@ -2388,6 +2440,7 @@ function renderAll(){
   renderProjection();
   renderTicker();
   buildWifGrid();
+  renderMarketPanel();
   const ts='Updated '+new Date().toLocaleTimeString();
   setEl('lastUpd',ts);
   setEl('lastUpdHoldings',ts);
@@ -2433,9 +2486,14 @@ function renderMetrics(){
   setH('mv-total-s',total>0?`Across ${P.assets.length} assets`:'Awaiting prices…');
   setEl('heroAsOf',total>0?new Date().toLocaleTimeString():'');
   updateNsrTotal();
-  // Super value label
+  // Super value label with sparkline
   const superAud=superTotalAUD();
-  setEl('superTotalLbl',superAud>0?`+ A$${Math.round(superAud).toLocaleString('en-AU')} super`:'');
+  if(superAud>0){
+    const spk=superSparklineSVG();
+    setH('superTotalLbl',`+ A$${Math.round(superAud).toLocaleString('en-AU')} super${spk}`);
+  } else {
+    setH('superTotalLbl','');
+  }
 
   // Hero delta row
   if(ch.$!==0){
@@ -3176,6 +3234,179 @@ function buildSyncUI(){
 }
 
 /* ═══════════════════════════════════════════════════
+   MARKET OVERVIEW  (BTC / ETH / SOL / XRP)
+═══════════════════════════════════════════════════ */
+async function fetchMarketOverview(){
+  try{
+    const url='https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd'+
+      '&ids=bitcoin,ethereum,solana,ripple&sparkline=false&price_change_percentage=24h';
+    const r=await fetch(url,{signal:AbortSignal.timeout(12000)});
+    if(!r.ok) return;
+    const d=await r.json();
+    const keyMap={bitcoin:'btc',ethereum:'eth',solana:'sol',ripple:'xrp'};
+    d.forEach(coin=>{
+      const key=keyMap[coin.id]; if(!key) return;
+      MARKET[key]={
+        price:coin.current_price||0,
+        ch24: coin.price_change_percentage_24h||0,
+        mcap: coin.market_cap||0,
+        logo: coin.image||null,
+        name: coin.name||key.toUpperCase()
+      };
+    });
+    renderMarketPanel();
+  }catch(e){}
+}
+
+function renderMarketPanel(){
+  const el=document.getElementById('marketRows');
+  if(!el) return;
+  const ORDER=[
+    {key:'btc',sym:'BTC'},
+    {key:'xrp',sym:'XRP'},
+    {key:'sol',sym:'SOL'},
+    {key:'eth',sym:'ETH'},
+  ];
+  const fmtMcap=v=>{
+    if(!v||v<=0) return '—';
+    if(v>=1e12) return '$'+(v/1e12).toFixed(2)+'T';
+    if(v>=1e9)  return '$'+(v/1e9).toFixed(1)+'B';
+    return '$'+(v/1e6).toFixed(0)+'M';
+  };
+  const fmtPx=v=>{
+    if(!v&&v!==0) return '—';
+    if(v>=10000) return '$'+Math.round(v).toLocaleString('en-AU');
+    if(v>=1)     return '$'+v.toFixed(2);
+    if(v>=0.001) return '$'+v.toFixed(4);
+    return '$'+v.toFixed(6);
+  };
+
+  const rows=ORDER.map(({key,sym})=>{
+    const m=MARKET[key];
+    if(!m||!m.price){
+      return`<div class="mkt-row">
+        <div class="mkt-logo"><span class="mkt-logo-fb">${sym[0]}</span></div>
+        <div class="mkt-info"><div class="mkt-sym">${sym}</div><div class="mkt-cap">—</div></div>
+        <div class="mkt-price"><div class="mkt-px" style="color:var(--ink-4)">…</div></div>
+      </div>`;
+    }
+    const chCls=m.ch24>=0?'pos':'neg';
+    const chSign=m.ch24>=0?'+':'';
+    const logoHtml=m.logo
+      ?`<img src="${m.logo}" alt="${sym}" loading="lazy" onerror="this.parentNode.innerHTML='<span class=mkt-logo-fb>${sym[0]}</span>'">`
+      :`<span class="mkt-logo-fb">${sym[0]}</span>`;
+    return`<div class="mkt-row">
+      <div class="mkt-logo">${logoHtml}</div>
+      <div class="mkt-info">
+        <div class="mkt-sym">${sym}</div>
+        <div class="mkt-cap">${fmtMcap(m.mcap)}</div>
+      </div>
+      <div class="mkt-price">
+        <div class="mkt-px">${fmtPx(m.price)}</div>
+        <div class="mkt-ch ${chCls}">${chSign}${m.ch24.toFixed(2)}%</div>
+      </div>
+    </div>`;
+  }).join('');
+  el.innerHTML=rows;
+}
+
+/* ═══════════════════════════════════════════════════
+   SUPER CHART + SPARKLINE
+═══════════════════════════════════════════════════ */
+function renderSuperChart(){
+  const section=document.getElementById('superChartSection');
+  const canvas=document.getElementById('superChart');
+  const empty=document.getElementById('superChartEmpty');
+  const ptsLbl=document.getElementById('superChartPts');
+  if(!section||!canvas) return;
+
+  if(SUPER_HISTORY.length<2){
+    section.style.display='block';
+    canvas.style.display='none';
+    if(empty) empty.style.display='block';
+    if(ptsLbl) ptsLbl.textContent='';
+    return;
+  }
+
+  section.style.display='block';
+  canvas.style.display='block';
+  if(empty) empty.style.display='none';
+  if(ptsLbl) ptsLbl.textContent=`${SUPER_HISTORY.length} data point${SUPER_HISTORY.length===1?'':'s'}`;
+
+  const labels=SUPER_HISTORY.map(h=>{
+    const d=new Date(h.ts);
+    // Short date + time
+    return d.toLocaleDateString('en-AU',{day:'numeric',month:'short'})+
+      ' '+d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  });
+  const data=SUPER_HISTORY.map(h=>+h.total.toFixed(2));
+  const up=data[data.length-1]>=data[0];
+  const lc=up?'#14794a':'#be2030';
+  const lcFill=lc+'14';
+  const tc=cc('#7d93a8','#6e7681');
+  const gc=DARK?'rgba(255,255,255,.04)':'rgba(0,0,0,.04)';
+
+  if(_superChart){_superChart.destroy();_superChart=null;}
+  _superChart=new Chart(canvas,{
+    type:'line',
+    data:{
+      labels,
+      datasets:[{
+        label:'Super (AUD)',
+        data,
+        borderColor:lc,
+        backgroundColor:lcFill,
+        fill:true,
+        tension:0.3,
+        pointRadius:data.length>20?0:3,
+        pointHoverRadius:4,
+        borderWidth:1.5,
+        spanGaps:false
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,animation:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{
+          label:c=>` A$${c.parsed.y.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})}`
+        }}
+      },
+      scales:{
+        x:{ticks:{color:tc,maxTicksLimit:6,font:{size:10,family:'"JetBrains Mono"'}},grid:{color:gc}},
+        y:{
+          ticks:{color:tc,font:{size:10,family:'"JetBrains Mono"'},
+            callback:v=>'A$'+(v>=1000?(v/1000).toFixed(1)+'K':Math.round(v).toLocaleString('en-AU'))
+          },
+          grid:{color:gc}
+        }
+      }
+    }
+  });
+}
+
+function superSparklineSVG(){
+  if(SUPER_HISTORY.length<3) return '';
+  const pts=SUPER_HISTORY.map(h=>h.total);
+  const mn=Math.min(...pts), mx=Math.max(...pts), rng=mx-mn;
+  if(rng<0.5) return ''; // too flat, no point showing
+  const W=42,H=16,n=pts.length;
+  const coords=pts.map((v,i)=>{
+    const x=((i/(n-1))*W).toFixed(1);
+    const y=(H-((v-mn)/rng)*(H-3)-1.5).toFixed(1);
+    return`${x},${y}`;
+  }).join(' ');
+  const up=pts[pts.length-1]>=pts[0];
+  const sc=up?'#14794a':'#be2030';
+  return`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" `+
+    `style="vertical-align:middle;margin-left:5px;opacity:0.65;cursor:pointer" `+
+    `onclick="openSuper()" title="View super chart">`+
+    `<polyline points="${coords}" fill="none" stroke="${sc}" stroke-width="1.3" `+
+    `stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+}
+
+/* ═══════════════════════════════════════════════════
    BOOT
 ═══════════════════════════════════════════════════ */
 /* ═══════════════════════════════════════════════════
@@ -3211,6 +3442,12 @@ function loadSuperPrices(){
     const validIds=new Set(SUPER_ASSETS.map(a=>a.id));
     Object.keys(SUPER_MANUAL).forEach(k=>{ if(!validIds.has(k)) delete SUPER_MANUAL[k]; });
   }catch(e){}
+  // Load super history
+  try{
+    const sh=localStorage.getItem('superHistory');
+    if(sh){ SUPER_HISTORY=JSON.parse(sh); if(!Array.isArray(SUPER_HISTORY)) SUPER_HISTORY=[]; }
+    if(SUPER_HISTORY.length>500) SUPER_HISTORY=SUPER_HISTORY.slice(-500);
+  }catch(e){ SUPER_HISTORY=[]; }
 }
 
 function saveSuperPrices(){
@@ -3219,6 +3456,19 @@ function saveSuperPrices(){
     localStorage.setItem('superManual',JSON.stringify(SUPER_MANUAL));
     localStorage.setItem('superTS',String(SUPER_TS));
   }catch(e){}
+  // Append to super history — record total + individual prices
+  const total=superTotalAUD();
+  if(total>0){
+    const prices={};
+    SUPER_ASSETS.forEach(a=>{ if(SUPER_MANUAL[a.id]!=null) prices[a.id]=SUPER_MANUAL[a.id]; });
+    // Dedup: replace last entry if within 10 minutes
+    const last=SUPER_HISTORY[SUPER_HISTORY.length-1];
+    const entry={ts:SUPER_TS,total,prices};
+    if(last&&(entry.ts-last.ts)<600000) SUPER_HISTORY[SUPER_HISTORY.length-1]=entry;
+    else SUPER_HISTORY.push(entry);
+    if(SUPER_HISTORY.length>500) SUPER_HISTORY=SUPER_HISTORY.slice(-500);
+    try{ localStorage.setItem('superHistory',JSON.stringify(SUPER_HISTORY)); }catch(e){}
+  }
   updateSuperUpdLbl();
   schedulePush(); // sync super price change
 }
@@ -3298,6 +3548,8 @@ function renderSuper(){
   // Footer button
   const fb=document.getElementById('superFooterBtn');
   if(fb) fb.textContent=totalMV>0?`A$${Math.round(totalMV).toLocaleString('en-AU')} (super)`:'super';
+  // Render chart if overlay is open
+  if(SUPER_OPEN) renderSuperChart();
 }
 
 function openSuper(){
@@ -3307,12 +3559,14 @@ function openSuper(){
   loadSuperPrices();
   renderSuper();
   updateSuperUpdLbl();
+  renderSuperChart();
 }
 
 function closeSuper(){
   SUPER_OPEN=false;
   document.getElementById('superOverlay').classList.remove('open');
   document.body.style.overflow='';
+  if(_superChart){_superChart.destroy();_superChart=null;}
 }
 
 document.addEventListener('DOMContentLoaded',async ()=>{
@@ -3335,6 +3589,8 @@ document.addEventListener('DOMContentLoaded',async ()=>{
   renderAll();
   // Pull from Supabase on load — merges super prices from other devices
   if(sbReady()) await sbPull();
+  // Start market overview fetch immediately (independent of main prices)
+  fetchMarketOverview();
   doRefresh();
   document.getElementById('overlay').addEventListener('keydown',e=>{
     if(e.key==='Escape') closeSettings();
