@@ -1244,7 +1244,7 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0);box-shadow:0 4px 18px o
         <div class="sync-section-hd">
           <span class="sync-hd-title">☁ Cloud Sync — Supabase</span>
         </div>
-        <p class="sync-desc">Syncs asset quantities, manual prices, and super prices across all your devices automatically.</p>
+        <p class="sync-desc">Syncs asset quantities, manual prices, super prices, full price history, and super chart history across all your devices. Opening on a new device picks up right where the last left off.</p>
         <div class="sync-status-row" id="syncStatusRow" style="display:flex">
           <div class="sync-dot" id="syncModalDot"></div>
           <span id="syncModalTxt">Connecting…</span>
@@ -1999,6 +1999,11 @@ function recordHistory(){
   else P.history.push(entry);
   if(P.history.length>2016) P.history=P.history.slice(-2016);
   saveP();
+  // Push history to cloud every SB_HIST_EVERY refreshes
+  if(sbReady()){
+    SB_HIST_CTR++;
+    if(SB_HIST_CTR>=SB_HIST_EVERY){ SB_HIST_CTR=0; sbPushHistory(true); }
+  }
 }
 
 /* ═══════════════════════════════════════════════════
@@ -3279,8 +3284,18 @@ function addAsset(){
   schedulePush(); // sync new asset
 }
 function clearHist(){
-  if(!confirm('Clear all history?')) return;
-  P.history=[];saveP();renderLine();toast('History cleared','inf');
+  if(!confirm('Clear all local and cloud history?')) return;
+  P.history=[];saveP();renderLine();
+  // Also wipe cloud history row so other devices sync the clear
+  if(sbReady()){
+    fetch(sbBase(),{
+      method:'POST',
+      headers:{...sbHdrs(),'Prefer':'resolution=merge-duplicates,return=minimal'},
+      body:JSON.stringify({id:'history',payload:{history:[]},updated_at:new Date().toISOString()}),
+      signal:AbortSignal.timeout(10000)
+    }).catch(()=>{});
+  }
+  toast('History cleared','inf');
 }
 
 /* ═══════════════════════════════════════════════════
@@ -3304,19 +3319,105 @@ function toast(msg,type='inf'){
 ═══════════════════════════════════════════════════ */
 /* ═══════════════════════════════════════════════════
    SUPABASE SYNC
-   Syncs: asset quantities, manual prices, super prices
-   Table: storehouse (id text PK, payload jsonb, updated_at timestamptz)
+   Rows in storehouse table (id text PK, payload jsonb, updated_at timestamptz):
+     'main'       → {assets:[{id,qty,manual}], superPrices, superTs, updatedAt}
+     'history'    → {history:[{ts,usd,av:{id:price},qty:{id:qty}}]}  ← price+supply snapshots
+     'super_hist' → {superHistory:[{ts,total,prices:{id:price}}]}    ← super chart history
    ═══════════════════════════════════════════════════ */
 const SB_URL = 'https://evfstosdfplixwxtksyg.supabase.co';
 const SB_KEY = 'sb_publishable_wpY2QftBtcIZBvaCS_bhqQ_1a5Y1kY3';
 let SB = {url: SB_URL, key: SB_KEY};
 let SB_PUSH_TM = null;
+let SB_HIST_CTR = 0;        // counts recordHistory() calls; pushes history every N
+const SB_HIST_EVERY = 3;    // push price history every 3 refreshes (~3 min)
 // Tracks when manual data was last changed locally (used to resolve conflicts)
 let MANUAL_MOD = (()=>{ try{ return parseInt(localStorage.getItem('ptManualMod')||'0',10)||0; }catch(e){ return 0; } })();
 
 function sbReady(){ return !!(SB.url && SB.key); }
 function sbHdrs(){ return {'Content-Type':'application/json','apikey':SB.key,'Authorization':'Bearer '+SB.key}; }
 function sbBase(){ return SB.url.replace(/\/+$/,'')+'/rest/v1/storehouse'; }
+
+// Merge two history arrays by timestamp. Local entries win on collision.
+// Sorts ascending and caps to maxLen most-recent entries.
+function mergeHistories(local, cloud, maxLen=2016){
+  const map=new Map();
+  (cloud||[]).forEach(e=>{ if(e&&e.ts) map.set(e.ts,e); });
+  (local||[]).forEach(e=>{ if(e&&e.ts) map.set(e.ts,e); }); // local wins
+  const merged=[...map.values()].sort((a,b)=>a.ts-b.ts);
+  return merged.length>maxLen ? merged.slice(-maxLen) : merged;
+}
+
+// Push price history (P.history) to id='history' row
+async function sbPushHistory(silent=true){
+  if(!sbReady()||!P.history.length) return;
+  try{
+    await fetch(sbBase(),{
+      method:'POST',
+      headers:{...sbHdrs(),'Prefer':'resolution=merge-duplicates,return=minimal'},
+      body:JSON.stringify({id:'history',payload:{history:P.history},updated_at:new Date().toISOString()}),
+      signal:AbortSignal.timeout(20000)
+    });
+    if(!silent) toast('History synced ✓','ok');
+  }catch(e){}
+}
+
+// Push super history (SUPER_HISTORY) to id='super_hist' row
+async function sbPushSuperHistory(silent=true){
+  if(!sbReady()||!SUPER_HISTORY.length) return;
+  try{
+    await fetch(sbBase(),{
+      method:'POST',
+      headers:{...sbHdrs(),'Prefer':'resolution=merge-duplicates,return=minimal'},
+      body:JSON.stringify({id:'super_hist',payload:{superHistory:SUPER_HISTORY},updated_at:new Date().toISOString()}),
+      signal:AbortSignal.timeout(20000)
+    });
+    if(!silent) toast('Super history synced ✓','ok');
+  }catch(e){}
+}
+
+// Pull price history from cloud and merge with local
+async function sbPullHistory(){
+  if(!sbReady()) return false;
+  try{
+    const r=await fetch(sbBase()+'?id=eq.history&select=payload',{
+      headers:sbHdrs(),signal:AbortSignal.timeout(15000)
+    });
+    if(!r.ok) return false;
+    const rows=await r.json();
+    if(!rows||!rows.length||!rows[0].payload) return false;
+    const cloudHist=rows[0].payload.history;
+    if(!Array.isArray(cloudHist)||!cloudHist.length) return false;
+    const merged=mergeHistories(P.history,cloudHist,2016);
+    if(merged.length>P.history.length){
+      P.history=merged;
+      saveP();
+      return true;
+    }
+  }catch(e){}
+  return false;
+}
+
+// Pull super history from cloud and merge with local
+async function sbPullSuperHistory(){
+  if(!sbReady()) return false;
+  try{
+    const r=await fetch(sbBase()+'?id=eq.super_hist&select=payload',{
+      headers:sbHdrs(),signal:AbortSignal.timeout(15000)
+    });
+    if(!r.ok) return false;
+    const rows=await r.json();
+    if(!rows||!rows.length||!rows[0].payload) return false;
+    const cloudSH=rows[0].payload.superHistory;
+    if(!Array.isArray(cloudSH)||!cloudSH.length) return false;
+    const merged=mergeHistories(SUPER_HISTORY,cloudSH,500);
+    if(merged.length>SUPER_HISTORY.length){
+      SUPER_HISTORY=merged;
+      try{ localStorage.setItem('superHistory',JSON.stringify(SUPER_HISTORY)); }catch(e){}
+      return true;
+    }
+  }catch(e){}
+  return false;
+}
 
 function buildSyncPayload(){
   return {
@@ -3345,6 +3446,9 @@ async function sbPush(silent=false){
     if(!r.ok){ const t=await r.text(); throw new Error('HTTP '+r.status+': '+t.slice(0,120)); }
     setSbStatus('ok','Synced '+new Date().toLocaleTimeString());
     if(!silent) toast('Synced to cloud ✓','ok');
+    // Also push history rows asynchronously — captures qty/price changes immediately
+    sbPushHistory(true);
+    sbPushSuperHistory(true);
   }catch(e){
     setSbStatus('err','Sync failed');
     if(!silent) toast('Sync failed: '+e.message,'err');
@@ -3402,6 +3506,9 @@ async function sbPull(){
   }catch(e){
     setSbStatus('err','Pull failed — check credentials');
   }
+  // Also pull price history and super history (merge with local, fire in parallel)
+  const [histChanged, superHistChanged] = await Promise.all([sbPullHistory(), sbPullSuperHistory()]);
+  if(histChanged || superHistChanged) renderAll();
 }
 
 // Call this whenever a user makes a manual change
@@ -3663,7 +3770,7 @@ function saveSuperPrices(){
     try{ localStorage.setItem('superHistory',JSON.stringify(SUPER_HISTORY)); }catch(e){}
   }
   updateSuperUpdLbl();
-  schedulePush(); // sync super price change
+  schedulePush(); // sync super manual prices (main row) + triggers sbPushHistory + sbPushSuperHistory
 }
 
 function updateSuperUpdLbl(){
