@@ -311,8 +311,28 @@ table.htbl{width:100%;border-collapse:collapse;min-width:700px;}
 .proj-tab.active{background:var(--ink);color:var(--bg);}
 @media(max-width:800px){.proj-cards{grid-template-columns:repeat(4,1fr);}.proj-card:nth-child(4){border-right:0;}.proj-card:nth-child(1),.proj-card:nth-child(2),.proj-card:nth-child(3),.proj-card:nth-child(4){border-bottom:1px solid var(--rule-s);}}
 
-/* ── Announcements — themed log panel ── */
-.announce-grid{background:var(--bg-2);border:1px solid var(--rule-s);font-family:var(--mono);padding:14px 18px;display:flex;flex-direction:column;gap:0;overflow:hidden;}
+/* ── Announcements — split two-column log panel ── */
+.announce-wrap{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--rule-s);overflow:hidden;}
+.announce-col{min-width:0;display:flex;flex-direction:column;}
+.announce-col:first-child{border-right:1px solid var(--rule-s);}
+.announce-col-hd{padding:7px 14px;border-bottom:1px solid var(--rule-s);font:500 9px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--ink-4);background:var(--bg);display:flex;align-items:center;gap:6px;}
+.announce-col-hd-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);}
+.announce-grid{background:var(--bg-2);font-family:var(--mono);padding:10px 14px;display:flex;flex-direction:column;gap:0;overflow:hidden;flex:1;}
+/* Asset change log — right panel */
+.asset-log{background:var(--bg-2);font-family:var(--mono);display:flex;flex-direction:column;gap:0;overflow:hidden;flex:1;padding:0;}
+.asset-log-item{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--rule-s);font-size:10.5px;line-height:1.4;}
+.asset-log-item:last-child{border-bottom:0;}
+.asset-log-ico{font-size:13px;flex-shrink:0;width:18px;text-align:center;}
+.asset-log-body{flex:1;min-width:0;}
+.asset-log-msg{color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.asset-log-detail{font-size:9.5px;color:var(--ink-4);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.asset-log-ts{font-size:9px;color:var(--ink-5);flex-shrink:0;white-space:nowrap;}
+.asset-log-empty{color:var(--ink-4);font-size:11px;padding:16px 14px;font-style:italic;}
+/* Fear & Greed gauge */
+.fg-gauge{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:150px;align-self:flex-end;padding-bottom:4px;}
+.fg-gauge-head{font-size:9px;font-weight:500;letter-spacing:.20em;text-transform:uppercase;color:var(--ink-4);margin-bottom:4px;}
+.fg-val{font-family:var(--mono);font-size:26px;font-weight:600;line-height:1;letter-spacing:-0.02em;margin-top:2px;}
+.fg-class{font-size:9px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin-top:1px;}
 .announce-item{display:flex;align-items:baseline;gap:0;padding:3px 0;border:0;line-height:1.65;font-size:11.5px;flex-wrap:nowrap;}
 .announce-ts{color:var(--ink-4);margin-right:10px;white-space:nowrap;flex-shrink:0;font-size:10.5px;letter-spacing:.03em;}
 .announce-prefix{margin-right:9px;flex-shrink:0;font-size:10.5px;font-weight:700;letter-spacing:.06em;min-width:64px;}
@@ -799,12 +819,20 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0);box-shadow:0 4px 18px o
   .ms-card-mult{font-size:8px;}
 
   /* ── Announcements — compact log ── */
+  .announce-wrap{grid-template-columns:1fr;}
+  .announce-col:first-child{border-right:0;border-bottom:1px solid var(--rule-s);}
   .announce-grid{padding:8px 16px;border-radius:0;}
   .announce-item{flex-wrap:nowrap;font-size:10.5px;padding:4px 0;}
   .announce-detail,.announce-sep{display:none;}
   .announce-ts{font-size:9px;min-width:38px;}
   .announce-prefix{min-width:46px;font-size:9px;}
   .announce-msg{font-size:10.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .asset-log-item{padding:7px 16px;}
+  /* Gauge — compact pill on mobile */
+  .fg-gauge{min-width:unset;width:100%;flex-direction:row;align-items:center;justify-content:flex-start;gap:10px;padding:12px 16px;border-top:1px solid var(--rule-s);}
+  .fg-gauge-head{margin-bottom:0;font-size:8px;}
+  .fg-val{font-size:20px;}
+  .fg-class{font-size:8px;}
 
   /* ── Portfolio composition ── */
   .row-comp{grid-template-columns:1fr;border:0;}
@@ -947,6 +975,13 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0);box-shadow:0 4px 18px o
         <span style="font-size:11px;color:var(--ink-3)" id="mv-total-s">Awaiting prices</span>
       </div>
     </div>
+    <!-- ── Fear & Greed Gauge ── -->
+    <div class="fg-gauge" id="fgGauge" style="display:none">
+      <div class="fg-gauge-head">Sentiment</div>
+      <svg id="fgSvg" width="150" height="86" viewBox="0 0 150 86" style="display:block;overflow:visible"></svg>
+      <div class="fg-val" id="fgVal">—</div>
+      <div class="fg-class" id="fgClass">Loading…</div>
+    </div>
     <!-- ── Market Overview panel ── -->
     <div class="market-panel" id="marketPanel">
       <div class="market-panel-head">Market Overview</div>
@@ -1015,7 +1050,16 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0);box-shadow:0 4px 18px o
       <div class="sect-title"><span class="sect-num">I</span>Announcements</div>
       <div class="sect-meta"><span class="sect-meta-val" id="announceCount">—</span></div>
     </div>
-    <div id="announceGrid" class="announce-grid"></div>
+    <div class="announce-wrap">
+      <div class="announce-col">
+        <div class="announce-col-hd"><div class="announce-col-hd-dot"></div>Market Signals</div>
+        <div id="announceGrid" class="announce-grid"></div>
+      </div>
+      <div class="announce-col">
+        <div class="announce-col-hd"><div class="announce-col-hd-dot" style="background:var(--blue)"></div>Holdings Changes</div>
+        <div id="assetChangePanel" class="asset-log"></div>
+      </div>
+    </div>
   </section>
 
   <!-- ── II · Milestones ── -->
@@ -1281,6 +1325,7 @@ const SIGNAL_GAP       = 3;
 
 const DEFAULTS = {
   v:10,
+  retiredAssets:{}, // id → {sym,name,color} — kept after removal so charts can label history
   assets:[
     {id:'pigeon',name:'Pigeon',          sym:'PIGEON',type:'solana_token',ca:'4fSWEw2wbYEUCcMtitzmeGUfqinoafXxkhqZrA9Gpump',qty:989934,    manual:null,color:'#5e38b8'},
     {id:'income',name:'Income',           sym:'INCOME',type:'solana_token',ca:'5QmbJw7mM6tcCdXVy8ftc2bu8izded7Etc57TMA2pump',qty:249497.79, manual:null,color:'#14794a'},
@@ -1311,6 +1356,11 @@ let LAST_MS_PCT = (()=>{ try{return parseFloat(localStorage.getItem('ptLastMsPct
 let MARKET = {}; // {btc,eth,sol,xrp} → {price,ch24,mcap,logo,name}
 let SUPER_HISTORY = []; // [{ts, total, prices:{nxt,mp1,dro}}] — persisted in localStorage
 let _superChart = null;
+let FEAR_GREED = null; // {value:int, classification:str, ts:int}
+// Asset change log — persisted in localStorage
+let ASSET_CHANGELOG = (()=>{
+  try{ return JSON.parse(localStorage.getItem('assetChangelog')||'[]'); }catch(e){ return []; }
+})();
 
 function setChartRange(r){
   CHART_RANGE=r;
@@ -1359,6 +1409,7 @@ function loadP(){
     if(r){
       const d=JSON.parse(r);
       if(!d.history) d.history=[];
+      if(!d.retiredAssets) d.retiredAssets={}; // seed for existing saves
       // Remove BTC (no longer held)
       d.assets=d.assets.filter(a=>a.id!=='btc');
       // Remove legacy supplySnaps
@@ -1389,7 +1440,8 @@ function applyDark(d){
   try{localStorage.setItem('ptDark',d?'1':'0');}catch(e){}
   renderPie(); renderLine(); renderStackedChart(); renderProjChart();
   if(SUPER_OPEN) renderSuperChart();
-  initBgCanvas(); // re-draw with updated theme colours
+  renderFearGreed(); // re-draw needle/track with updated theme colours
+  initBgCanvas();
 }
 
 /* ═══════════════════════════════════════════════════
@@ -1818,7 +1870,7 @@ async function doRefresh(){
   clearTimeout(RT);
   setStatus('busy','Fetching…');
   startCountdown();
-  await Promise.all([fetchAUDRate(),fetchAllPrices(),fetchMarketOverview()]);
+  await Promise.all([fetchAUDRate(),fetchAllPrices(),fetchMarketOverview(),fetchFearGreed()]);
 }
 async function fetchAllPrices(){
   const results=await Promise.allSettled(P.assets.map(a=>getPrice(a)));
@@ -2635,10 +2687,12 @@ function renderAll(){
   renderLine();
   renderStackedChart();
   renderAnnouncements();
+  renderAssetChanges();
   renderProjection();
   renderTicker();
   buildWifGrid();
   renderMarketPanel();
+  renderFearGreed();
   const ts='Updated '+new Date().toLocaleTimeString();
   setEl('lastUpd',ts);
   setEl('lastUpdHoldings',ts);
@@ -3054,42 +3108,61 @@ function renderStackedChart(){
       ' '+d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
   });
 
-  const currentTot=P.assets.reduce((s,a)=>{
-    const px=PX[a.id]; return s+(px&&!px.failed&&px.price?a.qty*px.price:0);
-  },0);
+  // Collect ALL asset IDs that appear in any history entry (active + retired)
+  // This ensures removed assets still appear on the chart during the period they were held
+  const retired=P.retiredAssets||{};
+  const histAssetIds=new Set();
+  slice.forEach(e=>{
+    if(e.qty) Object.keys(e.qty).forEach(id=>histAssetIds.add(id));
+    if(e.av)  Object.keys(e.av).forEach(id=>histAssetIds.add(id));
+  });
+  // Build a unified lookup: id → {sym, color, qty (current or 0 if retired)}
+  const assetMeta={};
+  P.assets.forEach(a=>{ assetMeta[a.id]={sym:a.sym,color:a.color,currQty:a.qty,active:true}; });
+  histAssetIds.forEach(id=>{
+    if(!assetMeta[id]){
+      const r=retired[id];
+      assetMeta[id]={sym:r?.sym||id,color:r?.color||'#888',currQty:0,active:false};
+    }
+  });
 
-  // Sort largest-avg first → sits at bottom of stack
-  // Use historical qty (e.qty) when available, fall back to current qty for old entries
-  const ordered=[...P.assets].sort((a,b)=>{
-    const avgA=slice.reduce((s,e)=>{const q=e.qty?.[a.id]??a.qty;return s+(e.av&&e.av[a.id]!=null?q*e.av[a.id]:0);},0)/slice.length;
-    const avgB=slice.reduce((s,e)=>{const q=e.qty?.[b.id]??b.qty;return s+(e.av&&e.av[b.id]!=null?q*e.av[b.id]:0);},0)/slice.length;
+  // Sort by average value descending (largest sits at bottom of stack)
+  const ordered=Object.entries(assetMeta).sort(([ ,a],[,b])=>{
+    const avgVal=meta=>slice.reduce((s,e)=>{
+      const q=e.qty?.[Object.keys(assetMeta).find(k=>assetMeta[k]===meta)]??meta.currQty;
+      const p=e.av?.[Object.keys(assetMeta).find(k=>assetMeta[k]===meta)];
+      return s+(p!=null?q*p:0);
+    },0)/slice.length;
+    // simpler: use the id directly
+    const avgA=slice.reduce((s,e)=>{const id=Object.keys(assetMeta).find(k=>assetMeta[k]===a);const q=e.qty?.[id]??a.currQty;const p=e.av?.[id];return s+(p!=null?q*p:0);},0)/slice.length;
+    const avgB=slice.reduce((s,e)=>{const id=Object.keys(assetMeta).find(k=>assetMeta[k]===b);const q=e.qty?.[id]??b.currQty;const p=e.av?.[id];return s+(p!=null?q*p:0);},0)/slice.length;
     return avgB-avgA;
   });
 
-  const datasets=ordered.map(a=>{
+  const datasets=ordered.map(([id,meta])=>{
     const data=slice.map(e=>{
-      // Use the qty recorded at the time of this snapshot; fall back to current qty for
-      // history entries that pre-date the qty-snapshot feature (graceful degradation)
-      const hQty=e.qty?.[a.id]??a.qty;
-      if(e.av&&e.av[a.id]!=null) return+(hQty*e.av[a.id]*rate).toFixed(2);
-      const px=PX[a.id];
-      if(px&&!px.failed&&px.price&&currentTot>0)
-        return+((hQty*px.price/currentTot)*e.usd*rate).toFixed(2);
+      // Use strictly historical qty — if not recorded for this snapshot, asset wasn't held (→ 0)
+      const hQty=e.qty?.[id];
+      if(hQty==null||hQty===0) return 0; // asset not held at this point in time
+      const p=e.av?.[id];
+      if(p!=null) return+(hQty*p*rate).toFixed(2);
       return 0;
     });
+    // Only include this asset if it has at least one non-zero data point
+    if(data.every(v=>v===0)) return null;
     return{
-      label:'$'+a.sym,
+      label:'$'+meta.sym,
       data,
-      borderColor:a.color,
-      backgroundColor:a.color+'38',
+      borderColor:meta.color,
+      backgroundColor:meta.color+'38',
       fill:true,
       tension:0.3,
       pointRadius:slice.length>40?0:2,
       pointHoverRadius:4,
-      borderWidth:1,
-      spanGaps:true
+      borderWidth:meta.active?1:0.5,
+      spanGaps:false // don't span gaps — zero means "not held"
     };
-  });
+  }).filter(Boolean);
 
   const tc=cc('#7d93a8','#6e7681');
   const gc=DARK?'rgba(255,255,255,.04)':'rgba(0,0,0,.04)';
@@ -3120,15 +3193,17 @@ function renderStackedChart(){
     }
   });
 
-  // Asset legend
+  // Asset legend (active assets with current weight; retired shown dimmed)
   if(legWrap){
     const tot=totalVal();
-    legWrap.innerHTML=ordered.map(a=>{
-      const v=assetVal(a);
-      const pct=tot>0?(v/tot*100).toFixed(1):'—';
-      return`<span style="display:inline-flex;align-items:center;gap:5px">
-        <span style="width:10px;height:10px;display:inline-block;background:${a.color};opacity:0.75;flex-shrink:0"></span>
-        <span style="color:var(--ink-2);font-size:10.5px">$${a.sym}</span>
+    legWrap.innerHTML=ordered.map(([id,meta])=>{
+      const a=P.assets.find(x=>x.id===id);
+      const v=a?assetVal(a):0;
+      const pct=tot>0&&v>0?(v/tot*100).toFixed(1):'—';
+      const dim=meta.active?'':'opacity:0.45;';
+      return`<span style="display:inline-flex;align-items:center;gap:5px;${dim}">
+        <span style="width:10px;height:10px;display:inline-block;background:${meta.color};opacity:0.75;flex-shrink:0"></span>
+        <span style="color:var(--ink-2);font-size:10.5px">$${meta.sym}${meta.active?'':' ✕'}</span>
         <span style="font-family:var(--mono);font-size:10px;color:var(--ink-4)">${pct}%</span>
       </span>`;
     }).join('');
@@ -3236,17 +3311,28 @@ function updateA(id,field,raw){
   const a=P.assets.find(x=>x.id===id);if(!a) return;
   const v=parseFloat(raw);
   if(field==='qty'){
+    const oldQty=a.qty;
     // Stamp a "closing" snapshot with the OLD quantity before updating,
     // so history has a clean break-point at the moment of the purchase.
-    // Force a fresh entry (bypass the 5-min dedup) by temporarily back-dating.
     const lastEntry=P.history[P.history.length-1];
-    if(lastEntry) lastEntry._locked=true; // prevent overwrite on next recordHistory
+    if(lastEntry) lastEntry._locked=true;
     recordHistory(); // records with current (pre-change) qty
     if(lastEntry) delete lastEntry._locked;
-    a[field]=isNaN(v)?0:v;
+    const newQty=isNaN(v)?0:v;
+    a[field]=newQty;
+    // Log the supply change
+    if(Math.abs(newQty-oldQty)>0.000001){
+      const diff=newQty-oldQty;
+      const type=diff>0?'buy':'sell';
+      const fmtQ=n=>n.toLocaleString('en-AU',{maximumFractionDigits:6});
+      logAssetChange(type,a.sym,`${diff>0?'+':''}${fmtQ(diff)} (${fmtQ(oldQty)} → ${fmtQ(newQty)})`,a.color);
+    }
   } else if(field==='manual'){
     a.manual=(!raw||v<=0)?null:v;
-    if(a.manual) PX[id]={price:a.manual,priceAud:null,ch24:0,mcap:0,source:'Manual'};
+    if(a.manual){
+      PX[id]={price:a.manual,priceAud:null,ch24:0,mcap:0,source:'Manual'};
+      logAssetChange('manual',a.sym,`Price override set to $${v.toFixed(4)}`,a.color);
+    }
   } else {
     a[field]=isNaN(v)?0:v;
   }
@@ -3255,7 +3341,14 @@ function updateA(id,field,raw){
 }
 function removeAsset(id){
   if(!confirm('Remove this asset?')) return;
-  P.assets=P.assets.filter(a=>a.id!==id);
+  const a=P.assets.find(x=>x.id===id);
+  if(a){
+    // Preserve metadata so historical chart can still label/color this asset
+    if(!P.retiredAssets) P.retiredAssets={};
+    P.retiredAssets[id]={sym:a.sym,name:a.name,color:a.color};
+    logAssetChange('remove',a.sym,`Removed from portfolio (held ${a.qty.toLocaleString('en-AU',{maximumFractionDigits:4})} units)`,a.color);
+  }
+  P.assets=P.assets.filter(x=>x.id!==id);
   delete PX[id];delete SPK[id];delete LOGOS[id];
   saveP();buildSettings();toast('Asset removed','inf');renderAll();
   schedulePush(); // sync asset removal
@@ -3280,6 +3373,7 @@ function addAsset(){
   else{const tk=document.getElementById('n-ticker').value.trim().toUpperCase();if(!tk){toast('Ticker required','err');return;}a.ticker=tk;}
   P.assets.push(a);saveP();buildSettings();
   ['n-sym','n-name','n-ca','n-cgid','n-ticker','n-qty'].forEach(i=>{const e=document.getElementById(i);if(e)e.value='';});
+  logAssetChange('add',sym_,`Added ${qty.toLocaleString('en-AU',{maximumFractionDigits:6})} units`,color);
   toast('$'+sym_+' added — fetching price…','ok');doRefresh();
   schedulePush(); // sync new asset
 }
@@ -3531,6 +3625,135 @@ function setSbStatus(state, msg=''){
 function buildSyncUI(){
   // Credentials are hardcoded — just reflect current status
   setSbStatus('ok');
+}
+
+/* ═══════════════════════════════════════════════════
+   FEAR & GREED INDEX
+═══════════════════════════════════════════════════ */
+async function fetchFearGreed(){
+  try{
+    const r=await fetch('https://api.alternative.me/fng/?limit=1',{signal:AbortSignal.timeout(10000)});
+    if(!r.ok) return;
+    const d=await r.json();
+    if(!d.data||!d.data[0]) return;
+    const item=d.data[0];
+    FEAR_GREED={value:parseInt(item.value,10),classification:item.value_classification,ts:parseInt(item.timestamp,10)*1000};
+    renderFearGreed();
+  }catch(e){}
+}
+
+function renderFearGreed(){
+  if(!FEAR_GREED) return;
+  const gauge=document.getElementById('fgGauge');
+  const svg=document.getElementById('fgSvg');
+  const valEl=document.getElementById('fgVal');
+  const clsEl=document.getElementById('fgClass');
+  if(!gauge||!svg) return;
+  gauge.style.display='flex';
+
+  const {value,classification}=FEAR_GREED;
+  const cx=75,cy=72,R=56,W=15;
+
+  // Value → angle in radians (π=left=0, 0=right=100)
+  const vToRad=v=>Math.PI*(1-v/100);
+
+  // Arc path for a donut segment
+  function arcPath(fromV,toV,r){
+    const a1=vToRad(fromV),a2=vToRad(toV);
+    const x1=(cx+r*Math.cos(a1)).toFixed(2),y1=(cy-r*Math.sin(a1)).toFixed(2);
+    const x2=(cx+r*Math.cos(a2)).toFixed(2),y2=(cy-r*Math.sin(a2)).toFixed(2);
+    return`M${x1},${y1} A${r},${r} 0 0,1 ${x2},${y2}`;
+  }
+
+  // Color zones
+  const zones=[
+    [0,25,'#c0392b'],   // Extreme Fear
+    [25,45,'#e67e22'],  // Fear
+    [45,55,'#f1c40f'],  // Neutral
+    [55,75,'#2ecc71'],  // Greed
+    [75,100,'#1a9948'], // Extreme Greed
+  ];
+
+  const segs=zones.map(([f,t,col])=>
+    `<path d="${arcPath(f,t,R)}" fill="none" stroke="${col}" stroke-width="${W}" stroke-linecap="butt" opacity="0.9"/>`
+  ).join('');
+
+  // Track background (subtle)
+  const trackPath=arcPath(0,100,R);
+  const track=`<path d="${trackPath}" fill="none" stroke="${DARK?'rgba(255,255,255,.06)':'rgba(0,0,0,.07)'}" stroke-width="${W+4}" stroke-linecap="butt"/>`;
+
+  // Zone tick marks at 0, 25, 45, 55, 75, 100
+  const ticks=[0,25,45,55,75,100].map(v=>{
+    const a=vToRad(v);
+    const r1=R-W/2-1,r2=R+W/2+1;
+    const x1=(cx+r1*Math.cos(a)).toFixed(2),y1=(cy-r1*Math.sin(a)).toFixed(2);
+    const x2=(cx+r2*Math.cos(a)).toFixed(2),y2=(cy-r2*Math.sin(a)).toFixed(2);
+    return`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${DARK?'rgba(0,0,0,.5)':'rgba(255,255,255,.7)'}" stroke-width="1.5"/>`;
+  }).join('');
+
+  // Needle
+  const ang=vToRad(value);
+  const nLen=R-4;
+  const nx=(cx+nLen*Math.cos(ang)).toFixed(2),ny=(cy-nLen*Math.sin(ang)).toFixed(2);
+  const needle=`<line x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}" stroke="${DARK?'#fff':'#1a1a1a'}" stroke-width="2.5" stroke-linecap="round"/>`;
+  const dot=`<circle cx="${cx}" cy="${cy}" r="5" fill="${DARK?'#fff':'#1a1a1a'}"/>`;
+
+  // Zone labels (tiny, at the outer edge)
+  const lbls=[
+    {v:12,t:'Fear',anchor:'end'},{v:50,t:'Neutral',anchor:'middle'},{v:88,t:'Greed',anchor:'start'}
+  ].map(({v,t,anchor})=>{
+    const a=vToRad(v); const rr=R+W/2+10;
+    const lx=(cx+rr*Math.cos(a)).toFixed(2),ly=(cy-rr*Math.sin(a)).toFixed(2);
+    return`<text x="${lx}" y="${ly}" fill="${DARK?'rgba(255,255,255,.3)':'rgba(0,0,0,.3)'}" font-size="7" text-anchor="${anchor}" dominant-baseline="middle" font-family="monospace">${t}</text>`;
+  }).join('');
+
+  svg.innerHTML=track+segs+ticks+needle+dot+lbls;
+
+  // Color the value number to match zone
+  const zoneColor=zones.find(([f,t])=>value>=f&&value<t)?.[2]||zones[4][2];
+  if(valEl) valEl.innerHTML=`<span style="color:${zoneColor}">${value}</span>`;
+  if(clsEl) clsEl.textContent=classification;
+}
+
+/* ═══════════════════════════════════════════════════
+   ASSET CHANGE LOG
+═══════════════════════════════════════════════════ */
+function saveAssetChangelog(){
+  try{ localStorage.setItem('assetChangelog',JSON.stringify(ASSET_CHANGELOG)); }catch(e){}
+}
+
+function logAssetChange(type, sym, detail, color){
+  // type: 'add'|'remove'|'buy'|'sell'|'manual'
+  const now=Date.now();
+  const ts=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  const date=new Date().toLocaleDateString('en-AU',{day:'numeric',month:'short'});
+  ASSET_CHANGELOG.unshift({type,sym,detail,color:color||'var(--accent)',ts,date,now});
+  if(ASSET_CHANGELOG.length>60) ASSET_CHANGELOG=ASSET_CHANGELOG.slice(0,60);
+  saveAssetChangelog();
+  renderAssetChanges();
+}
+
+function renderAssetChanges(){
+  const el=document.getElementById('assetChangePanel');
+  if(!el) return;
+  if(!ASSET_CHANGELOG.length){
+    el.innerHTML='<div class="asset-log-empty">No changes recorded yet — supply adjustments appear here.</div>';
+    return;
+  }
+  const shown=ASSET_CHANGELOG.slice(0,12);
+  const icons={add:'＋',remove:'✕',buy:'▲',sell:'▼',manual:'✎'};
+  const colors={add:'var(--pos)',remove:'var(--neg)',buy:'var(--pos)',sell:'var(--neg)',manual:'var(--accent)'};
+  el.innerHTML=shown.map(c=>{
+    const ico=icons[c.type]||'·';
+    const col=colors[c.type]||'var(--ink-3)';
+    return`<div class="asset-log-item">
+      <span class="asset-log-ico" style="color:${col}">${ico}</span>
+      <div class="asset-log-body">
+        <div class="asset-log-msg" style="color:${col}">$${c.sym} — ${c.detail}</div>
+        <div class="asset-log-detail">${c.date} at ${c.ts}</div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 /* ═══════════════════════════════════════════════════
@@ -3887,9 +4110,11 @@ document.addEventListener('DOMContentLoaded',async ()=>{
   // Sync status
   setSbStatus(sbReady()?'syncing':'off');
   renderAll();
-  // Pull from Supabase on load — merges super prices from other devices
+  // Pull from Supabase on load — merges all data from other devices
   if(sbReady()) await sbPull();
   fetchMarketOverview();
+  fetchFearGreed();
+  renderAssetChanges(); // Show existing changelog immediately on load
   doRefresh();
   document.getElementById('overlay').addEventListener('keydown',e=>{
     if(e.key==='Escape') closeSettings();
