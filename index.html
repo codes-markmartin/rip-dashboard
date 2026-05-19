@@ -759,16 +759,18 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0);box-shadow:0 4px 18px o
   }
   /* Asset name cell — flex grows */
   .htbl td:nth-child(1){flex:1;min-width:0;}
-  /* Price */
-  .htbl td:nth-child(2){display:none;}
+  /* Price — show compact, no AUD sub */
+  .htbl td:nth-child(2){flex-shrink:0;margin-left:10px;text-align:right;}
+  .htbl td:nth-child(2) .px-sub{display:none;}
+  .htbl td:nth-child(2) .px-cell{font-size:11px;font-weight:500;color:var(--ink-2);}
   /* 24h chip */
-  .htbl td:nth-child(3){flex-shrink:0;margin-left:8px;}
+  .htbl td:nth-child(3){flex-shrink:0;margin-left:6px;}
   /* Qty — hidden */
   .htbl td:nth-child(4){display:none;}
   /* Value — right side */
-  .htbl td:nth-child(5){flex-shrink:0;margin-left:10px;text-align:right;}
-  /* 7-day sparkline */
-  .htbl td:nth-child(6){flex-shrink:0;margin-left:10px;}
+  .htbl td:nth-child(5){flex-shrink:0;margin-left:8px;text-align:right;}
+  /* 7-day sparkline — hidden on mobile to reduce clutter */
+  .htbl td:nth-child(6){display:none;}
   /* Weight bar — hidden */
   .htbl td:nth-child(7){display:none;}
 
@@ -778,9 +780,8 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0);box-shadow:0 4px 18px o
   .a-orb img{width:20px;height:20px;}
   .a-sym{font-size:13px;font-weight:700;}
   .a-name-row{font-size:9.5px;gap:6px;margin-top:2px;}
-  .val-cell{font-size:15px;display:block;}
-  .px-cell{font-size:12px;}
-  .chip{padding:2px 6px;font-size:10px;}
+  .val-cell{font-size:14px;display:block;font-family:var(--serif);}
+  .chip{padding:2px 5px;font-size:9.5px;}
 
   /* ── Milestones ── */
   .ms-track-wrap{padding:0 16px;margin-bottom:12px;}
@@ -861,6 +862,14 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0);box-shadow:0 4px 18px o
   .kpi-figure{font-size:22px!important;}
   .sect-title{font-size:15px;}
   footer{font-size:9px;}
+  /* Holdings — extra compact on narrow phones */
+  .htbl tbody tr{padding:8px 12px;min-height:54px;}
+  .htbl td:nth-child(2) .px-cell{font-size:10px;}
+  .val-cell{font-size:12px;}
+  .chip{font-size:9px;padding:2px 4px;}
+  .a-orb{width:30px;height:30px;}
+  .a-orb img{width:17px;height:17px;}
+  .a-sym{font-size:12px;}
 }
 </style>
 </head>
