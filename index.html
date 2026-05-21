@@ -202,6 +202,31 @@ main{max-width:1480px;margin:0 auto;padding:36px 28px 60px;}
 .ms-card-mult{font-family:var(--mono);font-size:9.5px;color:var(--ink-5);letter-spacing:.03em;margin-top:2px;}
 .ms-card.ms-active .ms-card-mult{color:var(--ink-3);}
 
+/* ── Milestone "near" flash + heartbeat ── */
+@keyframes msBorderFlash{
+  0%,49%,100%{box-shadow:none;}
+  50%,99%{box-shadow:inset 0 0 0 2px var(--accent),0 0 10px oklch(0.80 0.105 80/.30);}
+}
+.ms-card.ms-near{animation:msBorderFlash 2s step-end infinite;}
+@keyframes heartbeat{
+  0%,100%{transform:scale(1);}
+  10%{transform:scale(1.09);}
+  20%{transform:scale(1);}
+  32%{transform:scale(1.06);}
+  44%,100%{transform:scale(1);}
+}
+.ms-sub-throb{display:inline-block;animation:heartbeat 2s ease-in-out infinite;color:var(--accent)!important;font-weight:600;}
+
+/* ── XRP target metric (hero) ── */
+.xrp-target{display:none;align-items:center;gap:9px;margin-top:10px;flex-wrap:wrap;}
+.xrp-target-lbl{font-size:9px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-4);}
+.xrp-target-px{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--accent);}
+.xrp-target-mult{font-family:var(--mono);font-size:10px;color:var(--ink-4);}
+
+/* ── Market net flow ── */
+.mkt-flow{font:400 8.5px/1 var(--mono);margin-top:2px;text-align:right;letter-spacing:.02em;}
+.mkt-flow.pos{color:var(--pos);}.mkt-flow.neg{color:var(--neg);}
+
 /* ── Composition row ── */
 .row-comp{display:grid;grid-template-columns:1.05fr 2.4fr;border:1px solid var(--rule-s);}
 .donut-pane{padding:24px 26px;border-right:1px solid var(--rule-s);display:flex;flex-direction:column;}
@@ -658,6 +683,9 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0);box-shadow:0 4px 18px o
   .hero-delta-row{margin-top:12px;gap:10px;}
   .hero-d-num{font-size:13px;}
   #superTotalRow{margin-top:6px;}
+  .xrp-target{margin-top:8px;gap:6px;}
+  .xrp-target-px{font-size:12px;}
+  .xrp-target-mult{font-size:9px;}
 
   /* ── Market panel — horizontal scroll strip ── */
   .market-panel{
@@ -701,6 +729,7 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0);box-shadow:0 4px 18px o
   .mkt-price{text-align:center;width:100%;}
   .mkt-px{font-size:10px;font-weight:600;}
   .mkt-ch{font-size:8.5px;text-align:center;}
+  .mkt-flow{font-size:7.5px;text-align:center;}
 
   /* ── Hero chart — tighter ── */
   .hero-chart-wrap{
@@ -973,6 +1002,12 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0);box-shadow:0 4px 18px o
         <div class="hero-d-num" id="mv-hero-chg">—</div>
         <div id="mv-hero-chip"></div>
         <span style="font-size:11px;color:var(--ink-3)" id="mv-total-s">Awaiting prices</span>
+      </div>
+      <!-- XRP → $10M AUD target price -->
+      <div class="xrp-target" id="xrpTargetRow">
+        <span class="xrp-target-lbl">XRP → A$10M</span>
+        <span class="xrp-target-px" id="xrpTargetPx">—</span>
+        <span class="xrp-target-mult" id="xrpTargetMult"></span>
       </div>
     </div>
     <!-- ── Fear & Greed Gauge ── -->
@@ -2693,6 +2728,7 @@ function renderAll(){
   buildWifGrid();
   renderMarketPanel();
   renderFearGreed();
+  renderXRPMetric();
   const ts='Updated '+new Date().toLocaleTimeString();
   setEl('lastUpd',ts);
   setEl('lastUpdHoldings',ts);
@@ -2916,7 +2952,11 @@ function renderMilestones(){
       const toGo=ms-aud;
       const prevMs=i>0?MILESTONES_AUD[i-1]:0;
       const pct=Math.min(100,Math.max(0,((aud-prevMs)/(ms-prevMs))*100));
-      subTxt=`A$${toGo.toLocaleString('en-AU',{maximumFractionDigits:0})} to go`;
+      // Within 10% of attainment → flash border + heartbeat on "to go" text
+      const isNear=pct>=90;
+      if(isNear) cls+=' ms-near';
+      const toGoFmt=`A$${toGo.toLocaleString('en-AU',{maximumFractionDigits:0})} to go`;
+      subTxt=isNear?`<span class="ms-sub-throb">${toGoFmt}</span>`:toGoFmt;
       barHTML=`<div class="ms-card-bar"><div class="ms-card-bar-fill" style="width:${pct.toFixed(1)}%"></div></div>`;
       pctHTML=`<div class="ms-card-pct">${pct.toFixed(1)}%</div>`;
     } else if(isMajor){
@@ -3117,12 +3157,16 @@ function renderStackedChart(){
     if(e.av)  Object.keys(e.av).forEach(id=>histAssetIds.add(id));
   });
   // Build a unified lookup: id → {sym, color, qty (current or 0 if retired)}
+  // STRICT FILTER: only include IDs that are either currently active OR in retiredAssets.
+  // Unknown IDs (e.g. legacy Solana tokens with null supply that were never properly removed)
+  // are silently skipped — they pollute the legend with raw contract-address strings.
   const assetMeta={};
   P.assets.forEach(a=>{ assetMeta[a.id]={sym:a.sym,color:a.color,currQty:a.qty,active:true}; });
   histAssetIds.forEach(id=>{
     if(!assetMeta[id]){
       const r=retired[id];
-      assetMeta[id]={sym:r?.sym||id,color:r?.color||'#888',currQty:0,active:false};
+      if(!r) return; // skip: no metadata for this ID — unknown/legacy asset, not a tracked holding
+      assetMeta[id]={sym:r.sym,color:r.color,currQty:0,active:false};
     }
   });
 
@@ -3716,6 +3760,43 @@ function renderFearGreed(){
 }
 
 /* ═══════════════════════════════════════════════════
+   XRP TARGET METRIC
+═══════════════════════════════════════════════════ */
+function renderXRPMetric(){
+  const rowEl=document.getElementById('xrpTargetRow');
+  const pxEl=document.getElementById('xrpTargetPx');
+  const multEl=document.getElementById('xrpTargetMult');
+  if(!rowEl||!pxEl) return;
+
+  const xrpAsset=P.assets.find(a=>a.id==='xrp');
+  if(!xrpAsset||xrpAsset.qty<=0){
+    rowEl.style.display='none';
+    return;
+  }
+
+  const rate=AUDRT||1.57;
+  const targetAUD=10_000_000;
+  // Price XRP needs to reach in AUD to make the holding worth A$10M
+  const priceNeededAUD=targetAUD/xrpAsset.qty;
+  const priceNeededUSD=priceNeededAUD/rate;
+
+  rowEl.style.display='flex';
+  pxEl.textContent='A$'+priceNeededAUD.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  // Show multiplier vs current price
+  if(multEl){
+    const px=PX['xrp'];
+    if(px&&!px.failed&&px.price>0){
+      const currAUD=px.price*rate;
+      const mult=priceNeededAUD/currAUD;
+      multEl.textContent=`(${mult.toFixed(1)}× current · ${fmtQty(xrpAsset.qty)} XRP)`;
+    } else {
+      multEl.textContent=`(${fmtQty(xrpAsset.qty)} XRP held)`;
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════════
    ASSET CHANGE LOG
 ═══════════════════════════════════════════════════ */
 function saveAssetChangelog(){
@@ -3773,6 +3854,7 @@ async function fetchMarketOverview(){
         price:coin.current_price||0,
         ch24: coin.price_change_percentage_24h||0,
         mcap: coin.market_cap||0,
+        vol24h:coin.total_volume||0,
         logo: coin.image||null,
         name: coin.name||key.toUpperCase()
       };
@@ -3803,6 +3885,15 @@ function renderMarketPanel(){
     if(v>=0.001) return '$'+v.toFixed(4);
     return '$'+v.toFixed(6);
   };
+  // Net flow = trading volume × sign(price change) — proxy for buy/sell pressure direction
+  const fmtFlow=v=>{
+    const abs=Math.abs(v);
+    const sign=v>=0?'+':'-';
+    if(abs>=1e9) return sign+'$'+(abs/1e9).toFixed(2)+'B';
+    if(abs>=1e6) return sign+'$'+(abs/1e6).toFixed(0)+'M';
+    if(abs>=1e3) return sign+'$'+(abs/1e3).toFixed(0)+'K';
+    return sign+'$'+Math.round(abs);
+  };
 
   const rows=ORDER.map(({key,sym})=>{
     const m=MARKET[key];
@@ -3815,6 +3906,11 @@ function renderMarketPanel(){
     }
     const chCls=m.ch24>=0?'pos':'neg';
     const chSign=m.ch24>=0?'+':'';
+    // Net flow: volume * (ch24/100) — positive = buying pressure, negative = selling pressure
+    const flow=(m.vol24h||0)*(m.ch24/100);
+    const flowHtml=m.vol24h>0
+      ?`<div class="mkt-flow ${flow>=0?'pos':'neg'}">${fmtFlow(flow)} flow</div>`
+      :'';
     const logoHtml=m.logo
       ?`<img src="${m.logo}" alt="${sym}" loading="lazy" onerror="this.parentNode.innerHTML='<span class=mkt-logo-fb>${sym[0]}</span>'">`
       :`<span class="mkt-logo-fb">${sym[0]}</span>`;
@@ -3827,6 +3923,7 @@ function renderMarketPanel(){
       <div class="mkt-price">
         <div class="mkt-px">${fmtPx(m.price)}</div>
         <div class="mkt-ch ${chCls}">${chSign}${m.ch24.toFixed(2)}%</div>
+        ${flowHtml}
       </div>
     </div>`;
   }).join('');
