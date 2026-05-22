@@ -11,20 +11,21 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:       oklch(0.155 0.006 70);
-  --bg-2:     oklch(0.185 0.006 70);
-  --surface:  oklch(0.205 0.006 70);
-  --raised:   oklch(0.235 0.006 70);
-  --rule:     oklch(0.30 0.006 70);
-  --rule-s:   oklch(0.25 0.006 70);
-  --ink:      oklch(0.965 0.008 85);
-  --ink-2:    oklch(0.78 0.008 85);
-  --ink-3:    oklch(0.58 0.008 85);
-  --ink-4:    oklch(0.42 0.008 85);
-  --ink-5:    oklch(0.30 0.008 85);
-  --accent:   oklch(0.80 0.105 80);
-  --accent-d: oklch(0.70 0.115 80);
-  --accent-bg:oklch(0.80 0.105 80 / 0.10);
+  /* ── Dark "chrome cognac" palette ── */
+  --bg:       oklch(0.090 0.028 48);   /* very deep warm brown */
+  --bg-2:     oklch(0.115 0.030 49);
+  --surface:  oklch(0.148 0.032 50);
+  --raised:   oklch(0.185 0.033 51);
+  --rule:     oklch(0.295 0.024 55);
+  --rule-s:   oklch(0.225 0.020 53);
+  --ink:      oklch(0.975 0.011 84);   /* warm near-white */
+  --ink-2:    oklch(0.840 0.013 80);
+  --ink-3:    oklch(0.620 0.011 75);
+  --ink-4:    oklch(0.435 0.009 70);
+  --ink-5:    oklch(0.295 0.007 65);
+  --accent:   oklch(0.76 0.152 63);    /* rich amber-gold */
+  --accent-d: oklch(0.64 0.162 59);
+  --accent-bg:oklch(0.76 0.152 63 / 0.13);
   --pos:      oklch(0.78 0.13 155);
   --pos-bg:   oklch(0.78 0.13 155 / 0.10);
   --neg:      oklch(0.70 0.17 25);
@@ -34,19 +35,19 @@
   --sans: -apple-system,BlinkMacSystemFont,"Helvetica Neue","Segoe UI",sans-serif;
   --serif:"Instrument Serif","Times New Roman",serif;
   --mono:"JetBrains Mono","SF Mono","Menlo",monospace;
-  /* Gold card border */
-  --card-border: oklch(0.80 0.105 80 / 0.42);
-  --card-border-sub: oklch(0.80 0.105 80 / 0.18);
+  /* Amber card border — more prominent in chrome look */
+  --card-border: oklch(0.76 0.152 63 / 0.48);
+  --card-border-sub: oklch(0.76 0.152 63 / 0.22);
   /* Mood colors */
   --flame-blue: #22d3ee;
   --flame-blue-dim: rgba(34,211,238,0.55);
   /* legacy compat aliases */
   --b:var(--rule); --blt:var(--rule-s); --bmd:var(--rule);
-  --hover:var(--bg-2); --raised:oklch(0.235 0.006 70);
+  --hover:var(--bg-2); --raised:oklch(0.185 0.033 51);
   --t1:var(--ink); --t2:var(--ink-2); --t3:var(--ink-3); --t4:var(--ink-4);
   --gold:var(--accent); --goldl:var(--accent); --navy:var(--ink);
   --posbg:var(--pos-bg); --negbg:var(--neg-bg);
-  --s1:none; --s2:none; --s3:0 12px 40px oklch(0 0 0 / 0.6);
+  --s1:none; --s2:none; --s3:0 16px 48px oklch(0 0 0 / 0.72);
   --r1:0px; --r2:0px; --r3:0px; --r4:0px;
 }
 /* ── Base ── */
@@ -230,12 +231,16 @@ main{max-width:1480px;margin:0 auto;padding:36px 28px 60px;}
 /* ── Composition row ── */
 .row-comp{display:grid;grid-template-columns:1.05fr 2.4fr;border:1px solid var(--rule-s);}
 .donut-pane{padding:24px 26px;border-right:1px solid var(--rule-s);display:flex;flex-direction:column;}
-.donut-wrap{position:relative;width:220px;height:220px;margin:8px auto 14px;flex-shrink:0;}
-.donut-wrap canvas{position:absolute;inset:0;width:100%!important;height:100%!important;}
-.donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;}
+.donut-wrap{position:relative;width:240px;height:240px;margin:8px auto 14px;flex-shrink:0;overflow:visible;}
+.donut-wrap canvas{position:absolute;inset:0;width:100%!important;height:100%!important;overflow:visible;}
+/* donut-center hidden when using full pie (no cutout) */
+.donut-center{display:none;}
 .donut-center .dc-lbl{font-size:9.5px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);}
 .donut-center .dc-val{font-family:var(--serif);font-size:20px;margin-top:4px;}
 .donut-center .dc-sub{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);margin-top:4px;}
+/* Pie total shown below chart, in legend header */
+.pie-total-row{text-align:center;font-family:var(--serif);font-size:22px;color:var(--ink);margin-bottom:10px;letter-spacing:-0.015em;}
+.pie-total-lbl{font-size:9px;font-weight:500;letter-spacing:.20em;text-transform:uppercase;color:var(--ink-4);margin-bottom:4px;text-align:center;}
 .donut-legend{display:flex;flex-direction:column;gap:9px;margin-top:8px;}
 .leg-row{display:grid;grid-template-columns:8px 1fr auto;gap:10px;align-items:center;font-size:11.5px;}
 .leg-swatch{width:8px;height:8px;}
@@ -246,6 +251,18 @@ main{max-width:1480px;margin:0 auto;padding:36px 28px 60px;}
 .no-hist{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;color:var(--ink-3);font-size:12px;text-align:center;gap:6px;}
 .chart-legend{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:8px;font-size:10px;color:var(--ink-3);}
 .chart-legend span{display:inline-flex;align-items:center;gap:4px;}
+
+/* ── Asset mini sparkline cards ── */
+.asset-mini-charts{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:14px;}
+.amc-card{background:var(--raised);border:1px solid var(--card-border-sub);border-radius:2px;padding:10px 11px 8px;display:flex;flex-direction:column;gap:3px;cursor:default;transition:border-color .14s;}
+.amc-card:hover{border-color:var(--card-border);}
+.amc-top{display:flex;align-items:center;justify-content:space-between;}
+.amc-sym{font:600 10px/1 var(--mono);letter-spacing:.08em;color:var(--ink-2);}
+.amc-ch{font:500 9px/1 var(--mono);}
+.amc-ch.pos{color:var(--pos);}.amc-ch.neg{color:var(--neg);}.amc-ch.neu{color:var(--ink-4);}
+.amc-svg{width:100%;height:36px;display:block;margin:4px 0 2px;}
+.amc-val{font:500 11px/1 var(--mono);color:var(--ink);}
+.amc-px{font:400 9px/1 var(--mono);color:var(--ink-3);margin-top:1px;}
 
 /* ── Holdings table ── */
 .tbl-wrap{overflow-x:auto;}
@@ -577,15 +594,23 @@ body.light-mode{
 body.light-mode .ms-card.ms-done{background:oklch(0.56 0.120 72 / 0.06);}
 body.light-mode .ms-card.ms-active{background:oklch(0.56 0.120 72 / 0.10);}
 body.light-mode .ticker{border-bottom-color:var(--rule-s);}
+
+/* ── Dark mode chrome — subtle inner highlight on all major card surfaces ── */
+/* Applied in default (dark) mode only; light mode overrides background directly */
+.hero,.hero-chart-wrap,.kpis,.sect{
+  background-color:var(--surface);
+  background-image:linear-gradient(175deg,oklch(0.76 0.152 63 / 0.055) 0%,transparent 38%);
+}
+
 /* Light mode elevation — cards lift above the near-white bg */
 body.light-mode{
   --card-border: oklch(0.56 0.120 72 / 0.45);
   --card-border-sub: oklch(0.56 0.120 72 / 0.20);
 }
-body.light-mode .sect{background:oklch(1 0 0);box-shadow:0 2px 14px oklch(0 0 0/.09),0 1px 3px oklch(0 0 0/.06);}
-body.light-mode .hero{background:oklch(1 0 0);}
-body.light-mode .kpis{background:oklch(1 0 0);}
-body.light-mode .hero-chart-wrap{background:oklch(1 0 0);box-shadow:0 4px 18px oklch(0 0 0/.10),0 1px 4px oklch(0 0 0/.06);}
+body.light-mode .sect{background:oklch(1 0 0)!important;background-image:none!important;box-shadow:0 2px 14px oklch(0 0 0/.09),0 1px 3px oklch(0 0 0/.06);}
+body.light-mode .hero{background:oklch(1 0 0)!important;background-image:none!important;}
+body.light-mode .kpis{background:oklch(1 0 0)!important;background-image:none!important;}
+body.light-mode .hero-chart-wrap{background:oklch(1 0 0)!important;background-image:none!important;box-shadow:0 4px 18px oklch(0 0 0/.10),0 1px 4px oklch(0 0 0/.06);}
 
 /* ── Responsive ── */
 /* ── Chart range toggle ── */
@@ -866,7 +891,7 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0);box-shadow:0 4px 18px o
   /* ── Portfolio composition ── */
   .row-comp{grid-template-columns:1fr;border:0;}
   .donut-pane{border-right:0;border-bottom:1px solid var(--rule-s);padding:16px;}
-  .donut-wrap{width:160px;height:160px;}
+  .donut-wrap{width:200px;height:200px;}
   .line-pane{padding:16px;}
   .line-pane .hero-chart-canvas{height:160px;}
 
@@ -1077,6 +1102,7 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0);box-shadow:0 4px 18px o
       </div>
     </div>
     <div class="chart-legend" id="chartLegend" style="display:none"></div>
+    <div class="asset-mini-charts" id="assetMiniCharts"></div>
   </div>
 
   <!-- ── I · Announcements ── -->
@@ -1150,11 +1176,9 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0);box-shadow:0 4px 18px o
         <span class="kpi-lbl">Allocation</span>
         <div class="donut-wrap">
           <canvas id="pieChart"></canvas>
-          <div class="donut-center">
-            <div class="dc-lbl">Total</div>
-            <div class="dc-val" id="donutVal">—</div>
-          </div>
         </div>
+        <div class="pie-total-lbl">Total</div>
+        <div class="pie-total-row" id="donutVal">—</div>
         <div class="donut-legend" id="donutLegend"></div>
       </div>
       <div class="line-pane">
@@ -1402,6 +1426,7 @@ function setChartRange(r){
   document.getElementById('crBtn7d')?.classList.toggle('active',r==='7d');
   document.getElementById('crBtnAll')?.classList.toggle('active',r==='all');
   renderLine();
+  renderAssetMiniCharts();
 }
 
 
@@ -1473,7 +1498,7 @@ function applyDark(d){
   const btn=document.getElementById('darkBtn');
   if(btn) btn.textContent=d?'🌙':'☀';
   try{localStorage.setItem('ptDark',d?'1':'0');}catch(e){}
-  renderPie(); renderLine(); renderStackedChart(); renderProjChart();
+  renderPie(); renderLine(); renderAssetMiniCharts(); renderStackedChart(); renderProjChart();
   if(SUPER_OPEN) renderSuperChart();
   renderFearGreed(); // re-draw needle/track with updated theme colours
   initBgCanvas();
@@ -1515,8 +1540,8 @@ function initBgCanvas(){
     drift+=0.38;
 
     ctx.clearRect(0,0,W,H);
-    // Warm gold — same hue as --accent (oklch 0.80 0.105 80 ≈ #c8920a)
-    ctx.strokeStyle='#c8920a';
+    // Amber contour — matches updated --accent (oklch 0.76 0.152 63 ≈ #c4780a)
+    ctx.strokeStyle='#c4780a';
     ctx.lineWidth=1.0;
 
     const spacing=52;
@@ -1823,6 +1848,86 @@ const signalPlugin={
 };
 // Register once — safe to call multiple times (Chart.js deduplicates)
 if(!Chart.registry.plugins.get('signalMarkers')) Chart.register(signalPlugin);
+
+/* ═══════════════════════════════════════════════════
+   PIE CHART — EXTERNAL CONNECTOR LABEL PLUGIN
+═══════════════════════════════════════════════════ */
+const pieExternalLabels={
+  id:'pieExternalLabels',
+  afterDraw(chart){
+    if(!chart.config?.options?._externalLabels) return;
+    const {ctx,data}=chart;
+    const meta=chart.getDatasetMeta(0);
+    if(!meta||!meta.data.length) return;
+
+    const total=data.datasets[0].data.reduce((s,v)=>s+v,0);
+    if(!total) return;
+
+    meta.data.forEach((arc,i)=>{
+      const pct=data.datasets[0].data[i]/total*100;
+      if(pct<2.5) return; // skip slivers
+
+      const mid=(arc.startAngle+arc.endAngle)/2;
+      const cx=arc.x, cy=arc.y;
+      const outerR=arc.outerRadius;
+
+      // Line start on the pie edge
+      const ex=cx+Math.cos(mid)*(outerR+3);
+      const ey=cy+Math.sin(mid)*(outerR+3);
+
+      // Label anchor (farther out, with an elbow extension)
+      const lineR=outerR+24;
+      const lx=cx+Math.cos(mid)*lineR;
+      const ly=cy+Math.sin(mid)*lineR;
+
+      // Horizontal elbow
+      const isRight=lx>cx;
+      const elbowLen=pct<8?14:10;
+      const ex2=lx+(isRight?elbowLen:-elbowLen);
+      const textX=ex2+(isRight?3:-3);
+
+      const color=data.datasets[0].borderColor[i];
+      const label=data.labels[i];
+
+      ctx.save();
+
+      // Connector line (diagonal)
+      ctx.beginPath();
+      ctx.moveTo(ex,ey);
+      ctx.lineTo(lx,ly);
+      ctx.strokeStyle=color;
+      ctx.lineWidth=1;
+      ctx.globalAlpha=0.65;
+      ctx.setLineDash([2,2]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Horizontal elbow
+      ctx.beginPath();
+      ctx.moveTo(lx,ly);
+      ctx.lineTo(ex2,ly);
+      ctx.globalAlpha=0.50;
+      ctx.stroke();
+      ctx.globalAlpha=1;
+
+      // Dot at elbow
+      ctx.beginPath();
+      ctx.arc(ex2,ly,1.8,0,Math.PI*2);
+      ctx.fillStyle=color;
+      ctx.fill();
+
+      // Text
+      ctx.fillStyle=DARK?'rgba(245,238,225,0.92)':'rgba(35,22,8,0.92)';
+      ctx.font='500 9px -apple-system,BlinkMacSystemFont,sans-serif';
+      ctx.textAlign=isRight?'left':'right';
+      ctx.textBaseline='middle';
+      ctx.fillText(`${label} ${pct.toFixed(1)}%`,textX,ly);
+
+      ctx.restore();
+    });
+  }
+};
+if(!Chart.registry.plugins.get('pieExternalLabels')) Chart.register(pieExternalLabels);
 
 /* ═══════════════════════════════════════════════════
    SIGNAL DETECTION  (for line chart)
@@ -2720,6 +2825,7 @@ function renderAll(){
   renderTable();
   renderPie();
   renderLine();
+  renderAssetMiniCharts();
   renderStackedChart();
   renderAnnouncements();
   renderAssetChanges();
@@ -3038,23 +3144,29 @@ function renderPie(){
   const labels=[],data=[],colors=[];
   P.assets.forEach(a=>{
     const v=assetVal(a);if(v<=0) return;
-    labels.push('$'+a.sym);data.push(+v.toFixed(2));colors.push(a.color);
+    labels.push(a.sym);data.push(+v.toFixed(2));colors.push(a.color);
   });
   setH('donutVal',total>0?fmtV(total,false):'—');
   const ctx=document.getElementById('pieChart');
   if(CHARTS.pie){CHARTS.pie.destroy();CHARTS.pie=null;}
   if(!data.length) return;
   CHARTS.pie=new Chart(ctx,{
-    type:'doughnut',
+    type:'pie',
     data:{labels,datasets:[{data,
-      backgroundColor:colors.map(c=>c+'22'),borderColor:colors,
+      backgroundColor:colors.map(c=>c+'33'),
+      borderColor:colors,
       borderWidth:1.5,hoverBorderWidth:2}]},
-    options:{cutout:'66%',responsive:true,maintainAspectRatio:false,plugins:{
-      legend:{display:false},
-      tooltip:{callbacks:{label:c=>` ${c.label}: ${fmtV(c.parsed,false)} (${(c.parsed/total*100).toFixed(1)}%)`}}
-    }}
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      layout:{padding:54},
+      _externalLabels:true,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:c=>` ${c.label}: ${fmtV(c.parsed,false)} (${(c.parsed/total*100).toFixed(1)}%)`}}
+      }
+    }
   });
-  // Custom legend
+  // Legend: compact colour chips only (labels shown externally on chart)
   const legEl=document.getElementById('donutLegend');
   if(legEl){
     legEl.innerHTML=labels.map((lbl,i)=>`
@@ -3064,6 +3176,83 @@ function renderPie(){
         <div class="leg-pct">${total>0?(data[i]/total*100).toFixed(1):'—'}%</div>
       </div>`).join('');
   }
+}
+
+function renderAssetMiniCharts(){
+  const el=document.getElementById('assetMiniCharts');
+  if(!el) return;
+  const assets=P.assets.filter(a=>a.qty>0);
+  if(!assets.length){el.innerHTML='';return;}
+
+  const cutoff=CHART_RANGE==='7d'?Date.now()-7*24*3600000:0;
+  const hist=P.history.filter(h=>h.ts>=cutoff);
+  const rate=AUDRT||1.57;
+
+  el.innerHTML=assets.map(a=>{
+    // Build price series from history av[] — fall back to SPK sparkline
+    let pts=[];
+    if(hist.length>=2){
+      const hpts=hist.filter(h=>h.av&&h.av[a.id]!=null).map(h=>h.av[a.id]);
+      if(hpts.length>=2) pts=hpts;
+    }
+    if(pts.length<2){
+      const spk=SPK[a.id];
+      if(spk&&spk.length>=2) pts=spk;
+    }
+
+    const px=PX[a.id];
+    const price=px&&!px.failed&&px.price!=null?px.price:null;
+    const ch24=px&&!px.failed?px.ch24:null;
+    const valUSD=price!=null?a.qty*price:null;
+    const val=valUSD!=null?(CCY==='AUD'?valUSD*rate:valUSD):null;
+    const priceDisp=price!=null?(CCY==='AUD'?price*rate:price):null;
+
+    // Build SVG mountain chart
+    let svgHtml='';
+    if(pts.length>=2){
+      const W=120,H=36,n=pts.length;
+      const mn=Math.min(...pts),mx=Math.max(...pts),rng=mx-mn||1;
+      const up=pts[pts.length-1]>=pts[0];
+      const color=a.color||( up?'#14794a':'#be2030');
+      const toX=i=>((i/(n-1))*W).toFixed(1);
+      const toY=v=>(H-2-((v-mn)/rng)*(H-6)).toFixed(1);
+      const lineCoords=pts.map((v,i)=>`${toX(i)},${toY(v)}`).join(' ');
+      // Area: close path along bottom
+      const areaCoords=`${toX(0)},${H} `+pts.map((v,i)=>`${toX(i)},${toY(v)}`).join(' ')+` ${toX(n-1)},${H}`;
+      svgHtml=`<svg class="amc-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="amcg_${a.id.replace(/[^a-z0-9]/gi,'_')}" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="${color}" stop-opacity="0.30"/>
+            <stop offset="100%" stop-color="${color}" stop-opacity="0.02"/>
+          </linearGradient>
+        </defs>
+        <polygon points="${areaCoords}" fill="url(#amcg_${a.id.replace(/[^a-z0-9]/gi,'_')})" stroke="none"/>
+        <polyline points="${lineCoords}" fill="none" stroke="${color}" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/>
+      </svg>`;
+    } else {
+      svgHtml=`<div class="amc-svg" style="display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--ink-5)">no data</div>`;
+    }
+
+    const chCls=ch24==null?'neu':ch24>=0?'pos':'neg';
+    const chTxt=ch24!=null?(ch24>=0?'+':'')+ch24.toFixed(2)+'%':'—';
+    const valTxt=val!=null?fmtV(val,false):'—';
+    const fmtPx=v=>{
+      if(v==null) return '—';
+      if(v>=1000) return (CCY==='AUD'?'A':'$')+v.toLocaleString('en-AU',{maximumFractionDigits:0});
+      if(v>=1) return (CCY==='AUD'?'A':'$')+v.toFixed(2);
+      return (CCY==='AUD'?'A':'$')+v.toFixed(4);
+    };
+
+    return `<div class="amc-card">
+      <div class="amc-top">
+        <span class="amc-sym">${a.sym}</span>
+        <span class="amc-ch ${chCls}">${chTxt}</span>
+      </div>
+      ${svgHtml}
+      <div class="amc-val">${valTxt}</div>
+      <div class="amc-px">${fmtPx(priceDisp)}</div>
+    </div>`;
+  }).join('');
 }
 
 function renderLine(){
