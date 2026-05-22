@@ -252,11 +252,21 @@ main{max-width:1480px;margin:0 auto;padding:36px 28px 60px;}
 .chart-legend{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:8px;font-size:10px;color:var(--ink-3);}
 .chart-legend span{display:inline-flex;align-items:center;gap:4px;}
 
+/* ── 24h daily bars (inside KPI tile) ── */
+.kpi-daily-bars{margin-top:10px;width:100%;height:48px;display:block;}
+.kpi-daily-bars-wrap{margin-top:10px;}
+.kpi-daily-bars-lbl{font:400 8px/1 var(--mono);color:var(--ink-5);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px;}
+
+/* ── Milestone progress chart ── */
+.ms-chart-wrap{height:150px;margin-top:14px;position:relative;border-top:1px solid var(--rule-s);padding-top:12px;}
+.ms-chart-wrap canvas{width:100%!important;height:100%!important;}
+
 /* ── Asset mini sparkline cards ── */
 .asset-mini-charts{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:14px;}
 .amc-card{background:var(--raised);border:1px solid var(--card-border-sub);border-radius:2px;padding:10px 11px 8px;display:flex;flex-direction:column;gap:3px;cursor:default;transition:border-color .14s;}
 .amc-card:hover{border-color:var(--card-border);}
-.amc-top{display:flex;align-items:center;justify-content:space-between;}
+.amc-top{display:flex;align-items:center;justify-content:space-between;gap:4px;}
+.amc-logo{width:14px;height:14px;border-radius:50%;object-fit:cover;flex-shrink:0;}
 .amc-sym{font:600 10px/1 var(--mono);letter-spacing:.08em;color:var(--ink-2);}
 .amc-ch{font:500 9px/1 var(--mono);}
 .amc-ch.pos{color:var(--pos);}.amc-ch.neg{color:var(--neg);}.amc-ch.neu{color:var(--ink-4);}
@@ -370,11 +380,16 @@ table.htbl{width:100%;border-collapse:collapse;min-width:700px;}
 .asset-log-detail{font-size:9.5px;color:var(--ink-4);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .asset-log-ts{font-size:9px;color:var(--ink-5);flex-shrink:0;white-space:nowrap;}
 .asset-log-empty{color:var(--ink-4);font-size:11px;padding:16px 14px;font-style:italic;}
-/* Fear & Greed gauge */
-.fg-gauge{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:150px;align-self:flex-end;padding-bottom:4px;}
-.fg-gauge-head{font-size:9px;font-weight:500;letter-spacing:.20em;text-transform:uppercase;color:var(--ink-4);margin-bottom:4px;}
-.fg-val{font-family:var(--mono);font-size:26px;font-weight:600;line-height:1;letter-spacing:-0.02em;margin-top:2px;}
-.fg-class{font-size:9px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin-top:1px;}
+/* Fear & Greed gauge — enhanced */
+.fg-gauge{display:flex;flex-direction:column;align-items:center;gap:0;min-width:190px;align-self:flex-end;padding-bottom:4px;}
+.fg-gauge-head{font-size:9px;font-weight:500;letter-spacing:.20em;text-transform:uppercase;color:var(--ink-4);margin-bottom:6px;}
+.fg-gauge-wrap{position:relative;width:190px;height:110px;}
+.fg-gauge-wrap svg{display:block;overflow:visible;}
+.fg-val-overlay{position:absolute;bottom:10px;left:0;right:0;text-align:center;pointer-events:none;}
+.fg-val{font-family:var(--mono);font-size:32px;font-weight:600;line-height:1;letter-spacing:-0.03em;}
+.fg-class{font-size:8.5px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;margin-top:3px;padding:2px 8px;border-radius:2px;display:inline-block;}
+@keyframes fgGlow{0%,100%{opacity:0.7;}50%{opacity:1;}}
+.fg-gauge.fg-extreme .fg-val{animation:fgGlow 1.8s ease-in-out infinite;}
 .announce-item{display:flex;align-items:baseline;gap:0;padding:3px 0;border:0;line-height:1.65;font-size:11.5px;flex-wrap:nowrap;}
 .announce-ts{color:var(--ink-4);margin-right:10px;white-space:nowrap;flex-shrink:0;font-size:10.5px;letter-spacing:.03em;}
 .announce-prefix{margin-right:9px;flex-shrink:0;font-size:10.5px;font-weight:700;letter-spacing:.06em;min-width:64px;}
@@ -882,10 +897,11 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0)!important;background-im
   .announce-prefix{min-width:46px;font-size:9px;}
   .announce-msg{font-size:10.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .asset-log-item{padding:7px 16px;}
-  /* Gauge — compact pill on mobile */
-  .fg-gauge{min-width:unset;width:100%;flex-direction:row;align-items:center;justify-content:flex-start;gap:10px;padding:12px 16px;border-top:1px solid var(--rule-s);}
-  .fg-gauge-head{margin-bottom:0;font-size:8px;}
-  .fg-val{font-size:20px;}
+  /* Gauge — compact on mobile */
+  .fg-gauge{min-width:unset;width:100%;padding:12px 16px 8px;border-top:1px solid var(--rule-s);}
+  .fg-gauge-wrap{width:170px;height:100px;}
+  .fg-gauge-wrap svg{width:170px;height:98px;}
+  .fg-val{font-size:24px;}
   .fg-class{font-size:8px;}
 
   /* ── Portfolio composition ── */
@@ -1037,10 +1053,14 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0)!important;background-im
     </div>
     <!-- ── Fear & Greed Gauge ── -->
     <div class="fg-gauge" id="fgGauge" style="display:none">
-      <div class="fg-gauge-head">Sentiment</div>
-      <svg id="fgSvg" width="150" height="86" viewBox="0 0 150 86" style="display:block;overflow:visible"></svg>
-      <div class="fg-val" id="fgVal">—</div>
-      <div class="fg-class" id="fgClass">Loading…</div>
+      <div class="fg-gauge-head">Market Sentiment</div>
+      <div class="fg-gauge-wrap">
+        <svg id="fgSvg" width="190" height="106" viewBox="0 0 190 106" style="display:block;overflow:visible"></svg>
+        <div class="fg-val-overlay">
+          <div class="fg-val" id="fgVal">—</div>
+          <div class="fg-class" id="fgClass">Loading…</div>
+        </div>
+      </div>
     </div>
     <!-- ── Market Overview panel ── -->
     <div class="market-panel" id="marketPanel">
@@ -1057,6 +1077,10 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0)!important;background-im
         <div class="kpi-figure" id="mv-chg">—</div>
       </div>
       <div class="kpi-sub" id="mv-chg-s">Awaiting data</div>
+      <div class="kpi-daily-bars-wrap">
+        <div class="kpi-daily-bars-lbl">Daily blocks · AEST</div>
+        <svg id="dailyBarsSvg" class="kpi-daily-bars" viewBox="0 0 160 48" preserveAspectRatio="none"></svg>
+      </div>
     </div>
     <div class="kpi" id="mv-mom-card">
       <span class="kpi-lbl">Momentum</span>
@@ -1133,6 +1157,9 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0)!important;background-im
       </div>
     </div>
     <div id="milestoneGrid"></div>
+    <div class="ms-chart-wrap" id="msChartWrap" style="display:none">
+      <canvas id="msLineChart"></canvas>
+    </div>
   </section>
 
   <!-- ── II · Holdings ── -->
@@ -1458,7 +1485,7 @@ function checkMilestoneAlerts(){
 function loadNotifiedMs(){
   try{NOTIFIED_MS=new Set(JSON.parse(localStorage.getItem('notifiedMs')||'[]'));}catch(e){}
 }
-let CHARTS = {pie:null,line:null,alloc:null,stacked:null};
+let CHARTS = {pie:null,line:null,alloc:null,stacked:null,msLine:null};
 let RT     = null;
 let CD_IV  = null;
 let CD_LEFT= REFRESH_SECS;
@@ -1499,6 +1526,7 @@ function applyDark(d){
   if(btn) btn.textContent=d?'🌙':'☀';
   try{localStorage.setItem('ptDark',d?'1':'0');}catch(e){}
   renderPie(); renderLine(); renderAssetMiniCharts(); renderStackedChart(); renderProjChart();
+  renderMilestoneChart(); renderDailyBarsChart();
   if(SUPER_OPEN) renderSuperChart();
   renderFearGreed(); // re-draw needle/track with updated theme colours
   initBgCanvas();
@@ -2906,6 +2934,7 @@ function renderMetrics(){
 
   renderMomentumCard();
   renderRisk(total);
+  renderDailyBarsChart();
 }
 
 function renderMomentumCard(){
@@ -3004,6 +3033,82 @@ function renderRisk(total){
   if(reading) reading.textContent=(max*100).toFixed(1)+'%';
 }
 
+function renderDailyBarsChart(){
+  const svgEl=document.getElementById('dailyBarsSvg');
+  if(!svgEl) return;
+  const hist=P.history;
+  if(hist.length<2){svgEl.innerHTML='';return;}
+
+  // Brisbane = AEST = UTC+10 (fixed, no DST adjustment)
+  const BRISBANE_OFFSET=10*3600*1000;
+  const DAY_MS=24*3600*1000;
+
+  // Map each history entry to its Brisbane day index
+  // dayStart in UTC for that Brisbane midnight = floor((ts+offset)/DAY_MS)*DAY_MS - offset
+  const brisDay=ts=>Math.floor((ts+BRISBANE_OFFSET)/DAY_MS)*DAY_MS-BRISBANE_OFFSET;
+
+  // Group into day buckets
+  const dayMap=new Map();
+  hist.forEach(e=>{
+    const ds=brisDay(e.ts);
+    if(!dayMap.has(ds)) dayMap.set(ds,[]);
+    dayMap.get(ds).push(e);
+  });
+
+  // Sort days, take last 10
+  const days=[...dayMap.keys()].sort((a,b)=>a-b).slice(-10);
+  if(days.length<1){svgEl.innerHTML='';return;}
+
+  // Compute per-day % change (open→close within the day's entries)
+  const bars=days.map(ds=>{
+    const entries=dayMap.get(ds).sort((a,b)=>a.ts-b.ts);
+    const open=entries[0].usd;
+    const close=entries[entries.length-1].usd;
+    const pct=open>0?((close-open)/open)*100:0;
+    // Day label: "Mon" etc in Brisbane tz
+    const d=new Date(ds+BRISBANE_OFFSET); // shift to read as UTC but represents Brisbane
+    const label=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getUTCDay()];
+    return{pct,label,isToday:ds===brisDay(Date.now())};
+  });
+
+  // SVG dimensions (viewBox 160×48)
+  const W=160,H=40,LBL=8,GAP=2;
+  const n=bars.length;
+  const barW=Math.max(4,(W-(n-1)*GAP)/n);
+  const maxAbs=Math.max(...bars.map(b=>Math.abs(b.pct)),0.5);
+  const midY=H/2;
+  const scale=v=>(Math.abs(v)/maxAbs)*(midY-4);
+
+  const posC=DARK?'#00b894':'#14794a';
+  const negC=DARK?'#d63031':'#be2030';
+  const todayBorder=DARK?'rgba(255,255,255,.25)':'rgba(0,0,0,.25)';
+
+  let rects='',lbls='',zeroline='';
+  bars.forEach((b,i)=>{
+    const x=i*(barW+GAP);
+    const h=Math.max(1.5,scale(b.pct));
+    const y=b.pct>=0?midY-h:midY;
+    const col=b.pct>=0?posC:negC;
+    const opacity=b.isToday?1:0.55;
+    rects+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${h.toFixed(1)}"
+      fill="${col}" opacity="${opacity}" rx="1"/>`;
+    if(b.isToday){
+      rects+=`<rect x="${(x-0.5).toFixed(1)}" y="${(y-0.5).toFixed(1)}"
+        width="${(barW+1).toFixed(1)}" height="${(h+1).toFixed(1)}"
+        fill="none" stroke="${col}" stroke-width="1" rx="1" opacity="0.6"/>`;
+    }
+    lbls+=`<text x="${(x+barW/2).toFixed(1)}" y="${(H+LBL).toFixed(1)}"
+      text-anchor="middle" font-size="5.5" font-family="-apple-system,sans-serif"
+      fill="${DARK?'rgba(255,255,255,.35)':'rgba(0,0,0,.35)'}"
+      font-weight="${b.isToday?'600':'400'}">${b.label}</text>`;
+  });
+  zeroline=`<line x1="0" y1="${midY}" x2="${W}" y2="${midY}"
+    stroke="${DARK?'rgba(255,255,255,.12)':'rgba(0,0,0,.12)'}" stroke-width="0.5"/>`;
+
+  svgEl.setAttribute('viewBox',`0 0 ${W} ${H+LBL+2}`);
+  svgEl.innerHTML=zeroline+rects+lbls;
+}
+
 function renderMilestones(){
   const aud=totalValAUD();
   const el=document.getElementById('milestoneGrid');
@@ -3085,6 +3190,116 @@ function renderMilestones(){
   }).join('');
 
   el.innerHTML=trackHTML+`<div class="ms-cards">${cards}</div>`;
+  renderMilestoneChart();
+}
+
+function renderMilestoneChart(){
+  const wrap=document.getElementById('msChartWrap');
+  const ctx=document.getElementById('msLineChart');
+  if(!wrap||!ctx) return;
+  const hist=P.history;
+  const rate=AUDRT||1.57;
+  const MAJOR=100000;
+
+  if(hist.length<2){wrap.style.display='none';return;}
+  wrap.style.display='block';
+
+  const labels=hist.map(e=>{
+    const d=new Date(e.ts);
+    return d.toLocaleDateString('en-AU',{month:'short',day:'numeric'})+' '+
+           d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  });
+  const values=hist.map(e=>+(e.usd*(rate)).toFixed(2));
+
+  // Milestone line colors (very faint)
+  const msColors=['#c8920a','#14794a','#235fa0','#5e38b8','#be2030','#e17055','#00a550'];
+
+  // Build milestone annotation datasets
+  const msDatasets=MILESTONES_AUD.map((ms,i)=>{
+    const col=msColors[i%msColors.length];
+    const isReached=values[values.length-1]>=ms;
+    return{
+      label:`A$${ms>=1000?(ms/1000).toFixed(0)+'K':ms}`,
+      data:hist.map(()=>ms),
+      borderColor:col+(isReached?'55':'33'),
+      borderWidth:isReached?1.2:0.8,
+      borderDash:[4,4],
+      pointRadius:0,
+      fill:false,
+      tension:0,
+      order:2
+    };
+  });
+
+  // Main portfolio line
+  const aud=values[values.length-1];
+  const up=aud>=(values[0]||0);
+  const lineCol=DARK?'#c8920a':'#a87016';
+
+  const mainDataset={
+    label:'Portfolio (AUD)',
+    data:values,
+    borderColor:lineCol,
+    borderWidth:2,
+    pointRadius:0,
+    pointHoverRadius:3,
+    fill:{target:'origin',above:lineCol+'18'},
+    tension:0.3,
+    order:1
+  };
+
+  // Current value dot at the end
+  const nowDataset={
+    label:'Now',
+    data:hist.map((_,i)=>i===hist.length-1?values[values.length-1]:null),
+    borderColor:lineCol,
+    backgroundColor:lineCol,
+    borderWidth:0,
+    pointRadius:4,
+    pointHoverRadius:5,
+    fill:false,
+    tension:0,
+    order:0,
+    spanGaps:false
+  };
+
+  if(CHARTS.msLine){CHARTS.msLine.destroy();CHARTS.msLine=null;}
+
+  CHARTS.msLine=new Chart(ctx,{
+    type:'line',
+    data:{labels,datasets:[...msDatasets,mainDataset,nowDataset]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          callbacks:{
+            label:c=>{
+              if(c.dataset.label==='Now'||c.dataset.label==='Portfolio (AUD)')
+                return` A$${Math.round(c.parsed.y).toLocaleString('en-AU')}`;
+              return` ${c.dataset.label}`;
+            }
+          }
+        }
+      },
+      scales:{
+        x:{display:false,grid:{display:false}},
+        y:{
+          min:0,
+          max:MAJOR,
+          grid:{color:DARK?'rgba(255,255,255,.04)':'rgba(0,0,0,.05)',drawBorder:false},
+          ticks:{
+            maxTicksLimit:6,
+            color:DARK?'rgba(255,255,255,.3)':'rgba(0,0,0,.3)',
+            font:{size:9,family:'JetBrains Mono, monospace'},
+            callback:v=>v>=1000?'A$'+(v/1000).toFixed(0)+'K':'A$'+v
+          },
+          border:{display:false}
+        }
+      }
+    }
+  });
 }
 
 function renderTable(){
@@ -3243,9 +3458,14 @@ function renderAssetMiniCharts(){
       return (CCY==='AUD'?'A':'$')+v.toFixed(4);
     };
 
+    const logoSrc=LOGOS[a.id]||null;
+    const logoHtml=logoSrc
+      ?`<img src="${logoSrc}" class="amc-logo" alt="" onerror="this.style.display='none'">`
+      :'';
+
     return `<div class="amc-card">
       <div class="amc-top">
-        <span class="amc-sym">${a.sym}</span>
+        <span style="display:flex;align-items:center;gap:4px;">${logoHtml}<span class="amc-sym">${a.sym}</span></span>
         <span class="amc-ch ${chCls}">${chTxt}</span>
       </div>
       ${svgHtml}
@@ -3885,12 +4105,12 @@ function renderFearGreed(){
   gauge.style.display='flex';
 
   const {value,classification}=FEAR_GREED;
-  const cx=75,cy=72,R=56,W=15;
+  const cx=95,cy=96,R=72,W=16;
 
   // Value → angle in radians (π=left=0, 0=right=100)
   const vToRad=v=>Math.PI*(1-v/100);
 
-  // Arc path for a donut segment
+  // Arc path helper
   function arcPath(fromV,toV,r){
     const a1=vToRad(fromV),a2=vToRad(toV);
     const x1=(cx+r*Math.cos(a1)).toFixed(2),y1=(cy-r*Math.sin(a1)).toFixed(2);
@@ -3898,54 +4118,111 @@ function renderFearGreed(){
     return`M${x1},${y1} A${r},${r} 0 0,1 ${x2},${y2}`;
   }
 
-  // Color zones
+  // Zone definitions: [from, to, hex, label, textAnchor]
   const zones=[
-    [0,25,'#c0392b'],   // Extreme Fear
-    [25,45,'#e67e22'],  // Fear
-    [45,55,'#f1c40f'],  // Neutral
-    [55,75,'#2ecc71'],  // Greed
-    [75,100,'#1a9948'], // Extreme Greed
+    [0,25,  '#d63031','Extreme Fear','end'],
+    [25,45, '#e17055','Fear',        'end'],
+    [45,55, '#fdcb6e','Neutral',     'middle'],
+    [55,75, '#00b894','Greed',       'start'],
+    [75,100,'#00a550','Extreme Greed','start'],
   ];
 
+  // Active zone color
+  const zoneColor=zones.find(([f,t])=>value>=f&&value<=t)?.[2]||zones[4][2];
+  const isExtreme=value<=20||value>=80;
+
+  // SVG defs — glow filter
+  const defs=`<defs>
+    <filter id="fgGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="fgGlowSm" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>`;
+
+  // Track background
+  const trackBg=`<path d="${arcPath(0,100,R)}" fill="none"
+    stroke="${DARK?'rgba(255,255,255,.07)':'rgba(0,0,0,.08)'}"
+    stroke-width="${W+6}" stroke-linecap="butt"/>`;
+
+  // Dim full arc (very faint, shows the full scale)
+  const dimArc=`<path d="${arcPath(0,100,R)}" fill="none"
+    stroke="${DARK?'rgba(255,255,255,.04)':'rgba(0,0,0,.04)'}"
+    stroke-width="${W}" stroke-linecap="butt"/>`;
+
+  // Colored zone segments
   const segs=zones.map(([f,t,col])=>
-    `<path d="${arcPath(f,t,R)}" fill="none" stroke="${col}" stroke-width="${W}" stroke-linecap="butt" opacity="0.9"/>`
+    `<path d="${arcPath(f,t,R)}" fill="none" stroke="${col}" stroke-width="${W}"
+      stroke-linecap="butt" opacity="${DARK?0.88:0.78}"/>`
   ).join('');
 
-  // Track background (subtle)
-  const trackPath=arcPath(0,100,R);
-  const track=`<path d="${trackPath}" fill="none" stroke="${DARK?'rgba(255,255,255,.06)':'rgba(0,0,0,.07)'}" stroke-width="${W+4}" stroke-linecap="butt"/>`;
+  // Bright "filled up to value" overlay (makes it read like a fuel gauge)
+  const filledArc=`<path d="${arcPath(0,value,R)}" fill="none"
+    stroke="${zoneColor}" stroke-width="${W-4}" stroke-linecap="butt"
+    opacity="0.35" filter="url(#fgGlowSm)"/>`;
 
-  // Zone tick marks at 0, 25, 45, 55, 75, 100
+  // Separator ticks between zones
   const ticks=[0,25,45,55,75,100].map(v=>{
     const a=vToRad(v);
-    const r1=R-W/2-1,r2=R+W/2+1;
+    const r1=R-W/2-0.5,r2=R+W/2+0.5;
     const x1=(cx+r1*Math.cos(a)).toFixed(2),y1=(cy-r1*Math.sin(a)).toFixed(2);
     const x2=(cx+r2*Math.cos(a)).toFixed(2),y2=(cy-r2*Math.sin(a)).toFixed(2);
-    return`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${DARK?'rgba(0,0,0,.5)':'rgba(255,255,255,.7)'}" stroke-width="1.5"/>`;
+    return`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"
+      stroke="${DARK?'rgba(0,0,0,.6)':'rgba(255,255,255,.8)'}" stroke-width="1.5"/>`;
   }).join('');
 
-  // Needle
+  // Zone labels at outer edge
+  const lblData=[
+    {v:12,t:'Extr. Fear',a:'end'},{v:35,t:'Fear',a:'end'},
+    {v:50,t:'Neutral',a:'middle'},
+    {v:65,t:'Greed',a:'start'},{v:88,t:'Extr. Greed',a:'start'}
+  ];
+  const lbls=lblData.map(({v,t,a})=>{
+    const ang=vToRad(v); const rr=R+W/2+11;
+    const lx=(cx+rr*Math.cos(ang)).toFixed(2),ly=(cy-rr*Math.sin(ang)).toFixed(2);
+    return`<text x="${lx}" y="${ly}"
+      fill="${DARK?'rgba(255,255,255,.28)':'rgba(0,0,0,.28)'}"
+      font-size="6.5" text-anchor="${a}" dominant-baseline="middle"
+      font-family="-apple-system,sans-serif" letter-spacing="0.03em">${t}</text>`;
+  }).join('');
+
+  // Needle — glows in zone color
   const ang=vToRad(value);
-  const nLen=R-4;
+  const nLen=R-3;
   const nx=(cx+nLen*Math.cos(ang)).toFixed(2),ny=(cy-nLen*Math.sin(ang)).toFixed(2);
-  const needle=`<line x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}" stroke="${DARK?'#fff':'#1a1a1a'}" stroke-width="2.5" stroke-linecap="round"/>`;
-  const dot=`<circle cx="${cx}" cy="${cy}" r="5" fill="${DARK?'#fff':'#1a1a1a'}"/>`;
+  // Shadow needle (glow)
+  const needleGlow=`<line x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}"
+    stroke="${zoneColor}" stroke-width="5" stroke-linecap="round" opacity="0.35"
+    filter="url(#fgGlow)"/>`;
+  const needle=`<line x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}"
+    stroke="${DARK?'#fff':'#111'}" stroke-width="2.2" stroke-linecap="round"/>`;
 
-  // Zone labels (tiny, at the outer edge)
-  const lbls=[
-    {v:12,t:'Fear',anchor:'end'},{v:50,t:'Neutral',anchor:'middle'},{v:88,t:'Greed',anchor:'start'}
-  ].map(({v,t,anchor})=>{
-    const a=vToRad(v); const rr=R+W/2+10;
-    const lx=(cx+rr*Math.cos(a)).toFixed(2),ly=(cy-rr*Math.sin(a)).toFixed(2);
-    return`<text x="${lx}" y="${ly}" fill="${DARK?'rgba(255,255,255,.3)':'rgba(0,0,0,.3)'}" font-size="7" text-anchor="${anchor}" dominant-baseline="middle" font-family="monospace">${t}</text>`;
-  }).join('');
+  // Center pivot dot
+  const pivotRing=`<circle cx="${cx}" cy="${cy}" r="7" fill="${DARK?'rgba(255,255,255,.08)':'rgba(0,0,0,.06)'}"/>`;
+  const pivot=`<circle cx="${cx}" cy="${cy}" r="4.5" fill="${zoneColor}" opacity="0.9" filter="url(#fgGlowSm)"/>`;
+  const pivotTop=`<circle cx="${cx}" cy="${cy}" r="2.5" fill="${DARK?'#fff':'#111'}"/>`;
 
-  svg.innerHTML=track+segs+ticks+needle+dot+lbls;
+  // Value dot on arc at needle tip
+  const dotR=3.5;
+  const valDot=`<circle cx="${nx}" cy="${ny}" r="${dotR}" fill="${zoneColor}" opacity="0.8" filter="url(#fgGlowSm)"/>`;
 
-  // Color the value number to match zone
-  const zoneColor=zones.find(([f,t])=>value>=f&&value<t)?.[2]||zones[4][2];
-  if(valEl) valEl.innerHTML=`<span style="color:${zoneColor}">${value}</span>`;
-  if(clsEl) clsEl.textContent=classification;
+  svg.innerHTML=defs+trackBg+dimArc+segs+filledArc+ticks+lbls+needleGlow+needle+pivotRing+pivot+pivotTop+valDot;
+
+  // Extreme sentiment pulsing
+  gauge.classList.toggle('fg-extreme',isExtreme);
+
+  // Value overlay
+  if(valEl) valEl.innerHTML=`<span style="color:${zoneColor};text-shadow:0 0 16px ${zoneColor}44">${value}</span>`;
+  if(clsEl){
+    const bgCol=zoneColor+'22';
+    clsEl.style.background=bgCol;
+    clsEl.style.color=zoneColor;
+    clsEl.style.border=`1px solid ${zoneColor}55`;
+    clsEl.textContent=classification;
+  }
 }
 
 /* ═══════════════════════════════════════════════════
