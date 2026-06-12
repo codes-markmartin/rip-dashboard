@@ -969,6 +969,36 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0)!important;background-im
   .a-orb img{width:17px;height:17px;}
   .a-sym{font-size:12px;}
 }
+/* ── Hero redesign ── */
+.hero{padding:26px 28px 22px;border:1px solid var(--card-border);border-bottom:1px solid var(--card-border-sub);border-radius:3px 3px 0 0;background:var(--surface);display:grid;grid-template-columns:1fr auto auto;align-items:start;gap:28px;flex-wrap:wrap;margin-top:20px;}
+.hero-main{min-width:0;}
+.hero-ccy-secondary{font-family:var(--mono);font-size:13px;color:var(--ink-3);margin-top:3px;letter-spacing:.02em;}
+.hero-pie-zone{display:flex;flex-direction:column;align-items:center;min-width:150px;padding-top:4px;}
+.hero-section-lbl{font-size:8.5px;font-weight:500;letter-spacing:.20em;text-transform:uppercase;color:var(--ink-4);margin-bottom:2px;text-align:center;}
+/* Pay countdown pill */
+.pay-cdown{display:flex;align-items:center;gap:10px;margin-top:14px;padding:9px 13px;border:1px solid var(--card-border-sub);background:var(--raised);border-radius:2px;width:fit-content;}
+.pay-cdown-inner{display:flex;flex-direction:column;gap:1px;}
+.pay-cdown-lbl{font-size:8px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-4);}
+.pay-cdown-date{font-size:10.5px;font-weight:500;color:var(--ink-2);font-family:var(--mono);}
+.pay-cdown-timer{font-family:var(--mono);font-size:17px;font-weight:600;color:var(--accent);letter-spacing:.03em;white-space:nowrap;}
+/* Hero pie legend compact */
+.hero-pie-legend{display:flex;flex-direction:column;gap:3px;margin-top:4px;min-width:130px;}
+.hero-pie-leg-row{display:flex;align-items:center;gap:5px;font:400 9.5px/1 var(--mono);}
+.hero-pie-swatch{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.hero-pie-sym{color:var(--ink-2);flex:1;}
+.hero-pie-pct{color:var(--ink-4);}
+/* Hero responsive */
+@media(max-width:900px){
+  .hero{grid-template-columns:1fr auto;grid-template-rows:auto auto;}
+  .fg-gauge{grid-column:2;grid-row:1;}
+  .hero-pie-zone{grid-column:1/-1;flex-direction:row;gap:16px;justify-content:flex-start;border-top:1px solid var(--rule-s);padding-top:14px;margin-top:4px;}
+  .hero-pie-zone .donut-wrap{width:90px!important;height:90px!important;flex-shrink:0;}
+}
+@media(max-width:640px){
+  .hero{grid-template-columns:1fr;gap:16px;}
+  .fg-gauge{display:none!important;}
+  .hero-pie-zone{flex-direction:row;}
+}
 </style>
 </head>
 <body>
@@ -1030,12 +1060,14 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0)!important;background-im
 
   <!-- ── Hero value row ── -->
   <div class="hero">
-    <div>
+    <!-- ── Left: portfolio value + metrics ── -->
+    <div class="hero-main">
       <div class="hero-meta">
         <span class="hero-lbl">Total Portfolio</span>
         <span class="hero-asof" id="heroAsOf"></span>
       </div>
       <div class="hero-figure" id="mv-total">—</div>
+      <div class="hero-ccy-secondary" id="heroCcyAlt"></div>
       <div style="display:flex;align-items:center;gap:8px;margin-top:4px;" id="superTotalRow">
         <span id="superTotalLbl" style="font:400 11px/1 var(--mono);color:var(--ink-4);letter-spacing:.04em;vertical-align:middle"></span>
       </div>
@@ -1050,22 +1082,44 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0)!important;background-im
         <span class="xrp-target-px" id="xrpTargetPx">—</span>
         <span class="xrp-target-mult" id="xrpTargetMult"></span>
       </div>
-    </div>
-    <!-- ── Fear & Greed Gauge ── -->
-    <div class="fg-gauge" id="fgGauge" style="display:none">
-      <div class="fg-gauge-head">Market Sentiment</div>
-      <div class="fg-gauge-wrap">
-        <svg id="fgSvg" width="190" height="106" viewBox="0 0 190 106" style="display:block;overflow:visible"></svg>
-        <div class="fg-val-overlay">
-          <div class="fg-val" id="fgVal">—</div>
-          <div class="fg-class" id="fgClass">Loading…</div>
+      <!-- Pay countdown -->
+      <div class="pay-cdown" id="payCdown">
+        <span style="font-size:18px">💰</span>
+        <div class="pay-cdown-inner">
+          <span class="pay-cdown-lbl">Next Capital Injection</span>
+          <span class="pay-cdown-date" id="payCdownDate">Wed 17 Jun</span>
         </div>
+        <div class="pay-cdown-timer" id="payCdownTimer">—</div>
       </div>
     </div>
-    <!-- ── Market Overview panel ── -->
-    <div class="market-panel" id="marketPanel">
-      <div class="market-panel-head">Market Overview</div>
-      <div id="marketRows"><div class="mkt-loading">Fetching market data…</div></div>
+
+    <!-- ── Center: Mini allocation pie ── -->
+    <div class="hero-pie-zone">
+      <div class="hero-section-lbl">Allocation</div>
+      <div class="donut-wrap" style="width:130px;height:130px;margin:0 auto;">
+        <canvas id="pieChart"></canvas>
+      </div>
+      <div class="hero-pie-legend" id="donutLegend"></div>
+      <div id="donutVal" style="display:none">—</div>
+    </div>
+
+    <!-- ── Right: Fear & Greed + Market ── -->
+    <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-end;">
+      <div class="fg-gauge" id="fgGauge" style="display:none">
+        <div class="fg-gauge-head">Market Sentiment</div>
+        <div class="fg-gauge-wrap">
+          <svg id="fgSvg" width="190" height="106" viewBox="0 0 190 106" style="display:block;overflow:visible"></svg>
+          <div class="fg-val-overlay">
+            <div class="fg-val" id="fgVal">—</div>
+            <div class="fg-class" id="fgClass">Loading…</div>
+          </div>
+        </div>
+      </div>
+      <!-- Market Overview panel (always visible once data arrives) -->
+      <div class="market-panel" id="marketPanel">
+        <div class="market-panel-head">Market Overview</div>
+        <div id="marketRows"><div class="mkt-loading">Fetching market data…</div></div>
+      </div>
     </div>
   </div>
 
@@ -1107,10 +1161,10 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0)!important;background-im
     </div>
   </section>
 
-  <!-- ── Portfolio History Chart — full width ── -->
+  <!-- ── Asset Composition Chart — full width ── -->
   <div class="hero-chart-wrap">
     <div class="hero-chart-head">
-      <span style="font-size:9.5px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3)" id="lineTitle">Portfolio History</span>
+      <span style="font-size:9.5px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3)">Asset Weight · Composition</span>
       <div style="display:flex;align-items:center;gap:14px;">
         <div class="chart-range-btns">
           <button class="cr-btn active" id="crBtn7d" onclick="setChartRange('7d')">7D</button>
@@ -1120,12 +1174,12 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0)!important;background-im
       </div>
     </div>
     <div class="hero-chart-canvas">
-      <canvas id="lineChart" style="display:none;"></canvas>
-      <div class="no-hist" id="noHist" style="min-height:0;height:100%;">
+      <canvas id="stackChart" style="display:none;"></canvas>
+      <div class="no-hist" id="noStackHist" style="min-height:0;height:100%;">
         <div>History builds automatically — a new point every 5 minutes.</div>
       </div>
     </div>
-    <div class="chart-legend" id="chartLegend" style="display:none"></div>
+    <div class="chart-legend" id="stackLegend" style="display:none;flex-wrap:wrap;gap:12px;margin-top:10px"></div>
     <div class="asset-mini-charts" id="assetMiniCharts"></div>
   </div>
 
@@ -1193,35 +1247,6 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0)!important;background-im
     </div>
   </section>
 
-  <!-- ── III · Portfolio Composition ── -->
-  <section class="sect">
-    <div class="sect-head">
-      <div class="sect-title"><span class="sect-num">IV</span>Portfolio Composition</div>
-    </div>
-    <div class="row-comp">
-      <div class="donut-pane">
-        <span class="kpi-lbl">Allocation</span>
-        <div class="donut-wrap">
-          <canvas id="pieChart"></canvas>
-        </div>
-        <div class="pie-total-lbl">Total</div>
-        <div class="pie-total-row" id="donutVal">—</div>
-        <div class="donut-legend" id="donutLegend"></div>
-      </div>
-      <div class="line-pane">
-        <div class="line-pane-head">
-          <span class="kpi-lbl">Asset Weight Over Time</span>
-        </div>
-        <div class="hero-chart-canvas" style="height:240px">
-          <canvas id="stackChart" style="display:none"></canvas>
-          <div class="no-hist" id="noStackHist">
-            <div>History builds automatically — check back after a few refreshes.</div>
-          </div>
-        </div>
-        <div class="chart-legend" id="stackLegend" style="display:none;flex-wrap:wrap;gap:12px;margin-top:10px"></div>
-      </div>
-    </div>
-  </section>
 
   <!-- ── V · Growth Projection ── -->
   <section class="sect">
@@ -1414,10 +1439,7 @@ const DEFAULTS = {
   retiredAssets:{}, // id → {sym,name,color} — kept after removal so charts can label history
   assets:[
     {id:'pigeon',name:'Pigeon',          sym:'PIGEON',type:'solana_token',ca:'4fSWEw2wbYEUCcMtitzmeGUfqinoafXxkhqZrA9Gpump',qty:989934,    manual:null,color:'#5e38b8'},
-    {id:'income',name:'Income',           sym:'INCOME',type:'solana_token',ca:'5QmbJw7mM6tcCdXVy8ftc2bu8izded7Etc57TMA2pump',qty:249497.79, manual:null,color:'#14794a'},
     {id:'xrp',   name:'XRP',              sym:'XRP',   type:'crypto',      cgId:'ripple',  qty:618.48, manual:null,color:'#235fa0'},
-    {id:'iren',  name:'Iris Energy',      sym:'IREN',  type:'stock',       ticker:'IREN',  qty:9.05,   manual:null,color:'#a87016'},
-    {id:'mara',  name:'Marathon Digital', sym:'MARA',  type:'stock',       ticker:'MARA',  qty:37.21,  manual:null,color:'#be2030'},
   ],
   history:[]
 };
@@ -1452,7 +1474,7 @@ function setChartRange(r){
   CHART_RANGE=r;
   document.getElementById('crBtn7d')?.classList.toggle('active',r==='7d');
   document.getElementById('crBtnAll')?.classList.toggle('active',r==='all');
-  renderLine();
+  renderStackedChart();
   renderAssetMiniCharts();
 }
 
@@ -1525,7 +1547,8 @@ function applyDark(d){
   const btn=document.getElementById('darkBtn');
   if(btn) btn.textContent=d?'🌙':'☀';
   try{localStorage.setItem('ptDark',d?'1':'0');}catch(e){}
-  renderPie(); renderLine(); renderAssetMiniCharts(); renderStackedChart(); renderProjChart();
+  renderPie(); renderAssetMiniCharts(); renderStackedChart(); renderProjChart();
+  renderHeroAltCurrency();
   renderMilestoneChart(); renderDailyBarsChart();
   if(SUPER_OPEN) renderSuperChart();
   renderFearGreed(); // re-draw needle/track with updated theme colours
@@ -2852,9 +2875,9 @@ function renderAll(){
   renderMilestones();
   renderTable();
   renderPie();
-  renderLine();
   renderAssetMiniCharts();
   renderStackedChart();
+  renderHeroAltCurrency();
   renderAnnouncements();
   renderAssetChanges();
   renderProjection();
@@ -2932,6 +2955,7 @@ function renderMetrics(){
     setC('mv-chg','kpi-figure',ch.$>=0?'pos':'neg');
   }else{setH('mv-chg','—');setH('mv-chg-s','Awaiting data');setC('mv-chg','kpi-figure','');}
 
+  renderHeroAltCurrency();
   renderMomentumCard();
   renderRisk(total);
   renderDailyBarsChart();
@@ -3381,14 +3405,14 @@ function renderPie(){
       }
     }
   });
-  // Legend: compact colour chips only (labels shown externally on chart)
+  // Hero compact legend
   const legEl=document.getElementById('donutLegend');
   if(legEl){
     legEl.innerHTML=labels.map((lbl,i)=>`
-      <div class="leg-row">
-        <div class="leg-swatch" style="background:${colors[i]}"></div>
-        <div class="leg-name">${lbl}</div>
-        <div class="leg-pct">${total>0?(data[i]/total*100).toFixed(1):'—'}%</div>
+      <div class="hero-pie-leg-row">
+        <div class="hero-pie-swatch" style="background:${colors[i]}"></div>
+        <span class="hero-pie-sym">${lbl}</span>
+        <span class="hero-pie-pct">${total>0?(data[i]/total*100).toFixed(1):'—'}%</span>
       </div>`).join('');
   }
 }
@@ -3476,9 +3500,10 @@ function renderAssetMiniCharts(){
 }
 
 function renderLine(){
+  const ctx=document.getElementById('lineChart');
+  if(!ctx) return; // canvas removed from DOM — line chart replaced by stacked chart
   const hist=P.history;
   const noH=document.getElementById('noHist');
-  const ctx=document.getElementById('lineChart');
   const legendEl=document.getElementById('chartLegend');
   const cutoff=CHART_RANGE==='7d'?Date.now()-7*24*3600000:0;
   const slice=hist.filter(e=>e.ts>=cutoff);
@@ -4655,6 +4680,64 @@ function closeSuper(){
   if(_superChart){_superChart.destroy();_superChart=null;}
 }
 
+/* ═══════════════════════════════════════════════════
+   PAY COUNTDOWN
+═══════════════════════════════════════════════════ */
+function getNextPay(){
+  // Next pay: fortnightly, every second Wednesday at noon AEST (UTC+10)
+  // Anchor: 17 June 2026 12:00 AEST = 17 June 2026 02:00 UTC
+  const BASE_MS=new Date('2026-06-17T02:00:00Z').getTime();
+  const FORTNIGHT=14*24*3600*1000;
+  const now=Date.now();
+  if(now<BASE_MS) return BASE_MS;
+  const periods=Math.floor((now-BASE_MS)/FORTNIGHT);
+  let next=BASE_MS+periods*FORTNIGHT;
+  if(next<=now) next+=FORTNIGHT;
+  return next;
+}
+
+function renderPayCountdown(){
+  const timerEl=document.getElementById('payCdownTimer');
+  const dateEl=document.getElementById('payCdownDate');
+  if(!timerEl) return;
+  const next=getNextPay();
+  const diff=next-Date.now();
+  if(diff<=0){timerEl.textContent='TODAY! 🎉';return;}
+  const d=Math.floor(diff/86400000);
+  const h=Math.floor((diff%86400000)/3600000);
+  const m=Math.floor((diff%3600000)/60000);
+  const s=Math.floor((diff%60000)/1000);
+  timerEl.textContent=d>0?`${d}d ${h}h ${m}m`:`${h}h ${m}m ${s}s`;
+  if(dateEl){
+    const brisbane=new Date(next+(10*3600000));
+    const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    dateEl.textContent=`${DAYS[brisbane.getUTCDay()]} ${brisbane.getUTCDate()} ${MONTHS[brisbane.getUTCMonth()]} · noon AEST`;
+  }
+}
+
+function initPayCountdown(){
+  renderPayCountdown();
+  setInterval(renderPayCountdown,1000);
+}
+
+/* ═══════════════════════════════════════════════════
+   HERO DUAL CURRENCY
+═══════════════════════════════════════════════════ */
+function renderHeroAltCurrency(){
+  const el=document.getElementById('heroCcyAlt');
+  if(!el) return;
+  const total=totalVal();
+  if(total<=0){el.textContent='';return;}
+  const rate=AUDRT||1.57;
+  if(CCY==='USD'){
+    el.textContent='≈ A$'+Math.round(total*rate).toLocaleString('en-AU')+' AUD';
+  } else {
+    const usd=total/rate;
+    el.textContent='≈ $'+Math.round(usd).toLocaleString('en-US')+' USD';
+  }
+}
+
 document.addEventListener('DOMContentLoaded',async ()=>{
   initBgCanvas(); // start background contour animation immediately
   initScrollNav(); // scroll-reactive nav strip
@@ -4673,6 +4756,7 @@ document.addEventListener('DOMContentLoaded',async ()=>{
   // Sync status
   setSbStatus(sbReady()?'syncing':'off');
   renderAll();
+  initPayCountdown();
   // Pull from Supabase on load — merges all data from other devices
   if(sbReady()) await sbPull();
   fetchMarketOverview();
