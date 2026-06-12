@@ -11,43 +11,42 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  /* ── Dark "chrome cognac" palette ── */
-  --bg:       oklch(0.090 0.028 48);   /* very deep warm brown */
-  --bg-2:     oklch(0.115 0.030 49);
-  --surface:  oklch(0.148 0.032 50);
-  --raised:   oklch(0.185 0.033 51);
-  --rule:     oklch(0.295 0.024 55);
-  --rule-s:   oklch(0.225 0.020 53);
-  --ink:      oklch(0.975 0.011 84);   /* warm near-white */
-  --ink-2:    oklch(0.840 0.013 80);
-  --ink-3:    oklch(0.620 0.011 75);
-  --ink-4:    oklch(0.435 0.009 70);
-  --ink-5:    oklch(0.295 0.007 65);
-  --accent:   oklch(0.76 0.152 63);    /* rich amber-gold */
-  --accent-d: oklch(0.64 0.162 59);
-  --accent-bg:oklch(0.76 0.152 63 / 0.13);
-  --pos:      oklch(0.78 0.13 155);
-  --pos-bg:   oklch(0.78 0.13 155 / 0.10);
-  --neg:      oklch(0.70 0.17 25);
-  --neg-bg:   oklch(0.70 0.17 25 / 0.10);
-  --blue:     oklch(0.74 0.13 245);
-  --purple:   oklch(0.72 0.14 295);
+  /* ── Light "paper" palette — crisp cool white, the default ── */
+  --bg:       oklch(0.976 0.003 245);   /* barely-there cool tint */
+  --bg-2:     oklch(0.948 0.004 245);
+  --surface:  oklch(1.000 0 0);         /* pure white cards */
+  --raised:   oklch(0.972 0.003 245);
+  --rule:     oklch(0.876 0.005 245);
+  --rule-s:   oklch(0.918 0.004 245);
+  --ink:      oklch(0.122 0.008 262);   /* deep cool near-black */
+  --ink-2:    oklch(0.238 0.008 260);
+  --ink-3:    oklch(0.418 0.007 258);
+  --ink-4:    oklch(0.582 0.006 256);
+  --ink-5:    oklch(0.742 0.005 254);
+  --accent:   oklch(0.52 0.128 68);     /* amber in light — slightly deeper */
+  --accent-d: oklch(0.44 0.138 65);
+  --accent-bg:oklch(0.52 0.128 68 / 0.10);
+  --pos:      oklch(0.38 0.158 150);
+  --pos-bg:   oklch(0.38 0.158 150 / 0.09);
+  --neg:      oklch(0.48 0.192 22);
+  --neg-bg:   oklch(0.48 0.192 22 / 0.09);
+  --blue:     oklch(0.44 0.152 240);
+  --purple:   oklch(0.44 0.158 290);
+  --card-border: oklch(0.52 0.128 68 / 0.38);
+  --card-border-sub: oklch(0.52 0.128 68 / 0.16);
+  /* Mood colors */
+  --flame-blue: #0ea5e9;
+  --flame-blue-dim: rgba(14,165,233,0.55);
   --sans: -apple-system,BlinkMacSystemFont,"Helvetica Neue","Segoe UI",sans-serif;
   --serif:"Instrument Serif","Times New Roman",serif;
   --mono:"JetBrains Mono","SF Mono","Menlo",monospace;
-  /* Amber card border — more prominent in chrome look */
-  --card-border: oklch(0.76 0.152 63 / 0.48);
-  --card-border-sub: oklch(0.76 0.152 63 / 0.22);
-  /* Mood colors */
-  --flame-blue: #22d3ee;
-  --flame-blue-dim: rgba(34,211,238,0.55);
   /* legacy compat aliases */
   --b:var(--rule); --blt:var(--rule-s); --bmd:var(--rule);
-  --hover:var(--bg-2); --raised:oklch(0.185 0.033 51);
+  --hover:var(--bg-2); --raised:oklch(0.972 0.003 245);
   --t1:var(--ink); --t2:var(--ink-2); --t3:var(--ink-3); --t4:var(--ink-4);
   --gold:var(--accent); --goldl:var(--accent); --navy:var(--ink);
   --posbg:var(--pos-bg); --negbg:var(--neg-bg);
-  --s1:none; --s2:none; --s3:0 16px 48px oklch(0 0 0 / 0.72);
+  --s1:none; --s2:none; --s3:0 4px 22px oklch(0 0 0 / 0.08);
   --r1:0px; --r2:0px; --r3:0px; --r4:0px;
 }
 /* ── Base ── */
@@ -578,54 +577,66 @@ footer{margin-top:48px;padding:24px 28px;border-top:1px solid var(--rule);displa
 footer a{color:var(--ink-3);text-decoration:none;}
 footer a:hover{color:var(--accent);}
 
-/* ── Light mode ── */
-body.light-mode{
-  --bg:       oklch(0.985 0.004 80);
-  --bg-2:     oklch(0.955 0.005 80);
-  --surface:  oklch(0.930 0.006 80);
-  --raised:   oklch(0.905 0.007 80);
-  --rule:     oklch(0.810 0.007 80);
-  --rule-s:   oklch(0.875 0.005 80);
-  --ink:      oklch(0.155 0.010 60);
-  --ink-2:    oklch(0.270 0.009 60);
-  --ink-3:    oklch(0.440 0.008 60);
-  --ink-4:    oklch(0.600 0.007 60);
-  --ink-5:    oklch(0.745 0.006 60);
-  --accent:   oklch(0.56 0.120 72);
-  --accent-d: oklch(0.48 0.130 72);
-  --accent-bg:oklch(0.56 0.120 72 / 0.12);
-  --pos:      oklch(0.42 0.150 150);
-  --pos-bg:   oklch(0.42 0.150 150 / 0.10);
-  --neg:      oklch(0.50 0.180 22);
-  --neg-bg:   oklch(0.50 0.180 22 / 0.10);
-  --blue:     oklch(0.46 0.150 240);
-  --purple:   oklch(0.46 0.155 290);
-  --s3:0 4px 20px oklch(0 0 0 / 0.10);
+/* ── Light is default (see :root) — no .light-mode class needed ── */
+/* These rules keep backward compat in case applyDark(false) is called and adds the class */
+body.light-mode .ms-card.ms-done{background:oklch(0.52 0.128 68 / 0.06);}
+body.light-mode .ms-card.ms-active{background:oklch(0.52 0.128 68 / 0.10);}
+/* Base milestone card states (default / light) */
+.ms-card.ms-done{background:oklch(0.52 0.128 68 / 0.06);}
+.ms-card.ms-active{background:oklch(0.52 0.128 68 / 0.10);}
+
+/* ── Aurora mode — midnight indigo + luminous aurora green ── */
+body.aurora-mode{
+  --bg:       oklch(0.054 0.030 278);   /* deep indigo-black — the void */
+  --bg-2:     oklch(0.080 0.038 275);
+  --surface:  oklch(0.115 0.042 272);
+  --raised:   oklch(0.150 0.046 270);
+  --rule:     oklch(0.248 0.036 270);
+  --rule-s:   oklch(0.182 0.030 272);
+  --ink:      oklch(0.974 0.010 216);   /* cool blue-white */
+  --ink-2:    oklch(0.845 0.016 214);
+  --ink-3:    oklch(0.635 0.012 214);
+  --ink-4:    oklch(0.440 0.009 215);
+  --ink-5:    oklch(0.285 0.006 216);
+  --accent:   oklch(0.80 0.205 148);    /* luminous aurora green */
+  --accent-d: oklch(0.66 0.215 145);
+  --accent-bg:oklch(0.80 0.205 148 / 0.12);
+  --pos:      oklch(0.80 0.205 148);    /* green = positive */
+  --pos-bg:   oklch(0.80 0.205 148 / 0.10);
+  --neg:      oklch(0.72 0.175 22);     /* warm coral */
+  --neg-bg:   oklch(0.72 0.175 22 / 0.10);
+  --blue:     oklch(0.72 0.140 215);
+  --purple:   oklch(0.72 0.145 295);
+  --card-border: oklch(0.80 0.205 148 / 0.30);
+  --card-border-sub: oklch(0.80 0.205 148 / 0.13);
+  --flame-blue: oklch(0.80 0.205 148);
+  --flame-blue-dim: oklch(0.80 0.205 148 / 0.55);
+  --s3:0 24px 72px oklch(0 0 0 / 0.92),0 0 80px oklch(0.80 0.205 148 / 0.04);
   /* legacy aliases */
   --t1:var(--ink);--t2:var(--ink-2);--t3:var(--ink-3);--t4:var(--ink-4);
   --gold:var(--accent);--goldl:var(--accent);
   --posbg:var(--pos-bg);--negbg:var(--neg-bg);
 }
-body.light-mode .ms-card.ms-done{background:oklch(0.56 0.120 72 / 0.06);}
-body.light-mode .ms-card.ms-active{background:oklch(0.56 0.120 72 / 0.10);}
-body.light-mode .ticker{border-bottom-color:var(--rule-s);}
+body.aurora-mode .ms-card.ms-done{background:oklch(0.80 0.205 148 / 0.05);}
+body.aurora-mode .ms-card.ms-active{background:oklch(0.80 0.205 148 / 0.10);}
 
-/* ── Dark mode chrome — subtle inner highlight on all major card surfaces ── */
-/* Applied in default (dark) mode only; light mode overrides background directly */
+/* ── Card chrome — light default + aurora override ── */
+/* Light (default): pure white cards with soft shadow lift */
 .hero,.hero-chart-wrap,.kpis,.sect{
   background-color:var(--surface);
-  background-image:linear-gradient(175deg,oklch(0.76 0.152 63 / 0.055) 0%,transparent 38%);
+  background-image:none;
 }
+.sect{box-shadow:0 2px 14px oklch(0 0 0/.08),0 1px 3px oklch(0 0 0/.05);}
+.hero-chart-wrap{box-shadow:0 4px 20px oklch(0 0 0/.09),0 1px 4px oklch(0 0 0/.05);}
 
-/* Light mode elevation — cards lift above the near-white bg */
-body.light-mode{
-  --card-border: oklch(0.56 0.120 72 / 0.45);
-  --card-border-sub: oklch(0.56 0.120 72 / 0.20);
+/* Aurora: faint green shimmer at crown, hint of violet below */
+body.aurora-mode .hero,body.aurora-mode .hero-chart-wrap,
+body.aurora-mode .kpis,body.aurora-mode .sect{
+  background-color:var(--surface);
+  background-image:linear-gradient(175deg,oklch(0.80 0.205 148 / 0.042) 0%,oklch(0.72 0.145 295 / 0.022) 52%,transparent 85%);
 }
-body.light-mode .sect{background:oklch(1 0 0)!important;background-image:none!important;box-shadow:0 2px 14px oklch(0 0 0/.09),0 1px 3px oklch(0 0 0/.06);}
-body.light-mode .hero{background:oklch(1 0 0)!important;background-image:none!important;}
-body.light-mode .kpis{background:oklch(1 0 0)!important;background-image:none!important;}
-body.light-mode .hero-chart-wrap{background:oklch(1 0 0)!important;background-image:none!important;box-shadow:0 4px 18px oklch(0 0 0/.10),0 1px 4px oklch(0 0 0/.06);}
+body.aurora-mode .sect{box-shadow:none;}
+body.aurora-mode .hero-chart-wrap{box-shadow:none;}
 
 /* ── Responsive ── */
 /* ── Chart range toggle ── */
@@ -636,6 +647,8 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0)!important;background-im
 .hero-figure.mood-pos{color:var(--accent);}
 .hero-figure.mood-pos .ccy{color:oklch(0.80 0.105 80 / 0.6);}
 .hero-figure.mood-pos .cents{color:oklch(0.80 0.105 80 / 0.55);}
+body.aurora-mode .hero-figure.mood-pos .ccy{color:oklch(0.80 0.205 148 / 0.55);}
+body.aurora-mode .hero-figure.mood-pos .cents{color:oklch(0.80 0.205 148 / 0.50);}
 .hero-figure.mood-exp{color:var(--flame-blue);}
 .hero-figure.mood-exp .ccy{color:var(--flame-blue-dim);}
 .hero-figure.mood-exp .cents{color:var(--flame-blue-dim);}
@@ -643,7 +656,14 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0)!important;background-im
   0%,100%{text-shadow:0 0 12px rgba(34,211,238,.35),0 0 30px rgba(34,211,238,.15);}
   50%{text-shadow:0 0 20px rgba(34,211,238,.6),0 0 50px rgba(34,211,238,.28),0 0 80px rgba(34,211,238,.10);}
 }
+@keyframes flamePulseAurora{
+  0%,100%{text-shadow:0 0 12px oklch(0.80 0.205 148 / 0.40),0 0 32px oklch(0.80 0.205 148 / 0.18);}
+  50%{text-shadow:0 0 22px oklch(0.80 0.205 148 / 0.70),0 0 54px oklch(0.80 0.205 148 / 0.32),0 0 90px oklch(0.80 0.205 148 / 0.12);}
+}
 .hero-figure.mood-exp{animation:flamePulse 2.2s ease-in-out infinite;}
+body.aurora-mode .hero-figure.mood-exp{animation:flamePulseAurora 2.2s ease-in-out infinite;}
+/* Aurora ticker label bg */
+body.aurora-mode .ticker-lbl{background:var(--bg);}
 
 /* ── Milestone toast ── */
 .ms-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--accent);color:var(--bg);padding:11px 24px;font:600 13px/1.4 var(--sans);z-index:999;opacity:0;transition:opacity .35s,transform .35s;pointer-events:none;white-space:nowrap;box-shadow:0 8px 32px oklch(0 0 0/.45);}
@@ -973,7 +993,7 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0)!important;background-im
 .hero{padding:26px 28px 22px;border:1px solid var(--card-border);border-bottom:1px solid var(--card-border-sub);border-radius:3px 3px 0 0;background:var(--surface);display:grid;grid-template-columns:1fr auto auto;align-items:start;gap:28px;flex-wrap:wrap;margin-top:20px;}
 .hero-main{min-width:0;}
 .hero-ccy-secondary{font-family:var(--mono);font-size:13px;color:var(--ink-3);margin-top:3px;letter-spacing:.02em;}
-.hero-pie-zone{display:flex;flex-direction:column;align-items:center;min-width:150px;padding-top:4px;}
+.hero-pie-zone{display:flex;flex-direction:column;align-items:center;min-width:180px;padding-top:4px;}
 .hero-section-lbl{font-size:8.5px;font-weight:500;letter-spacing:.20em;text-transform:uppercase;color:var(--ink-4);margin-bottom:2px;text-align:center;}
 /* Pay countdown pill */
 .pay-cdown{display:flex;align-items:center;gap:10px;margin-top:14px;padding:9px 13px;border:1px solid var(--card-border-sub);background:var(--raised);border-radius:2px;width:fit-content;}
@@ -1041,7 +1061,7 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0)!important;background-im
       <span id="syncTxt">No sync</span>
     </div>
     <button class="btn-icon" id="refreshBtn" onclick="doRefresh()" title="Refresh prices">↻</button>
-    <button class="btn-icon" id="darkBtn" title="Toggle light/dark mode" onclick="toggleDark()">🌙</button>
+    <button class="btn-icon" id="darkBtn" title="Theme: Light — click to toggle" onclick="toggleDark()">☀️</button>
     <button class="btn-icon" title="Settings" onclick="openSettings()">⚙</button>
   </div>
   <div class="cd-bar-wrap"><div class="cd-bar" id="cdBar"></div></div>
@@ -1078,7 +1098,7 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0)!important;background-im
       </div>
       <!-- XRP → $10M AUD target price -->
       <div class="xrp-target" id="xrpTargetRow">
-        <span class="xrp-target-lbl">XRP → A$10M</span>
+        <span class="xrp-target-lbl">XRP → A$10M (USD req.)</span>
         <span class="xrp-target-px" id="xrpTargetPx">—</span>
         <span class="xrp-target-mult" id="xrpTargetMult"></span>
       </div>
@@ -1096,7 +1116,7 @@ body.light-mode .hero-chart-wrap{background:oklch(1 0 0)!important;background-im
     <!-- ── Center: Mini allocation pie ── -->
     <div class="hero-pie-zone">
       <div class="hero-section-lbl">Allocation</div>
-      <div class="donut-wrap" style="width:130px;height:130px;margin:0 auto;">
+      <div class="donut-wrap" style="width:165px;height:165px;margin:0 auto;">
         <canvas id="pieChart"></canvas>
       </div>
       <div class="hero-pie-legend" id="donutLegend"></div>
@@ -1454,7 +1474,8 @@ let WIF    = {};
 let LOGOS  = {};
 let CCY    = 'USD';
 let AUDRT  = null;
-let DARK   = false;
+let THEME  = 'light'; // 'light' | 'aurora'
+let DARK   = false;   // true only for aurora (dark background)
 let CHART_RANGE = '7d'; // '7d' | 'all'
 let NOTIFIED_MS = new Set(); // milestone thresholds already toasted
 let PROJ_MODEL = 'linear'; // active projection model: 'linear'|'exp'|'momentum'|'cagr'
@@ -1538,22 +1559,30 @@ function saveP(){
 }
 
 /* ═══════════════════════════════════════════════════
-   DARK / LIGHT MODE
+   THEME — cycles: dark → light → aurora → dark
 ═══════════════════════════════════════════════════ */
-function applyDark(d){
-  DARK=d;
-  // dark = no class (default), light = add .light-mode class
-  document.body.classList.toggle('light-mode',!d);
-  const btn=document.getElementById('darkBtn');
-  if(btn) btn.textContent=d?'🌙':'☀';
-  try{localStorage.setItem('ptDark',d?'1':'0');}catch(e){}
+const THEME_ICONS  = {light:'☀️', aurora:'🌌'};
+const THEME_TITLES = {light:'Light', aurora:'Aurora'};
+
+function applyTheme(t){
+  if(t !== 'light' && t !== 'aurora') t = 'light'; // guard against legacy 'dark'
+  THEME = t;
+  DARK  = (t === 'aurora');
+  // Only aurora-mode class is needed — light is the default (:root)
+  document.body.classList.remove('light-mode','aurora-mode');
+  if(t === 'aurora') document.body.classList.add('aurora-mode');
+  const btn = document.getElementById('darkBtn');
+  if(btn){ btn.textContent = THEME_ICONS[t]; btn.title = `Theme: ${THEME_TITLES[t]} — click to toggle`; }
+  try{ localStorage.setItem('ptTheme', t); }catch(e){}
   renderPie(); renderAssetMiniCharts(); renderStackedChart(); renderProjChart();
   renderHeroAltCurrency();
   renderMilestoneChart(); renderDailyBarsChart();
   if(SUPER_OPEN) renderSuperChart();
-  renderFearGreed(); // re-draw needle/track with updated theme colours
+  renderFearGreed();
   initBgCanvas();
 }
+// Legacy shim
+function applyDark(d){ applyTheme(d ? 'aurora' : 'light'); }
 
 /* ═══════════════════════════════════════════════════
    BACKGROUND — animated contour canvas
@@ -1571,9 +1600,10 @@ function initBgCanvas(){
   if(_bgRaf){ cancelAnimationFrame(_bgRaf); _bgRaf=null; }
 
   const ctx=cv.getContext('2d');
-  const isLight=document.body.classList.contains('light-mode');
-  // Gold contour lines — slightly more visible in dark, a touch softer in light
-  cv.style.opacity=isLight?0.18:0.22;
+  // Theme-aware: amber in dark, aurora green in aurora, near-invisible in light
+  const isLight  = THEME === 'light';
+  const isAurora = THEME === 'aurora';
+  cv.style.opacity = isLight ? 0.14 : isAurora ? 0.26 : 0.20;
 
   let W=0,H=0,lastNow=0,drift=0;
 
@@ -1591,9 +1621,9 @@ function initBgCanvas(){
     drift+=0.38;
 
     ctx.clearRect(0,0,W,H);
-    // Amber contour — matches updated --accent (oklch 0.76 0.152 63 ≈ #c4780a)
-    ctx.strokeStyle='#c4780a';
-    ctx.lineWidth=1.0;
+    // Stroke colour: amber for dark, aurora-green for aurora, slate for light
+    ctx.strokeStyle = isAurora ? '#34d399' : isLight ? '#64748b' : '#c4780a';
+    ctx.lineWidth = isAurora ? 0.9 : 1.0;
 
     const spacing=52;
     const N=Math.ceil(H/spacing)+3;
@@ -1630,8 +1660,13 @@ function initBgCanvas(){
   window.addEventListener('resize',resize);
   _bgRaf=requestAnimationFrame(draw);
 }
-function toggleDark(){applyDark(!DARK);}
-function cc(l,dk){return DARK?dk:l;}
+function toggleDark(){
+  applyTheme(THEME === 'aurora' ? 'light' : 'aurora');
+}
+function cc(l,dk,aurora){
+  if(THEME==='aurora'&&aurora!==undefined) return aurora;
+  return DARK?dk:l;
+}
 
 /* ═══════════════════════════════════════════════════
    SCROLL-REACTIVE NAV
@@ -4267,20 +4302,19 @@ function renderXRPMetric(){
 
   const rate=AUDRT||1.57;
   const targetAUD=10_000_000;
-  // Price XRP needs to reach in AUD to make the holding worth A$10M
+  // Price XRP needs to reach in USD to make the holding worth A$10M
   const priceNeededAUD=targetAUD/xrpAsset.qty;
-  const priceNeededUSD=priceNeededAUD/rate;
+  const priceNeededUSD=priceNeededAUD/rate; // AUD → USD: divide by AUDRT (AUD per USD)
 
   rowEl.style.display='flex';
-  pxEl.textContent='A$'+priceNeededAUD.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});
+  pxEl.textContent='$'+priceNeededUSD.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 
-  // Show multiplier vs current price
+  // Show multiplier vs current USD price + AUD context
   if(multEl){
     const px=PX['xrp'];
     if(px&&!px.failed&&px.price>0){
-      const currAUD=px.price*rate;
-      const mult=priceNeededAUD/currAUD;
-      multEl.textContent=`(${mult.toFixed(1)}× current · ${fmtQty(xrpAsset.qty)} XRP)`;
+      const mult=priceNeededUSD/px.price;
+      multEl.textContent=`(${mult.toFixed(1)}× · A$${(priceNeededAUD).toLocaleString('en-AU',{maximumFractionDigits:0})} · ${fmtQty(xrpAsset.qty)} XRP)`;
     } else {
       multEl.textContent=`(${fmtQty(xrpAsset.qty)} XRP held)`;
     }
@@ -4747,11 +4781,11 @@ document.addEventListener('DOMContentLoaded',async ()=>{
   if(typeof Notification!=='undefined'&&Notification.permission==='default'){
     Notification.requestPermission().catch(()=>{});
   }
-  // Restore mode preference — default is dark
+  // Restore theme preference — default is light
   try{
-    const stored=localStorage.getItem('ptDark');
-    if(stored==='0') applyDark(false); // restore light
-    // else stays dark (DARK=true already set above)
+    const storedTheme = localStorage.getItem('ptTheme');
+    if(storedTheme === 'aurora') applyTheme('aurora');
+    // else stays light (default)
   }catch(e){}
   // Sync status
   setSbStatus(sbReady()?'syncing':'off');
