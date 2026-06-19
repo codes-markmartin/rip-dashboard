@@ -606,23 +606,6 @@ input::placeholder{color:var(--ink-4);}
 .xi-net-val{font-family:var(--mono);font-size:16px;font-weight:600;color:var(--xrp);line-height:1;}
 .xi-net-lbl{font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-4);margin-top:4px;}
 
-/* ── Whale Radar ── */
-.xi-whale-wrap{border:1px solid var(--rule);max-height:230px;overflow-y:auto;margin-bottom:4px;}
-.xi-whale-head{display:grid;grid-template-columns:70px 1fr 1fr 110px 60px;gap:8px;padding:7px 12px;
-  border-bottom:1px solid var(--rule);background:var(--bg-2);
-  font-size:7.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-4);}
-.xi-whale-row{display:grid;grid-template-columns:70px 1fr 1fr 110px 60px;gap:8px;
-  align-items:center;padding:8px 12px;border-bottom:1px solid var(--rule-s);
-  font-family:var(--mono);font-size:10px;transition:background .1s;}
-.xi-whale-row:last-child{border-bottom:none;}
-.xi-whale-row:hover{background:var(--bg-2);}
-.xi-whale-time{color:var(--ink-4);font-size:9.5px;}
-.xi-whale-addr{color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9.5px;}
-.xi-whale-amt{font-size:11px;font-weight:600;color:var(--xrp);text-align:right;}
-.xi-whale-link{text-align:right;}
-.xi-whale-link a{font-size:8.5px;color:var(--ink-4);text-decoration:none;letter-spacing:.08em;text-transform:uppercase;}
-.xi-whale-link a:hover{color:var(--xrp);}
-.xi-xi-empty{padding:18px;text-align:center;color:var(--ink-4);font-size:11px;letter-spacing:.06em;}
 
 /* ── Carry Context Box ── */
 .xi-ctx{border:1px solid rgba(0,170,228,.28);background:rgba(0,170,228,.04);padding:14px 18px;margin-bottom:4px;}
@@ -636,12 +619,10 @@ input::placeholder{color:var(--ink-4);}
   .xi-macro-row{grid-template-columns:1fr 1fr;}
   .xi-network-row{flex-wrap:wrap;}
   .xi-net-tile{flex:1 0 33%;border-bottom:1px solid var(--rule-s);}
-  .xi-whale-head,.xi-whale-row{grid-template-columns:60px 1fr 90px;}
-  .xi-whale-addr:last-of-type,.xi-whale-link{display:none;}
 }
 /* Aurora overrides */
 body.aurora-mode .xi-tile{background:var(--raised);}
-body.aurora-mode .xi-net-val,.body.aurora-mode .xi-whale-amt{color:var(--accent);}
+body.aurora-mode .xi-net-val{color:var(--accent);}
 
 /* ── Footer ── */
 footer{margin-top:48px;padding:24px 28px;border-top:1px solid var(--rule);display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;font-size:10.5px;color:var(--ink-4);letter-spacing:.04em;}
@@ -1317,40 +1298,36 @@ body.aurora-mode .ticker-lbl{background:var(--bg);}
       <div class="xi-ctx-body" id="xiCarryBody">The USD/JPY carry trade is a key macro risk for crypto. When JPY strengthens rapidly (USD/JPY falls), investors unwind borrowed-JPY positions — selling risk assets including XRP. Monitoring this rate gives early warning of potential liquidity shocks.</div>
     </div>
 
-    <!-- XRPL Network Health -->
-    <div class="xi-lbl">XRPL Network · Live</div>
+    <!-- Price Momentum -->
+    <div class="xi-lbl">Price Momentum</div>
     <div class="xi-network-row">
       <div class="xi-net-tile">
-        <div class="xi-net-val" id="xiTPS">—</div>
-        <div class="xi-net-lbl">TPS</div>
+        <div class="xi-net-val" id="xiChg24">—</div>
+        <div class="xi-net-lbl">24h Change</div>
       </div>
       <div class="xi-net-tile">
-        <div class="xi-net-val" id="xiLedgerIdx">—</div>
-        <div class="xi-net-lbl">Ledger #</div>
+        <div class="xi-net-val" id="xiChg7">—</div>
+        <div class="xi-net-lbl">7d Change</div>
       </div>
       <div class="xi-net-tile">
-        <div class="xi-net-val" id="xiAvgFee">—</div>
-        <div class="xi-net-lbl">Avg Fee</div>
+        <div class="xi-net-val" id="xiChg30">—</div>
+        <div class="xi-net-lbl">30d Change</div>
       </div>
       <div class="xi-net-tile">
-        <div class="xi-net-val" id="xiActiveAcc">—</div>
-        <div class="xi-net-lbl">Active Wallets</div>
+        <div class="xi-net-val" id="xiVol24">—</div>
+        <div class="xi-net-lbl">24h Volume</div>
       </div>
       <div class="xi-net-tile">
-        <div class="xi-net-val" id="xiEscrowXRP">—</div>
-        <div class="xi-net-lbl">In Escrow</div>
+        <div class="xi-net-val" id="xiVolMCap">—</div>
+        <div class="xi-net-lbl">Vol / MCap</div>
       </div>
     </div>
 
-    <!-- Whale Radar -->
-    <div class="xi-lbl">Whale Radar · >1M XRP Movements</div>
-    <div class="xi-whale-wrap">
-      <div class="xi-whale-head">
-        <span>Time</span><span>From</span><span>To</span><span>Amount</span><span>Ledger</span>
-      </div>
-      <div id="xiWhaleList">
-        <div class="xi-xi-empty">Scanning ledger for large movements…</div>
-      </div>
+    <!-- Analyst Signal -->
+    <div class="xi-lbl">Analyst Signal</div>
+    <div class="xi-ctx" id="xiSignalWrap">
+      <div class="xi-ctx-head" id="xiSignalBadge">Generating signal…</div>
+      <div class="xi-ctx-body" id="xiSignalBody">Waiting for market data…</div>
     </div>
   </section>
 
@@ -1637,7 +1614,7 @@ let MARKET = {}; // {btc,eth,sol,xrp} → {price,ch24,mcap,logo,name}
 let SUPER_HISTORY = []; // [{ts, total, prices:{nxt,mp1,maq}}] — persisted in localStorage
 let _superChart = null;
 let FEAR_GREED = null; // {value:int, classification:str, ts:int}
-let XRP_INSIGHTS = {usdjpy:null, xrpExt:null, xrplMetrics:null, whales:[], lastUpdated:0};
+let XRP_INSIGHTS = {usdjpy:null, xrpExt:null, lastUpdated:0};
 // Asset change log — persisted in localStorage
 let ASSET_CHANGELOG = (()=>{
   try{ return JSON.parse(localStorage.getItem('assetChangelog')||'[]'); }catch(e){ return []; }
@@ -4972,15 +4949,6 @@ document.addEventListener('DOMContentLoaded',async ()=>{
 /* ═══════════════════════════════════════════════════
    XRP INTELLIGENCE — fetch + render
 ═══════════════════════════════════════════════════ */
-function xiTimeAgo(ms){
-  const s=Math.floor(ms/1000);
-  if(s<60) return s+'s ago';
-  const m=Math.floor(s/60);
-  if(m<60) return m+'m ago';
-  const h=Math.floor(m/60);
-  if(h<24) return h+'h '+Math.floor(m%60)+'m ago';
-  return Math.floor(h/24)+'d ago';
-}
 function fmtXRP(n){
   if(n>=1e9) return (n/1e9).toFixed(2)+'B XRP';
   if(n>=1e6) return (n/1e6).toFixed(2)+'M XRP';
@@ -4995,103 +4963,53 @@ async function fetchXRPInsights(){
   if(!xrpAsset){if(sect) sect.style.display='none'; return;}
   if(sect) sect.style.display='';
 
-  const SIG={signal:AbortSignal.timeout(9000)};
+  // Tight timeouts — never block the UI
+  function tFetch(url, opts={}){
+    const ac=new AbortController();
+    const t=setTimeout(()=>ac.abort(),6000);
+    return fetch(url,{...opts,signal:ac.signal})
+      .then(r=>r.json())
+      .catch(()=>null)
+      .finally(()=>clearTimeout(t));
+  }
 
-  // ── 1. USD/JPY from Frankfurter (free, no key, CORS-friendly) ──
-  const fxProm=fetch('https://api.frankfurter.app/latest?from=USD&to=JPY',SIG).then(r=>r.json()).catch(()=>null);
+  // ── 1. USD/JPY — open.er-api.com (free, reliable, CORS-friendly) ──
+  const fxProm = tFetch('https://open.er-api.com/v6/latest/USD');
 
-  // ── 2. Extended XRP data from CoinGecko ──
-  const cgProm=fetch(
-    'https://api.coingecko.com/api/v3/coins/ripple?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false',
-    SIG).then(r=>r.json()).catch(()=>null);
+  // ── 2. Extended XRP data from CoinGecko (single call: price changes, volume, ATH, supply, BTC ratio) ──
+  const cgProm = tFetch(
+    'https://api.coingecko.com/api/v3/coins/ripple?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false'
+  );
 
-  // ── 3. XRPL network metrics from XRPScan ──
-  const xsProm=fetch('https://api.xrpscan.com/api/v1/metrics',SIG).then(r=>r.json()).catch(()=>null);
+  // Run both in parallel, never let one failure block the other
+  const [fxRes, cgRes] = await Promise.allSettled([fxProm, cgProm]);
+  const fx  = fxRes.status==='fulfilled'  ? fxRes.value  : null;
+  const cg  = cgRes.status==='fulfilled'  ? cgRes.value  : null;
 
-  // ── 4. Escrow summary ──
-  const escProm=fetch('https://api.xrpscan.com/api/v1/account/rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh/balances',SIG).then(r=>r.json()).catch(()=>null);
-
-  const [fx,cg,xs,esc]=await Promise.all([fxProm,cgProm,xsProm,escProm]);
-
-  // Store USD/JPY
+  // ── Store USD/JPY ──
   if(fx?.rates?.JPY){
     const prev=XRP_INSIGHTS.usdjpy?.rate||null;
     XRP_INSIGHTS.usdjpy={rate:fx.rates.JPY, prev};
   }
 
-  // Store CoinGecko extended data
+  // ── Store CoinGecko data (all analyst metrics in one object) ──
   if(cg?.market_data){
     const md=cg.market_data;
     XRP_INSIGHTS.xrpExt={
-      ath: md.ath?.usd,
-      athDate: md.ath_date?.usd,
+      ath:            md.ath?.usd,
+      athDate:        md.ath_date?.usd,
       circulatingSupply: md.circulating_supply,
-      totalSupply: md.total_supply,
-      maxSupply: md.max_supply||100_000_000_000,
-      btcRatio: md.current_price?.btc,
-      rank: cg.market_cap_rank,
-      priceChangeVsBTC: md.price_change_percentage_24h_in_currency?.btc
+      maxSupply:      md.max_supply||100_000_000_000,
+      btcRatio:       md.current_price?.btc,
+      rank:           cg.market_cap_rank,
+      priceChangeVsBTC: md.price_change_percentage_24h_in_currency?.btc,
+      chg24:          md.price_change_percentage_24h,
+      chg7:           md.price_change_percentage_7d,
+      chg30:          md.price_change_percentage_30d,
+      vol24:          md.total_volume?.usd,
+      mcap:           md.market_cap?.usd,
     };
   }
-
-  // Store XRPL metrics
-  if(xs){
-    XRP_INSIGHTS.xrplMetrics={
-      tps: xs.tx_per_second ?? xs.tps ?? null,
-      ledgerIndex: xs.ledger_index ?? xs.ledger ?? null,
-      avgFee: xs.avg_fee ?? null,
-      activeAccounts: xs.active_accounts ?? null,
-      escrowXRP: xs.total_escrow ?? null
-    };
-  }
-
-  // ── 5. Whale scanner — query known high-volume XRPL wallets ──
-  // We query 3 known large XRP wallets concurrently and merge large payments
-  const WHALE_ADDRS=[
-    'rN7n3473SaZBCG4dFL83w7PB8sXpRknUKX', // Ripple Labs main
-    'rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B',  // Bitstamp
-    'rEb8TK3gBgk5auZkwc6sHnwrGVJH8DuaLh'  // Binance
-  ];
-  const MIN_DROPS=1_000_000_000_000; // 1M XRP in drops
-  const RIPPLE_EPOCH=946684800;
-
-  const whalePrms=WHALE_ADDRS.map(addr=>
-    fetch('https://xrplcluster.com/',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({method:'account_tx',params:[{account:addr,ledger_index_min:-1,limit:40}]}),
-      signal:AbortSignal.timeout(10000)
-    }).then(r=>r.json()).catch(()=>null)
-  );
-  const whaleResults=await Promise.all(whalePrms);
-
-  const allWhales=[];
-  whaleResults.forEach(wr=>{
-    if(!wr?.result?.transactions) return;
-    wr.result.transactions.forEach(t=>{
-      const tx=t.tx||t;
-      if(tx.TransactionType!=='Payment') return;
-      if(typeof tx.Amount!=='string') return;
-      const drops=parseInt(tx.Amount);
-      if(isNaN(drops)||drops<MIN_DROPS) return;
-      if(t.meta?.TransactionResult&&t.meta.TransactionResult!=='tesSUCCESS') return;
-      allWhales.push({
-        ts:(tx.date+RIPPLE_EPOCH)*1000,
-        from:tx.Account||'?',
-        to:tx.Destination||'?',
-        amount:drops/1_000_000,
-        ledger:tx.inLedger||tx.ledger_index||'?',
-        hash:tx.hash||''
-      });
-    });
-  });
-
-  // Sort by timestamp desc, dedup by hash, take top 15
-  const seen=new Set();
-  XRP_INSIGHTS.whales=allWhales
-    .filter(w=>{ if(seen.has(w.hash)){return false;} seen.add(w.hash); return true; })
-    .sort((a,b)=>b.ts-a.ts)
-    .slice(0,15);
 
   XRP_INSIGHTS.lastUpdated=Date.now();
   renderXRPInsights();
@@ -5101,13 +5019,15 @@ function renderXRPInsights(){
   const sect=document.getElementById('xiSect');
   if(!sect) return;
 
-  // Show/hide based on whether XRP is held
   const xrpAsset=P.assets.find(a=>a.id==='xrp'&&a.qty>0);
   if(!xrpAsset){sect.style.display='none';return;}
   sect.style.display='';
 
   setH('xiUpdated', XRP_INSIGHTS.lastUpdated?
     'Updated '+new Date(XRP_INSIGHTS.lastUpdated).toLocaleTimeString():'Loading…');
+
+  const ext=XRP_INSIGHTS.xrpExt;
+  const xrpPx=PX['xrp'];
 
   // ── USD/JPY & Carry Trade ──
   const jpy=XRP_INSIGHTS.usdjpy;
@@ -5116,44 +5036,41 @@ function renderXRPInsights(){
     const chg=prev?((r-prev)/prev*100):0;
     setH('xiUSDJPYVal',r.toFixed(2));
     setH('xiUSDJPYSub',prev&&Math.abs(chg)>0.001?
-      (chg>0?'▲':'▼')+' '+Math.abs(chg).toFixed(3)+'% vs last refresh':'Live rate');
-
+      (chg>0?'▲':'▼')+Math.abs(chg).toFixed(3)+'% vs last refresh':'Live rate');
     let risk,badge,body;
     if(r>=155){
       risk='risk-med'; badge='⚡ Extended — Watch for BOJ';
-      body=`USD/JPY at ${r.toFixed(1)} — carry trade is deeply extended. Markets are highly levered on cheap JPY. Any BOJ rate surprise or hawkish pivot could trigger a rapid unwind. Historically, moves back toward 140 have coincided with sharp crypto drawdowns of 15–30%. Monitor BOJ press conferences closely.`;
+      body=`USD/JPY at ${r.toFixed(1)} — carry trade is deeply extended. Markets are highly levered on cheap JPY. Any BOJ rate surprise could trigger a rapid unwind; historically, moves back toward 140 have coincided with sharp crypto drawdowns of 15–30%.`;
     } else if(r>=148){
       risk='risk-low'; badge='✓ Carry Active — Supportive';
-      body=`USD/JPY at ${r.toFixed(1)} — carry trade is active and supportive of global risk assets. Cheap JPY funding remains available, keeping liquidity conditions accommodative. This environment is generally positive for XRP and the broader crypto market.`;
+      body=`USD/JPY at ${r.toFixed(1)} — carry trade is active and supportive of global risk assets. Cheap JPY funding keeps liquidity conditions accommodative, generally positive for XRP.`;
     } else if(r>=138){
       risk='risk-med'; badge='⚠ Compression Zone';
-      body=`USD/JPY at ${r.toFixed(1)} — approaching the compression zone. Carry trade enthusiasm is moderating. Watch for momentum shifts — a break below 135 historically triggers accelerated position unwinds across risk assets. Consider having a plan ready.`;
+      body=`USD/JPY at ${r.toFixed(1)} — carry trade enthusiasm is moderating. A break below 135 historically triggers accelerated position unwinds across risk assets. Consider having a plan ready.`;
     } else {
       risk='risk-high'; badge='🚨 Unwind in Progress';
-      body=`USD/JPY at ${r.toFixed(1)} — significant carry trade unwind risk. Rapid JPY strengthening forces closure of leveraged positions. This historically triggers selling across crypto, equities, and EM assets simultaneously. Risk management is critical at these levels.`;
+      body=`USD/JPY at ${r.toFixed(1)} — significant carry trade unwind risk. Rapid JPY strengthening forces closure of leveraged positions, triggering simultaneous selling across crypto, equities, and EM assets.`;
     }
-    const badge_el=document.getElementById('xiCarryBadge');
-    if(badge_el){badge_el.textContent=badge;badge_el.className='xi-carry-badge '+risk;}
+    const badgeEl=document.getElementById('xiCarryBadge');
+    if(badgeEl){badgeEl.textContent=badge; badgeEl.className='xi-carry-badge '+risk;}
     setH('xiCarryBody',body);
   }
 
   // ── XRP/BTC Ratio ──
-  const ext=XRP_INSIGHTS.xrpExt;
   if(ext?.btcRatio){
-    const sats=(ext.btcRatio*1e8);
-    setH('xiBTCRatioVal', sats>=1 ? sats.toFixed(0)+' sats' : (sats*100).toFixed(2)+' msats');
+    const sats=ext.btcRatio*1e8;
+    setH('xiBTCRatioVal', sats>=1?sats.toFixed(0)+' sats':(sats*100).toFixed(2)+' msats');
     const chgStr=ext.priceChangeVsBTC!=null?
       ` · ${ext.priceChangeVsBTC>0?'▲':'▼'}${Math.abs(ext.priceChangeVsBTC).toFixed(1)}% vs BTC 24h`:'';
     setH('xiBTCRatioSub',`Rank #${ext.rank||'—'}${chgStr}`);
   }
 
   // ── ATH Distance ──
-  const xrpPx=PX['xrp'];
   if(ext?.ath&&xrpPx?.price){
     const ath=ext.ath, cur=xrpPx.price;
-    const distPct=((ath-cur)/ath*100);
-    const mult=(ath/cur);
-    setH('xiATHVal', distPct.toFixed(1)+'% below ATH');
+    const distPct=(ath-cur)/ath*100;
+    const mult=ath/cur;
+    setH('xiATHVal',distPct.toFixed(1)+'% below ATH');
     const athYear=ext.athDate?new Date(ext.athDate).getFullYear():'';
     setH('xiATHSub',`ATH $${ath.toFixed(3)} ${athYear?'('+athYear+')':''} · needs ${mult.toFixed(2)}×`);
   }
@@ -5165,36 +5082,64 @@ function renderXRPInsights(){
     setH('xiSupplySub',`${(c/max*100).toFixed(1)}% of ${(max/1e9).toFixed(0)}B max · deflationary burn`);
   }
 
-  // ── XRPL Network Metrics ──
-  const m=XRP_INSIGHTS.xrplMetrics;
-  if(m){
-    setH('xiTPS', m.tps!=null?(+m.tps).toFixed(1):'—');
-    setH('xiLedgerIdx', m.ledgerIndex?(+m.ledgerIndex).toLocaleString():'—');
-    setH('xiAvgFee', m.avgFee!=null?((+m.avgFee)/1e6).toFixed(5)+' XRP':'—');
-    setH('xiActiveAcc', m.activeAccounts?(+m.activeAccounts).toLocaleString():'—');
-    setH('xiEscrowXRP', m.escrowXRP?(+m.escrowXRP/1e9).toFixed(1)+'B':'—');
+  // ── Price Momentum ──
+  if(ext){
+    function fmtChg(v, elId){
+      const el=document.getElementById(elId);
+      if(!el) return;
+      if(v==null){el.textContent='—'; return;}
+      el.textContent=(v>=0?'+':'')+v.toFixed(2)+'%';
+      el.style.color=v>=0?'var(--pos)':'var(--neg)';
+    }
+    fmtChg(ext.chg24,'xiChg24');
+    fmtChg(ext.chg7, 'xiChg7');
+    fmtChg(ext.chg30,'xiChg30');
+    if(ext.vol24!=null){
+      const v=ext.vol24;
+      setH('xiVol24', v>=1e9?'$'+(v/1e9).toFixed(2)+'B':'$'+(v/1e6).toFixed(0)+'M');
+    }
+    if(ext.vol24!=null&&ext.mcap!=null){
+      setH('xiVolMCap',(ext.vol24/ext.mcap*100).toFixed(2)+'%');
+    }
   }
 
-  // ── Whale Radar ──
-  const wEl=document.getElementById('xiWhaleList');
-  if(wEl){
-    if(!XRP_INSIGHTS.whales.length){
-      wEl.innerHTML='<div class="xi-xi-empty">No 1M+ XRP movements found in recent ledger scan — wallets may be dormant</div>';
-    } else {
-      const now=Date.now();
-      wEl.innerHTML=XRP_INSIGHTS.whales.map(w=>{
-        const fromS=w.from.slice(0,6)+'…'+w.from.slice(-4);
-        const toS=w.to.slice(0,6)+'…'+w.to.slice(-4);
-        const href=w.hash?`https://xrpscan.com/tx/${w.hash}`:'#';
-        return`<div class="xi-whale-row">
-          <span class="xi-whale-time">${xiTimeAgo(now-w.ts)}</span>
-          <span class="xi-whale-addr" title="${w.from}">${fromS}</span>
-          <span class="xi-whale-addr" title="${w.to}">${toS}</span>
-          <span class="xi-whale-amt">${fmtXRP(w.amount)}</span>
-          <span class="xi-whale-link"><a href="${href}" target="_blank" rel="noopener">↗ view</a></span>
-        </div>`;
-      }).join('');
-    }
+  // ── Analyst Signal ──
+  if(ext){
+    const chg24=ext.chg24||0, chg7=ext.chg7||0, chg30=ext.chg30||0;
+    const volMcap=(ext.vol24&&ext.mcap)?ext.vol24/ext.mcap*100:0;
+    const athDist=(ext.ath&&xrpPx?.price)?((ext.ath-xrpPx.price)/ext.ath*100):100;
+    const jpyRate=XRP_INSIGHTS.usdjpy?.rate||150;
+
+    // Score: -6 (very bearish) → +6 (very bullish)
+    let score=0;
+    if(chg7>15) score+=2; else if(chg7>0) score+=1; else if(chg7>-10) score-=1; else score-=2;
+    if(chg30>25) score+=2; else if(chg30>0) score+=1; else if(chg30>-20) score-=1; else score-=2;
+    if(chg24>3) score+=1; else if(chg24<-3) score-=1;
+    if(volMcap>5) score+=1; else if(volMcap<0.8) score-=1;
+    if(jpyRate>=148) score+=1; else if(jpyRate<140) score-=2;
+
+    let signal, signalColor;
+    if(score>=4){signal='🟢 Strong Uptrend'; signalColor='var(--pos)';}
+    else if(score>=2){signal='🔵 Bullish Bias'; signalColor='var(--flame-blue)';}
+    else if(score>=-1){signal='⚪ Neutral / Consolidating'; signalColor='var(--ink-3)';}
+    else if(score>=-3){signal='🟡 Caution — Weakening'; signalColor='var(--accent)';}
+    else {signal='🔴 Bearish — Risk Off'; signalColor='var(--neg)';}
+
+    const parts=[];
+    if(Math.abs(chg7)>0.5) parts.push(`7d momentum ${chg7>=0?'positive':'negative'} at ${chg7>=0?'+':''}${chg7.toFixed(1)}%`);
+    if(Math.abs(chg30)>0.5) parts.push(`30d trend ${chg30>=0?'up':'down'} ${chg30>=0?'+':''}${chg30.toFixed(1)}%`);
+    if(volMcap>4) parts.push(`elevated volume (${volMcap.toFixed(1)}% of market cap) signals strong participation`);
+    else if(volMcap>1) parts.push(`moderate volume at ${volMcap.toFixed(1)}% of market cap`);
+    else if(volMcap>0) parts.push(`low volume (${volMcap.toFixed(1)}% of MCap) — conviction unclear`);
+    if(athDist<40) parts.push(`within ${athDist.toFixed(0)}% of all-time high — approaching price discovery territory`);
+    else parts.push(`${athDist.toFixed(0)}% below ATH — significant upside potential remains`);
+    if(jpyRate>=148) parts.push(`USD/JPY ${jpyRate.toFixed(1)} supportive of carry trade, positive for risk assets`);
+    else if(jpyRate<140) parts.push(`USD/JPY ${jpyRate.toFixed(1)} flagging carry trade compression — watch for risk-off spillover`);
+    if(ext.rank) parts.push(`market cap rank #${ext.rank}`);
+
+    const badgeEl=document.getElementById('xiSignalBadge');
+    if(badgeEl){badgeEl.textContent='📊 '+signal; badgeEl.style.color=signalColor;}
+    setH('xiSignalBody', parts.length?parts.join('. ')+'.':'Insufficient data to generate signal — refresh and try again.');
   }
 }
 </script>
