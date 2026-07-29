@@ -555,6 +555,21 @@ input::placeholder{color:var(--ink-4);}
 .s-del{font-size:11px;color:var(--neg);background:var(--neg-bg);border:0;padding:2px 7px;cursor:pointer;font-weight:600;font-family:inherit;}
 .s-del:hover{background:oklch(0.70 0.17 25 / 0.2);}
 .divider{height:1px;background:var(--rule);margin:16px 0;}
+.sec-lbl{font-size:9.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);}
+/* ── XRP split balance ── */
+.xrp-split-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px;}
+.xrp-split-total{font-size:11px;color:var(--ink-4);letter-spacing:.03em;margin-bottom:2px;}
+.xrp-split-total strong{color:var(--ink-2);font-family:var(--mono);}
+/* ── Savings settings ── */
+.sav-toggle-row{display:flex;align-items:center;}
+.sav-toggle-label{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;user-select:none;}
+.sav-toggle-label input[type=checkbox]{width:16px;height:16px;accent-color:var(--pos);cursor:pointer;}
+.sav-meta{font-size:11px;color:var(--ink-4);margin-top:9px;letter-spacing:.02em;line-height:1.5;}
+/* ── Savings mini badge on asset cards ── */
+.sav-rate-badge{display:inline-block;font-size:8px;font-weight:700;letter-spacing:.10em;
+  text-transform:uppercase;background:oklch(0.35 0.16 148 / 0.15);color:var(--pos);
+  border:1px solid oklch(0.38 0.16 148 / 0.35);border-radius:3px;padding:1px 5px;
+  margin-left:5px;vertical-align:middle;font-family:var(--sans);}
 .add-block{background:var(--raised);border:1px dashed var(--rule);padding:13px;}
 .add-block h4{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--accent);margin-bottom:10px;font-weight:700;}
 
@@ -663,6 +678,31 @@ body.aurora-mode .xms-mult.pos{color:var(--pos);}
 @media(max-width:600px){
   .xms-table td,.xms-table th{padding-right:10px;font-size:11.5px;}
   .xms-price{font-size:12px;}
+}
+
+/* ── Savings Growth Projection ── */
+.savgrow-sect{}
+.savgrow-meta{font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:.02em;}
+.savgrow-tiles{display:grid;grid-template-columns:repeat(7,1fr);gap:0;border:1px solid var(--rule-s);border-radius:8px;overflow:hidden;margin-bottom:20px;background:var(--card-bg);}
+.savgrow-tile{padding:16px 12px 14px;border-right:1px solid var(--rule-s);display:flex;flex-direction:column;gap:4px;position:relative;}
+.savgrow-tile:last-child{border-right:0;}
+.savgrow-tile::after{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:oklch(0.48 0.17 148 / 0.4);}
+.savgrow-tile-lbl{font-size:8.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-4);margin-bottom:2px;}
+.savgrow-tile-bal{font-family:var(--sans);font-size:16px;font-weight:600;color:var(--ink-1);line-height:1.1;}
+.savgrow-tile-int{font-family:var(--mono);font-size:10px;color:var(--pos);font-weight:600;margin-top:2px;}
+.savgrow-tile-date{font-family:var(--mono);font-size:9.5px;color:var(--ink-4);margin-top:1px;}
+.savgrow-chart-wrap{height:190px;position:relative;}
+body.aurora-mode .savgrow-tile::after{background:oklch(0.72 0.19 148 / 0.5);}
+body.aurora-mode .savgrow-tiles{background:oklch(0.18 0.03 265 / 0.5);}
+@media(max-width:900px){
+  .savgrow-tiles{grid-template-columns:repeat(4,1fr);}
+  .savgrow-tile:nth-child(4){border-right:0;}
+  .savgrow-tile:nth-child(1),.savgrow-tile:nth-child(2),.savgrow-tile:nth-child(3),.savgrow-tile:nth-child(4){border-bottom:1px solid var(--rule-s);}
+}
+@media(max-width:520px){
+  .savgrow-tiles{grid-template-columns:repeat(2,1fr);}
+  .savgrow-tile:nth-child(2n){border-right:0;}
+  .savgrow-tile{border-bottom:1px solid var(--rule-s);}
 }
 
 /* ── Footer ── */
@@ -1401,6 +1441,18 @@ body.aurora-mode .ticker-lbl{background:var(--bg);}
     </div>
   </section>
 
+  <!-- ── VIII · Savings Growth ── -->
+  <section class="sect savgrow-sect" id="savGrowSect" style="display:none">
+    <div class="sect-head">
+      <div class="sect-title"><span class="sect-num">VIII</span>💰 Savings Growth</div>
+      <span class="savgrow-meta" id="savGrowMeta">—</span>
+    </div>
+    <div class="savgrow-tiles" id="savGrowTiles"></div>
+    <div class="savgrow-chart-wrap">
+      <canvas id="savGrowChart"></canvas>
+    </div>
+  </section>
+
   <!-- ── VI · What-If ── -->
   <section class="sect">
     <div class="sect-head">
@@ -1606,6 +1658,18 @@ let _superChart = null;
 let FEAR_GREED = null; // {value:int, classification:str, ts:int}
 const XMS_PRICES = [1, 2.50, 5, 10, 25, 50, 100, 589, 1000, 10000];
 const XMS_BADGES = {589:'Flare Thesis', 1000:'Four Figures', 10000:'Theoretical Max'};
+
+// ── Savings account state ──
+let SAVINGS = (()=>{
+  try{ const s=localStorage.getItem('ptSavings'); return s?JSON.parse(s):{enabled:false,balanceAUD:0,annualRate:4.5,lastCompounded:null}; }
+  catch(e){ return {enabled:false,balanceAUD:0,annualRate:4.5,lastCompounded:null}; }
+})();
+
+// ── XRP split state (cold storage + Revolut) ──
+let XRP_SPLIT = (()=>{
+  try{ const s=localStorage.getItem('ptXrpSplit'); return s?JSON.parse(s):{cold:0,revolut:0}; }
+  catch(e){ return {cold:0,revolut:0}; }
+})();
 // Asset change log — persisted in localStorage
 let ASSET_CHANGELOG = (()=>{
   try{ return JSON.parse(localStorage.getItem('assetChangelog')||'[]'); }catch(e){ return []; }
@@ -1700,6 +1764,7 @@ function applyTheme(t){
   if(SUPER_OPEN) renderSuperChart();
   renderFearGreed();
   renderXRPScenarios();
+  renderSavingsProjection();
   initBgCanvas();
 }
 // Legacy shim
@@ -2221,6 +2286,7 @@ async function doRefresh(){
   renderXRPScenarios();
 }
 async function fetchAllPrices(){
+  syncSavingsAsset(); // ensure savings is present/absent in P.assets before fetching
   const results=await Promise.allSettled(P.assets.map(a=>getPrice(a)));
   let anyOk=false;
   results.forEach((r,i)=>{
@@ -2244,8 +2310,51 @@ async function fetchAllPrices(){
   renderAll();
   RT=setTimeout(doRefresh,REFRESH_SECS*1000);
 }
+/* ═══════════════════════════════════════════════════
+   SAVINGS ACCOUNT
+═══════════════════════════════════════════════════ */
+function saveSavings(){
+  try{localStorage.setItem('ptSavings',JSON.stringify(SAVINGS));}catch(e){}
+}
+
+function compoundSavings(){
+  if(!SAVINGS.enabled||!SAVINGS.balanceAUD||!SAVINGS.lastCompounded) return;
+  const today=new Date().toISOString().slice(0,10);
+  if(SAVINGS.lastCompounded>=today) return; // already done today
+  const days=Math.max(0,Math.floor((Date.now()-new Date(SAVINGS.lastCompounded).getTime())/86400000));
+  if(days<=0) return;
+  SAVINGS.balanceAUD=SAVINGS.balanceAUD*Math.pow(1+SAVINGS.annualRate/100/365,days);
+  SAVINGS.lastCompounded=today;
+  saveSavings();
+}
+
+function syncSavingsAsset(){
+  compoundSavings();
+  const idx=P.assets.findIndex(a=>a.id==='savings');
+  if(SAVINGS.enabled&&SAVINGS.balanceAUD>0){
+    const sav={id:'savings',name:'Savings',sym:'SAV',type:'savings',qty:1,color:'#10b981',manual:null};
+    if(idx<0) P.assets.push(sav);
+    // Inject PX immediately so history guard doesn't block on first load
+    const rate=AUDRT||1.57;
+    PX['savings']={price:SAVINGS.balanceAUD/rate,priceAud:SAVINGS.balanceAUD,ch24:0,failed:false,source:'Savings'};
+  } else {
+    if(idx>=0) P.assets.splice(idx,1);
+    delete PX['savings'];
+  }
+}
+
+function getSavingsPrice(){
+  compoundSavings();
+  if(!SAVINGS.enabled||!SAVINGS.balanceAUD) return {failed:true,price:null,priceAud:null,ch24:0};
+  const rate=AUDRT||1.57;
+  const px={price:SAVINGS.balanceAUD/rate,priceAud:SAVINGS.balanceAUD,ch24:0,failed:false,source:'Savings'};
+  PX['savings']=px;
+  return px;
+}
+
 async function getPrice(a){
   if(a.manual&&a.manual>0) return{price:a.manual,priceAud:null,ch24:0,mcap:0,source:'Manual'};
+  if(a.type==='savings')      return getSavingsPrice();
   if(a.type==='solana_token') return fetchDex(a);
   if(a.type==='crypto')       return fetchCoinGecko(a);
   if(a.type==='stock')        return fetchStock(a);
@@ -3053,6 +3162,8 @@ function renderAll(){
   renderMarketPanel();
   renderFearGreed();
   renderXRPMetric();
+  renderXRPScenarios();
+  renderSavingsProjection();
   const ts='Updated '+new Date().toLocaleTimeString();
   setEl('lastUpd',ts);
   setEl('lastUpdHoldings',ts);
@@ -3655,6 +3766,23 @@ function renderAssetMiniCharts(){
       ?`<img src="${logoSrc}" class="amc-logo" alt="" onerror="this.style.display='none'">`
       :'';
 
+    // Savings card: show rate badge instead of change %, and balance instead of price
+    if(a.id==='savings'){
+      const rateStr=SAVINGS.annualRate?SAVINGS.annualRate.toFixed(2)+'% p.a.':'—';
+      const balStr=SAVINGS.balanceAUD
+        ?'A$'+SAVINGS.balanceAUD.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})
+        :'A$0';
+      return `<div class="amc-card">
+        <div class="amc-top">
+          <span class="amc-sym" style="display:flex;align-items:center;gap:4px;">💰 SAV</span>
+          <span class="sav-rate-badge">${rateStr}</span>
+        </div>
+        ${svgHtml}
+        <div class="amc-val">${valTxt}</div>
+        <div class="amc-px" style="font-size:10px">${balStr}</div>
+      </div>`;
+    }
+
     return `<div class="amc-card">
       <div class="amc-top">
         <span style="display:flex;align-items:center;gap:4px;">${logoHtml}<span class="amc-sym">${a.sym}</span></span>
@@ -3934,25 +4062,159 @@ function checkPw(){
   }
 }
 function buildSettings(){ buildSyncUI();
-  document.getElementById('sAssets').innerHTML=P.assets.map(a=>`
-    <div class="s-row">
-      <div class="s-row-hd">
-        <div style="display:flex;align-items:center;gap:7px">
-          <div style="width:8px;height:8px;border-radius:50%;background:${a.color};flex-shrink:0"></div>
-          <span class="s-row-name">$${a.sym} — ${a.name}</span>
+  // Regular asset rows — skip 'savings' (gets its own dedicated section below)
+  document.getElementById('sAssets').innerHTML=P.assets
+    .filter(a=>a.id!=='savings')
+    .map(a=>{
+      // XRP gets a split-balance row instead of a plain quantity field
+      if(a.id==='xrp'){
+        const total=(XRP_SPLIT.cold||0)+(XRP_SPLIT.revolut||0);
+        return `<div class="s-row">
+          <div class="s-row-hd">
+            <div style="display:flex;align-items:center;gap:7px">
+              <div style="width:8px;height:8px;border-radius:50%;background:${a.color};flex-shrink:0"></div>
+              <span class="s-row-name">$${a.sym} — ${a.name}</span>
+            </div>
+            <button class="s-del" onclick="removeAsset('${a.id}')">✕ Remove</button>
+          </div>
+          <div class="xrp-split-grid">
+            <div class="fg" style="margin:0">
+              <label>🧊 Cold Storage</label>
+              <input type="number" id="xrpCold" value="${XRP_SPLIT.cold||0}" step="any"
+                onchange="updateXrpSplit('cold',this.value)"/>
+            </div>
+            <div class="fg" style="margin:0">
+              <label>💳 Revolut</label>
+              <input type="number" id="xrpRevolut" value="${XRP_SPLIT.revolut||0}" step="any"
+                onchange="updateXrpSplit('revolut',this.value)"/>
+            </div>
+          </div>
+          <div class="xrp-split-total">Total: <strong id="xrpTotalDisplay">${total.toLocaleString('en-AU',{maximumFractionDigits:6})} XRP</strong></div>
+          <div class="two" style="margin-top:8px">
+            <div class="fg" style="margin:0"><label>Manual Price USD (0 = live)</label>
+              <input type="number" value="${a.manual||''}" step="any" placeholder="Live"
+                onchange="updateA('${a.id}','manual',this.value)"/></div>
+            <div></div>
+          </div>
+        </div>`;
+      }
+      // Standard row for all other assets
+      return `<div class="s-row">
+        <div class="s-row-hd">
+          <div style="display:flex;align-items:center;gap:7px">
+            <div style="width:8px;height:8px;border-radius:50%;background:${a.color};flex-shrink:0"></div>
+            <span class="s-row-name">$${a.sym} — ${a.name}</span>
+          </div>
+          <button class="s-del" onclick="removeAsset('${a.id}')">✕ Remove</button>
         </div>
-        <button class="s-del" onclick="removeAsset('${a.id}')">✕ Remove</button>
-      </div>
-      <div class="two">
-        <div class="fg" style="margin:0"><label>Quantity</label>
-          <input type="number" value="${a.qty}" step="any"
-            onchange="updateA('${a.id}','qty',this.value)"/></div>
-        <div class="fg" style="margin:0"><label>Manual Price USD (0 = live)</label>
-          <input type="number" value="${a.manual||''}" step="any" placeholder="Live"
-            onchange="updateA('${a.id}','manual',this.value)"/></div>
-      </div>
-    </div>`).join('');
+        <div class="two">
+          <div class="fg" style="margin:0"><label>Quantity</label>
+            <input type="number" value="${a.qty}" step="any"
+              onchange="updateA('${a.id}','qty',this.value)"/></div>
+          <div class="fg" style="margin:0"><label>Manual Price USD (0 = live)</label>
+            <input type="number" value="${a.manual||''}" step="any" placeholder="Live"
+              onchange="updateA('${a.id}','manual',this.value)"/></div>
+        </div>
+      </div>`;
+    }).join('');
+
+  // ── Savings section ──
+  buildSavingsSettings();
 }
+function buildSavingsSettings(){
+  // Inject savings section after the divider that follows sAssets
+  const container=document.getElementById('sBody');
+  if(!container) return;
+  // Remove existing savings block if present (avoid duplication on re-open)
+  const old=document.getElementById('savingsSettingsBlock');
+  if(old) old.remove();
+
+  const today=new Date().toISOString().slice(0,10);
+  const lastCmp=SAVINGS.lastCompounded||'—';
+  const dailyIncome=SAVINGS.enabled&&SAVINGS.balanceAUD
+    ?(SAVINGS.balanceAUD*SAVINGS.annualRate/100/365).toFixed(2)
+    :'0.00';
+  const balDisplay=SAVINGS.balanceAUD
+    ?'A$'+SAVINGS.balanceAUD.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})
+    :'A$0.00';
+
+  const block=document.createElement('div');
+  block.id='savingsSettingsBlock';
+  block.innerHTML=`
+    <div class="divider"></div>
+    <div class="sec-lbl" style="margin-bottom:10px">💰 Savings Account</div>
+    <div class="s-row">
+      <div class="sav-toggle-row">
+        <label class="sav-toggle-label">
+          <input type="checkbox" id="savEnabled" ${SAVINGS.enabled?'checked':''}
+            onchange="updateSavings('enabled',this.checked)">
+          <span>Include savings in portfolio</span>
+        </label>
+      </div>
+      <div class="two" style="margin-top:10px">
+        <div class="fg" style="margin:0">
+          <label>Balance (A$)</label>
+          <input type="number" id="savBalance" value="${SAVINGS.balanceAUD||0}" step="0.01" placeholder="0.00"
+            onchange="updateSavings('balanceAUD',this.value)"/>
+        </div>
+        <div class="fg" style="margin:0">
+          <label>Annual Interest Rate (%)</label>
+          <input type="number" id="savRate" value="${SAVINGS.annualRate||4.5}" step="0.01" placeholder="4.50"
+            onchange="updateSavings('annualRate',this.value)"/>
+        </div>
+      </div>
+      <div class="sav-meta" id="savMeta">
+        ${SAVINGS.enabled&&SAVINGS.balanceAUD>0
+          ?`Balance: ${balDisplay} · +A$${dailyIncome}/day · Last compounded: ${lastCmp}`
+          :'Enable and enter a balance to track savings interest automatically.'}
+      </div>
+    </div>`;
+  // Insert before the divider that precedes "Add New Asset"
+  const divider=container.querySelector('.divider');
+  if(divider) container.insertBefore(block,divider);
+  else container.appendChild(block);
+}
+
+function updateXrpSplit(field, raw){
+  const v=parseFloat(raw)||0;
+  XRP_SPLIT[field]=v;
+  try{localStorage.setItem('ptXrpSplit',JSON.stringify(XRP_SPLIT));}catch(e){}
+  const total=(XRP_SPLIT.cold||0)+(XRP_SPLIT.revolut||0);
+  // Update total display
+  const el=document.getElementById('xrpTotalDisplay');
+  if(el) el.textContent=total.toLocaleString('en-AU',{maximumFractionDigits:6})+' XRP';
+  // Push total qty to the XRP asset
+  updateA('xrp','qty',total);
+}
+
+function updateSavings(field, value){
+  if(field==='enabled') SAVINGS.enabled=Boolean(value);
+  else if(field==='balanceAUD'){
+    const v=parseFloat(value)||0;
+    SAVINGS.balanceAUD=v;
+    if(v>0&&!SAVINGS.lastCompounded){
+      SAVINGS.lastCompounded=new Date().toISOString().slice(0,10);
+    }
+  }
+  else if(field==='annualRate') SAVINGS.annualRate=parseFloat(value)||0;
+  saveSavings();
+  syncSavingsAsset();
+  saveP();
+  // Refresh the savings meta line
+  const meta=document.getElementById('savMeta');
+  if(meta){
+    const balDisplay=SAVINGS.balanceAUD
+      ?'A$'+SAVINGS.balanceAUD.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})
+      :'A$0.00';
+    const dailyIncome=SAVINGS.enabled&&SAVINGS.balanceAUD
+      ?(SAVINGS.balanceAUD*SAVINGS.annualRate/100/365).toFixed(2):'0.00';
+    meta.textContent=SAVINGS.enabled&&SAVINGS.balanceAUD>0
+      ?`Balance: ${balDisplay} · +A$${dailyIncome}/day · Last compounded: ${SAVINGS.lastCompounded||'—'}`
+      :'Enable and enter a balance to track savings interest automatically.';
+  }
+  renderAll();
+}
+
 function updateA(id,field,raw){
   const a=P.assets.find(x=>x.id===id);if(!a) return;
   const v=parseFloat(raw);
@@ -4924,6 +5186,15 @@ document.addEventListener('DOMContentLoaded',async ()=>{
   }catch(e){}
   // Sync status
   setSbStatus(sbReady()?'syncing':'off');
+  // Seed XRP_SPLIT from existing qty if never set before
+  if(!XRP_SPLIT.cold&&!XRP_SPLIT.revolut){
+    const xrpA=P.assets.find(a=>a.id==='xrp');
+    if(xrpA&&xrpA.qty>0){
+      XRP_SPLIT.cold=xrpA.qty;
+      try{localStorage.setItem('ptXrpSplit',JSON.stringify(XRP_SPLIT));}catch(e){}
+    }
+  }
+  syncSavingsAsset(); // apply savings to P.assets + PX before first render
   renderAll();
   initPayCountdown();
   // Pull from Supabase on load — merges all data from other devices
@@ -4931,6 +5202,7 @@ document.addEventListener('DOMContentLoaded',async ()=>{
   fetchMarketOverview();
   fetchFearGreed();
   renderXRPScenarios();
+  renderSavingsProjection();
   renderAssetChanges(); // Show existing changelog immediately on load
   doRefresh();
   document.getElementById('overlay').addEventListener('keydown',e=>{
@@ -5014,6 +5286,160 @@ function renderXRPScenarios(){
 
 async function fetchXRPInsights(){ /* retired */ }
 function renderXRPInsights(){ /* retired */ }
+
+/* ═══════════════════════════════════════════════════
+   SAVINGS GROWTH PROJECTION
+═══════════════════════════════════════════════════ */
+let _savGrowChart = null;
+
+function renderSavingsProjection(){
+  const sect = document.getElementById('savGrowSect');
+  if(!sect) return;
+
+  if(!SAVINGS.enabled || !SAVINGS.balanceAUD || !SAVINGS.annualRate){
+    sect.style.display = 'none';
+    if(_savGrowChart){ _savGrowChart.destroy(); _savGrowChart=null; }
+    return;
+  }
+  sect.style.display = '';
+
+  const bal      = SAVINGS.balanceAUD;
+  const annRate  = SAVINGS.annualRate;
+  const dailyR   = annRate / 100 / 365;
+
+  // ── Meta line ─────────────────────────────────────
+  const metaEl = document.getElementById('savGrowMeta');
+  if(metaEl){
+    const balFmt = 'A$'+bal.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});
+    metaEl.textContent = `${balFmt} @ ${annRate}% p.a. compound`;
+  }
+
+  // ── Milestone tiles ───────────────────────────────
+  const MILESTONES=[
+    {lbl:'1 Month',  days:30},
+    {lbl:'3 Months', days:91},
+    {lbl:'6 Months', days:182},
+    {lbl:'1 Year',   days:365},
+    {lbl:'2 Years',  days:730},
+    {lbl:'5 Years',  days:1825},
+    {lbl:'10 Years', days:3650},
+  ];
+
+  const fmtAUDShort = v => {
+    if(v>=1e6) return 'A$'+(v/1e6).toFixed(2)+'M';
+    if(v>=1e3) return 'A$'+v.toLocaleString('en-AU',{maximumFractionDigits:0});
+    return 'A$'+v.toFixed(2);
+  };
+
+  const tilesEl = document.getElementById('savGrowTiles');
+  if(tilesEl){
+    tilesEl.innerHTML = MILESTONES.map(({lbl,days})=>{
+      const projBal  = bal * Math.pow(1 + dailyR, days);
+      const interest = projBal - bal;
+      const d        = new Date(Date.now() + days*86400000);
+      const dateStr  = d.toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'2-digit'});
+      return `<div class="savgrow-tile">
+        <div class="savgrow-tile-lbl">${lbl}</div>
+        <div class="savgrow-tile-bal">${fmtAUDShort(projBal)}</div>
+        <div class="savgrow-tile-int">+${fmtAUDShort(interest)}</div>
+        <div class="savgrow-tile-date">${dateStr}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Chart: monthly data points over 10 years ──────
+  const canvas = document.getElementById('savGrowChart');
+  if(!canvas) return;
+
+  const labels  = [];
+  const dataVals = [];
+  const MONTHS   = 120; // 10 years
+
+  for(let m=0; m<=MONTHS; m++){
+    const days   = m * (365/12);
+    const projBal= bal * Math.pow(1 + dailyR, days);
+    const d      = new Date(Date.now() + days*86400000);
+    // Label only Jan of each year (m divisible by 12) and mid-years sparsely
+    let lbl = '';
+    if(m===0)         lbl = 'Now';
+    else if(m%12===0) lbl = d.getFullYear().toString();
+    labels.push(lbl);
+    dataVals.push(+projBal.toFixed(2));
+  }
+
+  // Destroy old chart
+  if(_savGrowChart){ _savGrowChart.destroy(); _savGrowChart=null; }
+
+  const isDark  = (THEME==='aurora');
+  const lineClr = isDark ? '#34d399' : '#10b981';
+  const fillClr = isDark ? 'rgba(52,211,153,0.12)' : 'rgba(16,185,129,0.10)';
+  const gridClr = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+  const lblClr  = isDark ? 'rgba(255,255,255,0.38)' : 'rgba(0,0,0,0.33)';
+
+  _savGrowChart = new Chart(canvas, {
+    type:'line',
+    data:{
+      labels,
+      datasets:[{
+        data: dataVals,
+        borderColor: lineClr,
+        backgroundColor: fillClr,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 0,
+        borderWidth: 2,
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      animation:{duration:400},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          callbacks:{
+            title: items => {
+              const idx = items[0].dataIndex;
+              const d = new Date(Date.now() + idx*(365/12)*86400000);
+              return d.toLocaleDateString('en-AU',{month:'short',year:'numeric'});
+            },
+            label: ctx => {
+              const v = ctx.parsed.y;
+              const interest = v - bal;
+              return [
+                'Balance: A$'+v.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2}),
+                'Interest: +A$'+interest.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2}),
+              ];
+            }
+          }
+        }
+      },
+      scales:{
+        x:{
+          grid:{color:gridClr},
+          ticks:{
+            color:lblClr,
+            font:{size:9},
+            autoSkip:false,
+            maxRotation:0,
+          }
+        },
+        y:{
+          grid:{color:gridClr},
+          ticks:{
+            color:lblClr,
+            font:{size:9},
+            callback: v => {
+              if(v>=1e6) return 'A$'+(v/1e6).toFixed(1)+'M';
+              if(v>=1000) return 'A$'+(v/1000).toFixed(0)+'K';
+              return 'A$'+v.toLocaleString('en-AU',{maximumFractionDigits:0});
+            }
+          }
+        }
+      }
+    }
+  });
+}
 </script>
 </body>
 </html>
