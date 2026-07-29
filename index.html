@@ -680,6 +680,12 @@ body.aurora-mode .xms-mult.pos{color:var(--pos);}
   .xms-price{font-size:12px;}
 }
 
+/* ── Hood Chain / INDEX payout ── */
+.hood-scan-btn{background:var(--card-bg);border:1px solid var(--card-border);color:var(--ink-2);
+  border-radius:5px;cursor:pointer;font-size:11px;padding:4px 12px;font-family:var(--sans);
+  transition:all .15s;}
+.hood-scan-btn:hover{background:var(--accent-bg);border-color:var(--accent);color:var(--accent);}
+
 /* ── Savings Growth Projection ── */
 .savgrow-sect{}
 .savgrow-meta{font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:.02em;}
@@ -1670,6 +1676,25 @@ let XRP_SPLIT = (()=>{
   try{ const s=localStorage.getItem('ptXrpSplit'); return s?JSON.parse(s):{cold:0,revolut:0}; }
   catch(e){ return {cold:0,revolut:0}; }
 })();
+
+// ── Hood Chain wallet / INDEX payout tracking ──
+const HOOD_WALLET   = '0x56044510cd3c8470c9944316e19341b90de7d18b';
+const INDEX_CA      = '0x56910d4409f3a0c78c64dd8d0545ff0705389870';
+const HOOD_EXPLORER = 'https://robinhoodchain.blockscout.com';
+const HOOD_PAYOUT_COLORS = [
+  '#f59e0b','#ef4444','#8b5cf6','#ec4899','#06b6d4',
+  '#84cc16','#f97316','#3b82f6','#14b8a6','#a855f7',
+];
+let _hoodColorIdx = 0;
+function nextHoodColor(){ return HOOD_PAYOUT_COLORS[_hoodColorIdx++ % HOOD_PAYOUT_COLORS.length]; }
+
+let HOOD_SCAN = (()=>{
+  try{
+    const s=localStorage.getItem('ptHoodScan');
+    return s?JSON.parse(s):{enabled:true,lastScan:null,knownCAs:{}};
+  }catch(e){ return {enabled:true,lastScan:null,knownCAs:{}}; }
+})();
+// knownCAs: { [caLower]: true } — set of CAs already added as assets
 // Asset change log — persisted in localStorage
 let ASSET_CHANGELOG = (()=>{
   try{ return JSON.parse(localStorage.getItem('assetChangelog')||'[]'); }catch(e){ return []; }
@@ -2352,10 +2377,103 @@ function getSavingsPrice(){
   return px;
 }
 
+/* ═══════════════════════════════════════════════════
+   HOOD CHAIN WALLET SCANNER — INDEX + payout tokens
+═══════════════════════════════════════════════════ */
+function saveHoodScan(){
+  try{localStorage.setItem('ptHoodScan',JSON.stringify(HOOD_SCAN));}catch(e){}
+}
+
+let _hoodScanTmr = null;
+
+async function scanHoodWallet(){
+  if(!HOOD_SCAN.enabled) return;
+  let items;
+  try{
+    const r=await fetch(
+      `${HOOD_EXPLORER}/api/v2/addresses/${HOOD_WALLET}/token-balances`,
+      {signal:AbortSignal.timeout(15000)}
+    );
+    if(!r.ok) return;
+    items=await r.json();
+    if(!Array.isArray(items)) return;
+  }catch(e){ return; }
+
+  let changed=false;
+  const newPayouts=[];
+
+  for(const item of items){
+    const token=item.token;
+    if(!token||token.type!=='ERC-20') continue;
+    const ca=(token.address||'').toLowerCase();
+    if(!ca) continue;
+    const decimals=parseInt(token.decimals||'18');
+    // Use string arithmetic to avoid BigInt overflow on very large numbers
+    const rawStr=(item.value||'0').replace(/[^0-9]/g,'');
+    const qty = rawStr.length > 18
+      ? parseInt(rawStr.slice(0, rawStr.length - decimals + 4)) / 1e4
+      : parseInt(rawStr||'0') / Math.pow(10, decimals);
+    if(qty<=0||!isFinite(qty)) continue;
+
+    const name = token.name  || 'Unknown';
+    const sym  = (token.symbol||'???').toUpperCase();
+
+    if(ca===INDEX_CA.toLowerCase()){
+      // Sync INDEX qty from on-chain balance
+      const idxA=P.assets.find(a=>a.id==='index-rh');
+      if(idxA&&Math.abs(idxA.qty-qty)>1e-8){ idxA.qty=qty; changed=true; }
+    } else {
+      // Payout token received from holding INDEX
+      const assetId='payout:'+ca;
+      const existingA=P.assets.find(a=>a.id===assetId);
+      if(!existingA){
+        // Brand-new payout token — add to portfolio
+        P.assets.push({
+          id:assetId, name, sym,
+          type:'evm_token', qty,
+          color:nextHoodColor(),
+          manual:null, ca, chain:'robinhood',
+          isHoodPayout:true,
+        });
+        HOOD_SCAN.knownCAs[ca]=true;
+        newPayouts.push({name,sym,qty});
+        changed=true;
+      } else if(Math.abs(existingA.qty-qty)>1e-8){
+        if(qty>existingA.qty) newPayouts.push({name,sym,qty:qty-existingA.qty});
+        existingA.qty=qty;
+        changed=true;
+      }
+    }
+  }
+
+  HOOD_SCAN.lastScan=new Date().toISOString();
+  saveHoodScan();
+
+  if(newPayouts.length){
+    const msg=newPayouts.length===1
+      ?`📦 Payout received: ${newPayouts[0].qty.toFixed(4)} ${newPayouts[0].sym}`
+      :`📦 ${newPayouts.length} new payouts received from INDEX`;
+    toast(msg,'ok');
+  }
+  if(changed){ saveP(); renderAll(); }
+
+  // Refresh settings panel timestamp if open
+  const scanEl=document.getElementById('hoodLastScan');
+  if(scanEl) scanEl.textContent='Last scan: '+new Date(HOOD_SCAN.lastScan).toLocaleTimeString();
+  buildHoodSettings();
+}
+
+function startHoodScan(){
+  if(_hoodScanTmr) clearInterval(_hoodScanTmr);
+  scanHoodWallet();
+  _hoodScanTmr=setInterval(scanHoodWallet, 60*60*1000); // hourly
+}
+
 async function getPrice(a){
   if(a.manual&&a.manual>0) return{price:a.manual,priceAud:null,ch24:0,mcap:0,source:'Manual'};
   if(a.type==='savings')      return getSavingsPrice();
   if(a.type==='solana_token') return fetchDex(a);
+  if(a.type==='evm_token')    return fetchDex(a);   // Robinhood Chain / any EVM via DexScreener
   if(a.type==='crypto')       return fetchCoinGecko(a);
   if(a.type==='stock')        return fetchStock(a);
   return null;
@@ -2365,8 +2483,11 @@ async function fetchDex(a){
     {signal:AbortSignal.timeout(12000)});
   if(!r.ok) throw new Error('DS '+r.status);
   const d=await r.json();
-  if(!d.pairs?.length) throw new Error('No pairs');
-  const pair=d.pairs.sort((x,y)=>(y.liquidity?.usd||0)-(x.liquidity?.usd||0))[0];
+  let pairs=d.pairs||[];
+  if(!pairs.length) throw new Error('No pairs');
+  // Filter to the specified chain if set (e.g. 'robinhood')
+  if(a.chain){ const cf=pairs.filter(p=>p.chainId===a.chain); if(cf.length) pairs=cf; }
+  const pair=pairs.sort((x,y)=>(y.liquidity?.usd||0)-(x.liquidity?.usd||0))[0];
   const price=parseFloat(pair.priceUsd)||0;
   const logo=pair.info?.imageUrl||null;
   if(logo&&!LOGOS[a.id]) LOGOS[a.id]=logo;
@@ -2490,11 +2611,13 @@ function recordHistory(){
   // Without this, any asset whose price hasn't loaded yet contributes $0,
   // creating a false "crash" spike in the chart.
   const heldAssets = P.assets.filter(a=>a.qty>0);
-  const allPriced = heldAssets.every(a=>{
+  // Payout tokens are "optional" — they don't block history recording if prices aren't available yet
+  const requiredAssets = heldAssets.filter(a=>!a.isHoodPayout);
+  const allPriced = requiredAssets.every(a=>{
     const px=PX[a.id];
     return px&&!px.failed&&px.price!=null;
   });
-  if(!allPriced||!heldAssets.length) return;
+  if(!allPriced||!requiredAssets.length) return;
 
   const usdTotal=P.assets.reduce((s,a)=>{
     const px=PX[a.id];
@@ -4062,9 +4185,9 @@ function checkPw(){
   }
 }
 function buildSettings(){ buildSyncUI();
-  // Regular asset rows — skip 'savings' (gets its own dedicated section below)
+  // Regular asset rows — skip 'savings' and Hood payout tokens (get their own sections)
   document.getElementById('sAssets').innerHTML=P.assets
-    .filter(a=>a.id!=='savings')
+    .filter(a=>a.id!=='savings'&&!a.isHoodPayout)
     .map(a=>{
       // XRP gets a split-balance row instead of a plain quantity field
       if(a.id==='xrp'){
@@ -4098,6 +4221,28 @@ function buildSettings(){ buildSyncUI();
           </div>
         </div>`;
       }
+      // INDEX (chain-managed qty — read-only balance, still allow manual price)
+      if(a.id==='index-rh'){
+        return `<div class="s-row">
+          <div class="s-row-hd">
+            <div style="display:flex;align-items:center;gap:7px">
+              <div style="width:8px;height:8px;border-radius:50%;background:${a.color};flex-shrink:0"></div>
+              <span class="s-row-name">$${a.sym} — ${a.name}</span>
+              <span class="sav-rate-badge" style="margin-left:4px">ON-CHAIN</span>
+            </div>
+            <button class="s-del" onclick="removeAsset('${a.id}')">✕ Remove</button>
+          </div>
+          <div class="two">
+            <div class="fg" style="margin:0">
+              <label>Quantity <span style="color:var(--ink-4);font-weight:400">(synced from wallet)</span></label>
+              <input type="number" value="${a.qty.toFixed(6)}" step="any" readonly
+                style="opacity:.55;cursor:not-allowed;background:var(--card-bg)"/></div>
+            <div class="fg" style="margin:0"><label>Manual Price USD (0 = live)</label>
+              <input type="number" value="${a.manual||''}" step="any" placeholder="Live"
+                onchange="updateA('${a.id}','manual',this.value)"/></div>
+          </div>
+        </div>`;
+      }
       // Standard row for all other assets
       return `<div class="s-row">
         <div class="s-row-hd">
@@ -4120,6 +4265,8 @@ function buildSettings(){ buildSyncUI();
 
   // ── Savings section ──
   buildSavingsSettings();
+  // ── Hood Chain section ──
+  buildHoodSettings();
 }
 function buildSavingsSettings(){
   // Inject savings section after the divider that follows sAssets
@@ -4170,6 +4317,81 @@ function buildSavingsSettings(){
       </div>
     </div>`;
   // Insert before the divider that precedes "Add New Asset"
+  const divider=container.querySelector('.divider');
+  if(divider) container.insertBefore(block,divider);
+  else container.appendChild(block);
+}
+
+function buildHoodSettings(){
+  const container=document.getElementById('sBody');
+  if(!container) return;
+  const old=document.getElementById('hoodSettingsBlock');
+  if(old) old.remove();
+
+  const payoutAssets=P.assets.filter(a=>a.isHoodPayout&&a.qty>0);
+  const lastScan=HOOD_SCAN.lastScan
+    ?new Date(HOOD_SCAN.lastScan).toLocaleTimeString():'Never';
+  const idxA=P.assets.find(a=>a.id==='index-rh');
+  const idxQty=idxA?idxA.qty.toLocaleString('en-AU',{maximumFractionDigits:4}):'0';
+  const idxPx=idxA&&PX['index-rh']&&!PX['index-rh'].failed
+    ?PX['index-rh'].price*((CCY==='AUD'?AUDRT:1)||1):null;
+  const idxVal=idxPx&&idxA
+    ?`≈ ${CCY==='AUD'?'A$':'$'}${(idxA.qty*idxPx).toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})}`
+    :'';
+
+  const block=document.createElement('div');
+  block.id='hoodSettingsBlock';
+  block.innerHTML=`
+    <div class="divider"></div>
+    <div class="s-section-label" style="display:flex;justify-content:space-between;align-items:center">
+      <span>🔗 Hood Chain Wallet · INDEX Payouts</span>
+      <span id="hoodLastScan" style="font-size:10px;color:var(--ink-4);font-weight:400">Last scan: ${lastScan}</span>
+    </div>
+    <div class="s-row" style="padding:10px 0 6px;border:0">
+      <div style="font-size:10px;color:var(--ink-4);margin-bottom:10px;word-break:break-all;line-height:1.5">
+        📍 <strong style="color:var(--ink-3)">Wallet:</strong>
+        <span style="font-family:var(--mono);font-size:9px">${HOOD_WALLET}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <label class="sav-toggle-label" style="font-size:12px">
+          <input type="checkbox" ${HOOD_SCAN.enabled?'checked':''}
+            onchange="HOOD_SCAN.enabled=this.checked;saveHoodScan();if(this.checked)startHoodScan()">
+          Auto-scan hourly
+        </label>
+        <button class="hood-scan-btn" onclick="scanHoodWallet()" style="font-size:11px">
+          ↻ Scan now
+        </button>
+      </div>
+    </div>
+    <div style="padding:6px 0 8px;border-bottom:1px solid var(--rule-s)">
+      <div class="sec-lbl" style="margin-bottom:5px">INDEX Balance</div>
+      <div style="font-size:13px;color:var(--ink-1);font-family:var(--mono)">
+        ${idxQty} INDEX
+        ${idxVal?`<span style="color:var(--ink-4);font-size:10px;font-family:var(--sans);margin-left:6px">${idxVal}</span>`:''}
+      </div>
+      <div style="font-size:9.5px;color:var(--ink-4);margin-top:2px">Synced from chain — updates every hour</div>
+    </div>
+    <div style="padding:8px 0 4px">
+      <div class="sec-lbl" style="margin-bottom:6px">Received Payouts (${payoutAssets.length} token${payoutAssets.length!==1?'s':''})</div>
+      ${payoutAssets.length?payoutAssets.map(a=>{
+        const px=PX[a.id];
+        const unitPx=px&&!px.failed?px.price*(CCY==='AUD'?AUDRT:1):null;
+        const val=unitPx?`${CCY==='AUD'?'A$':'$'}${(a.qty*unitPx).toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})}`:'';
+        return `<div style="display:flex;justify-content:space-between;align-items:center;
+          padding:7px 0;border-bottom:1px solid var(--rule-s);font-size:12px">
+          <div style="display:flex;align-items:center;gap:7px">
+            <div style="width:6px;height:6px;border-radius:50%;background:${a.color};flex-shrink:0"></div>
+            <span style="font-weight:600;color:var(--ink-1)">$${a.sym}</span>
+            <span style="color:var(--ink-4);font-size:10.5px">${a.name}</span>
+          </div>
+          <div style="text-align:right;font-family:var(--mono)">
+            <div style="color:var(--ink-2);font-size:11.5px">${a.qty.toLocaleString('en-AU',{maximumFractionDigits:4})}</div>
+            ${val?`<div style="color:var(--pos);font-size:10px">${val}</div>`:''}
+          </div>
+        </div>`;
+      }).join(''):'<div style="font-size:11px;color:var(--ink-4);padding:4px 0 6px">No payouts detected yet — click Scan now to check.</div>'}
+    </div>
+  `;
   const divider=container.querySelector('.divider');
   if(divider) container.insertBefore(block,divider);
   else container.appendChild(block);
@@ -5195,6 +5417,36 @@ document.addEventListener('DOMContentLoaded',async ()=>{
     }
   }
   syncSavingsAsset(); // apply savings to P.assets + PX before first render
+
+  // ── Auto-add INDEX if not already in the portfolio ──
+  if(!P.assets.find(a=>a.id==='index-rh')){
+    P.assets.push({
+      id:'index-rh', name:'The Index', sym:'INDEX',
+      type:'evm_token', qty:0,
+      color:'#6366f1',
+      manual:null,
+      ca: INDEX_CA,
+      chain:'robinhood',
+      isHoodPayout:false,
+    });
+    saveP();
+  }
+
+  // ── Re-attach any saved payout tokens from HOOD_SCAN ──
+  // (Restores payout assets if localStorage has data but P.assets was cleared/migrated)
+  for(const [ca, known] of Object.entries(HOOD_SCAN.knownCAs||{})){
+    const assetId='payout:'+ca;
+    if(!P.assets.find(a=>a.id===assetId)){
+      P.assets.push({
+        id:assetId, name:'Payout Token', sym:'???',
+        type:'evm_token', qty:0,
+        color:nextHoodColor(),
+        manual:null, ca, chain:'robinhood',
+        isHoodPayout:true,
+      });
+    }
+  }
+
   renderAll();
   initPayCountdown();
   // Pull from Supabase on load — merges all data from other devices
@@ -5205,6 +5457,8 @@ document.addEventListener('DOMContentLoaded',async ()=>{
   renderSavingsProjection();
   renderAssetChanges(); // Show existing changelog immediately on load
   doRefresh();
+  // Start Hood wallet scanner (runs immediately + every hour)
+  startHoodScan();
   document.getElementById('overlay').addEventListener('keydown',e=>{
     if(e.key==='Escape') closeSettings();
   });
