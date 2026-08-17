@@ -711,6 +711,34 @@ body.aurora-mode .savgrow-tiles{background:oklch(0.18 0.03 265 / 0.5);}
   .savgrow-tile{border-bottom:1px solid var(--rule-s);}
 }
 
+/* ── Insights grid ── */
+.insights-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--rule-s);}
+.insight-card{background:var(--surface);padding:22px 24px;display:flex;flex-direction:column;gap:6px;transition:background .12s;}
+.insight-card:hover{background:var(--raised);}
+.insight-tag-row{display:flex;align-items:center;gap:8px;}
+.insight-tag{font:700 8px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;padding:3px 7px;border-radius:2px;flex-shrink:0;}
+.insight-tag.tag-pos{background:var(--pos-bg);color:var(--pos);}
+.insight-tag.tag-neg{background:var(--neg-bg);color:var(--neg);}
+.insight-tag.tag-info{background:var(--accent-bg);color:var(--accent);}
+.insight-tag.tag-warn{background:oklch(0.78 0.13 85 / 0.14);color:oklch(0.50 0.14 72);}
+.insight-tag.tag-neutral{background:var(--bg-2);color:var(--ink-3);border:1px solid var(--rule);}
+.insight-ico{font-size:20px;line-height:1;margin-top:4px;}
+.insight-title{font-family:var(--serif);font-size:17px;letter-spacing:-0.01em;color:var(--ink);line-height:1.25;}
+.insight-body{font-size:11px;color:var(--ink-3);line-height:1.65;font-family:var(--mono);margin-top:2px;}
+.insights-empty{padding:40px 28px;text-align:center;color:var(--ink-4);font-size:12px;font-style:italic;background:var(--surface);grid-column:1/-1;}
+body.aurora-mode .insight-card{background:var(--surface);}
+body.aurora-mode .insight-card:hover{background:var(--raised);}
+@media(max-width:900px){.insights-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:560px){.insights-grid{grid-template-columns:1fr;}}
+
+/* ── Super add-asset block ── */
+.super-add-block{margin-top:28px;padding-top:24px;border-top:1px solid var(--rule-s);}
+.super-add-hd{font-size:9.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);margin-bottom:14px;}
+.super-add-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.super-del-btn{background:none;border:0;color:var(--neg);font-size:11px;font-weight:600;cursor:pointer;padding:2px 6px;font-family:inherit;opacity:.7;transition:opacity .12s;}
+.super-del-btn:hover{opacity:1;}
+@media(max-width:600px){.super-add-grid{grid-template-columns:1fr;}}
+
 /* ── Footer ── */
 footer{margin-top:48px;padding:24px 28px;border-top:1px solid var(--rule);display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;font-size:10.5px;color:var(--ink-4);letter-spacing:.04em;}
 footer a{color:var(--ink-3);text-decoration:none;}
@@ -1046,15 +1074,9 @@ body.aurora-mode .ticker-lbl{background:var(--bg);}
   .ms-card-pct{font-size:9px;}
   .ms-card-mult{font-size:8px;}
 
-  /* ── Announcements — compact log ── */
-  .announce-wrap{grid-template-columns:1fr;}
-  .announce-col:first-child{border-right:0;border-bottom:1px solid var(--rule-s);}
-  .announce-grid{padding:8px 16px;border-radius:0;}
-  .announce-item{flex-wrap:nowrap;font-size:10.5px;padding:4px 0;}
-  .announce-detail,.announce-sep{display:none;}
-  .announce-ts{font-size:9px;min-width:38px;}
-  .announce-prefix{min-width:46px;font-size:9px;}
-  .announce-msg{font-size:10.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  /* ── Insights — single column on mobile ── */
+  .insights-grid{grid-template-columns:1fr!important;}
+  .insight-card{padding:16px;}
   .asset-log-item{padding:7px 16px;}
   /* Gauge — compact on mobile */
   .fg-gauge{min-width:unset;width:100%;padding:12px 16px 8px;border-top:1px solid var(--rule-s);}
@@ -1367,21 +1389,17 @@ body.aurora-mode .ticker-lbl{background:var(--bg);}
     </div>
   </section>
 
-  <!-- ── I · Announcements ── -->
+  <!-- ── I · Insights ── -->
   <section class="sect">
     <div class="sect-head">
-      <div class="sect-title"><span class="sect-num">I</span>Announcements</div>
-      <div class="sect-meta"><span class="sect-meta-val" id="announceCount">—</span></div>
+      <div class="sect-title"><span class="sect-num">I</span>Insights</div>
+      <div class="sect-meta"><span class="sect-meta-val" id="insightCount">—</span></div>
     </div>
-    <div class="announce-wrap">
-      <div class="announce-col">
-        <div class="announce-col-hd"><div class="announce-col-hd-dot"></div>Market Signals</div>
-        <div id="announceGrid" class="announce-grid"></div>
-      </div>
-      <div class="announce-col">
-        <div class="announce-col-hd"><div class="announce-col-hd-dot" style="background:var(--blue)"></div>Holdings Changes</div>
-        <div id="assetChangePanel" class="asset-log"></div>
-      </div>
+    <div id="insightsGrid" class="insights-grid"></div>
+    <!-- Holdings changes log remains below, compact -->
+    <div style="border-top:1px solid var(--rule-s);margin-top:0">
+      <div class="announce-col-hd" style="padding:7px 14px"><div class="announce-col-hd-dot" style="background:var(--blue)"></div>Holdings Changes</div>
+      <div id="assetChangePanel" class="asset-log"></div>
     </div>
   </section>
 
@@ -1444,18 +1462,6 @@ body.aurora-mode .ticker-lbl{background:var(--bg);}
     <div id="projGrid"></div>
     <div class="proj-chart-wrap" id="projChartWrap" style="display:none">
       <canvas id="projChart"></canvas>
-    </div>
-  </section>
-
-  <!-- ── VIII · Savings Growth ── -->
-  <section class="sect savgrow-sect" id="savGrowSect" style="display:none">
-    <div class="sect-head">
-      <div class="sect-title"><span class="sect-num">VIII</span>💰 Savings Growth</div>
-      <span class="savgrow-meta" id="savGrowMeta">—</span>
-    </div>
-    <div class="savgrow-tiles" id="savGrowTiles"></div>
-    <div class="savgrow-chart-wrap">
-      <canvas id="savGrowChart"></canvas>
     </div>
   </section>
 
@@ -1526,6 +1532,21 @@ body.aurora-mode .ticker-lbl{background:var(--bg);}
     </table>
     <div class="super-foot">
       <span class="super-foot-note" id="superSrc">Edit prices above · changes save automatically</span>
+    </div>
+    <!-- ── Add new super asset ── -->
+    <div class="super-add-block" id="superAddBlock">
+      <div class="super-add-hd">+ Add Asset</div>
+      <div class="super-add-grid">
+        <div class="fg" style="margin:0"><label>Ticker (ASX)</label>
+          <input id="superNewSym" placeholder="NXT" style="text-transform:uppercase"/></div>
+        <div class="fg" style="margin:0"><label>Full Name</label>
+          <input id="superNewName" placeholder="NextDC"/></div>
+        <div class="fg" style="margin:0"><label>Quantity</label>
+          <input id="superNewQty" type="number" step="any" placeholder="100"/></div>
+        <div class="fg" style="margin:0"><label>Cost Basis (A$ per share)</label>
+          <input id="superNewCost" type="number" step="0.001" placeholder="10.000"/></div>
+      </div>
+      <button class="btn primary" style="margin-top:10px" onclick="addSuperAsset()">+ Add to Super</button>
     </div>
     <!-- ── Super chart section ── -->
     <div class="super-chart-section" id="superChartSection" style="display:none">
@@ -1677,24 +1698,6 @@ let XRP_SPLIT = (()=>{
   catch(e){ return {cold:0,revolut:0}; }
 })();
 
-// ── Hood Chain wallet / INDEX payout tracking ──
-const HOOD_WALLET   = '0x56044510cd3c8470c9944316e19341b90de7d18b';
-const INDEX_CA      = '0x56910d4409f3a0c78c64dd8d0545ff0705389870';
-const HOOD_EXPLORER = 'https://robinhoodchain.blockscout.com';
-const HOOD_PAYOUT_COLORS = [
-  '#f59e0b','#ef4444','#8b5cf6','#ec4899','#06b6d4',
-  '#84cc16','#f97316','#3b82f6','#14b8a6','#a855f7',
-];
-let _hoodColorIdx = 0;
-function nextHoodColor(){ return HOOD_PAYOUT_COLORS[_hoodColorIdx++ % HOOD_PAYOUT_COLORS.length]; }
-
-let HOOD_SCAN = (()=>{
-  try{
-    const s=localStorage.getItem('ptHoodScan');
-    return s?JSON.parse(s):{enabled:true,lastScan:null,knownCAs:{}};
-  }catch(e){ return {enabled:true,lastScan:null,knownCAs:{}}; }
-})();
-// knownCAs: { [caLower]: true } — set of CAs already added as assets
 // Asset change log — persisted in localStorage
 let ASSET_CHANGELOG = (()=>{
   try{ return JSON.parse(localStorage.getItem('assetChangelog')||'[]'); }catch(e){ return []; }
@@ -2377,27 +2380,50 @@ function getSavingsPrice(){
   return px;
 }
 
-/* ═══════════════════════════════════════════════════
-   HOOD CHAIN WALLET SCANNER — INDEX + payout tokens
-═══════════════════════════════════════════════════ */
-function saveHoodScan(){
-  try{localStorage.setItem('ptHoodScan',JSON.stringify(HOOD_SCAN));}catch(e){}
-}
-
-let _hoodScanTmr = null;
-
-async function scanHoodWallet(){
+async function scanHoodWallet_RETIRED(){
   if(!HOOD_SCAN.enabled) return;
   let items;
+  // ── Try Blockscout v2 first, fall back to v1 ──
   try{
     const r=await fetch(
       `${HOOD_EXPLORER}/api/v2/addresses/${HOOD_WALLET}/token-balances`,
       {signal:AbortSignal.timeout(15000)}
     );
-    if(!r.ok) return;
-    items=await r.json();
-    if(!Array.isArray(items)) return;
-  }catch(e){ return; }
+    if(r.ok){
+      const d=await r.json();
+      // v2 returns a direct array OR {items:[...]} depending on version
+      items=Array.isArray(d)?d:(Array.isArray(d?.items)?d.items:null);
+    }
+  }catch(e){ /* network/CORS error — fall through to v1 */ }
+
+  // ── Blockscout v1 fallback ──
+  if(!items){
+    try{
+      const r=await fetch(
+        `${HOOD_EXPLORER}/api?module=account&action=tokenlist&address=${HOOD_WALLET}`,
+        {signal:AbortSignal.timeout(15000)}
+      );
+      if(!r.ok){ toast(`Hood scan failed (${r.status})`,'err'); return; }
+      const d=await r.json();
+      if(d.status!=='1'||!Array.isArray(d.result)){ toast('Hood scan: no token data returned','err'); return; }
+      // Normalise v1 result to v2 shape
+      items=d.result.map(t=>({
+        token:{
+          address:t.contractAddress,
+          name:t.name,
+          symbol:t.symbol,
+          decimals:t.decimals,
+          type:t.type||'ERC-20',
+        },
+        value:t.balance,
+      }));
+    }catch(e){
+      toast('Hood scan error: '+(e.message||'network failure'),'err');
+      return;
+    }
+  }
+
+  if(!items||!items.length){ toast('Hood scan: wallet has no tokens yet','inf'); return; }
 
   let changed=false;
   const newPayouts=[];
@@ -2461,12 +2487,6 @@ async function scanHoodWallet(){
   const scanEl=document.getElementById('hoodLastScan');
   if(scanEl) scanEl.textContent='Last scan: '+new Date(HOOD_SCAN.lastScan).toLocaleTimeString();
   buildHoodSettings();
-}
-
-function startHoodScan(){
-  if(_hoodScanTmr) clearInterval(_hoodScanTmr);
-  scanHoodWallet();
-  _hoodScanTmr=setInterval(scanHoodWallet, 60*60*1000); // hourly
 }
 
 async function getPrice(a){
@@ -3118,152 +3138,173 @@ function clearWif(){
 }
 
 /* ═══════════════════════════════════════════════════
-   ANNOUNCEMENTS
+   INSIGHTS — auto-generated portfolio intelligence
 ═══════════════════════════════════════════════════ */
-function addAnnouncement(key, icon, title, sub, type){
-  if(ANNOUNCEMENTS.some(a=>a.key===key)) return; // dedup
-  const time=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-  ANNOUNCEMENTS.unshift({key,icon,title,sub,time,type});
-  if(ANNOUNCEMENTS.length>24) ANNOUNCEMENTS=ANNOUNCEMENTS.slice(0,24);
-}
+function renderInsights(){
+  const grid=document.getElementById('insightsGrid');
+  const countEl=document.getElementById('insightCount');
+  if(!grid) return;
 
-function renderAnnouncements(){
-  const el=document.getElementById('announceGrid');
-  const countEl=document.getElementById('announceCount');
-  if(!el) return;
+  const cards=[];
+  const fmtAUD=v=>'A$'+v.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const fmtK=v=>v>=1000000?'A$'+(v/1000000).toFixed(2)+'M':v>=1000?'A$'+(v/1000).toFixed(1)+'K':fmtAUD(v);
+  const rate=AUDRT||1.57;
 
-  const now=Date.now();
+  // Assets with valid prices
+  const live=P.assets.filter(a=>PX[a.id]&&!PX[a.id].failed&&a.id!=='savings');
+  const total=totalVal();
+  const totalAUD=CCY==='AUD'?total:total*rate;
 
-  // ── 1. Major asset price move (24h >= 10%) ──
-  P.assets.forEach(a=>{
-    const px=PX[a.id];
-    if(!px||px.failed||px.ch24==null) return;
-    const ch=px.ch24;
-    if(Math.abs(ch)>=10){
-      const dir=ch>0;
-      const key=`price_24h_${a.id}_${Math.sign(ch)}_${Math.floor(now/3600000)}`;
-      addAnnouncement(
-        key,
-        dir?'🚀':'📉',
-        `$${a.sym} ${dir?'surged':'dropped'} ${Math.abs(ch).toFixed(1)}% in 24h`,
-        `Current price: ${fmtP(dp(px),isConv(px))} · 24h move`,
-        dir?'pos':'neg'
-      );
-    }
-    // Intra-day sparkline checks
-    const spk=SPK[a.id];
-    if(spk&&spk.length>=24){
-      [1,3,6,12].forEach(h=>{
-        const idx=Math.max(0,spk.length-1-h);
-        const pOld=spk[idx], pNew=spk[spk.length-1];
-        if(pOld>0){
-          const chH=(pNew-pOld)/pOld*100;
-          if(Math.abs(chH)>=8){
-            const dir=chH>0;
-            const key=`price_${h}h_${a.id}_${Math.sign(chH)}_${Math.floor(now/3600000)}`;
-            addAnnouncement(
-              key,
-              dir?'⚡':'⚠️',
-              `$${a.sym} ${dir?'up':'down'} ${Math.abs(chH).toFixed(1)}% in ${h}h`,
-              `Intraday move detected via sparkline data`,
-              dir?'pos':'neg'
-            );
-          }
-        }
+  // ── 1. Best performer today ──
+  if(live.length){
+    const best=live.filter(a=>PX[a.id].ch24!=null).sort((a,b)=>PX[b.id].ch24-PX[a.id].ch24)[0];
+    if(best&&PX[best.id].ch24!=null){
+      const ch=PX[best.id].ch24;
+      const val=assetVal(best)*rate;
+      cards.push({
+        tag:ch>=0?'pos':'neg', ico:ch>=5?'🚀':ch>=0?'📈':'📉',
+        title:`${best.sym} ${ch>=0?'up':'down'} ${Math.abs(ch).toFixed(1)}% today`,
+        body:`Best performer · Portfolio value: ${fmtAUD(val)} · Price: ${fmtP(dp(PX[best.id]),isConv(PX[best.id]))}`,
       });
-    }
-  });
-
-  // ── 2. Weighting flip ──
-  if(P.history.length>=2){
-    const prevSnap=P.history[P.history.length-2];
-    if(prevSnap&&prevSnap.av){
-      const sortedNow=[...P.assets].sort((a,b)=>{
-        const va=assetVal(a), vb=assetVal(b); return vb-va;
-      });
-      const sortedPrev=[...P.assets].sort((a,b)=>{
-        const pa=prevSnap.av[a.id]||0, pb=prevSnap.av[b.id]||0;
-        return (b.qty*pb)-(a.qty*pa);
-      });
-      // Check each adjacent pair in current ordering vs prev ordering
-      for(let i=0;i<sortedNow.length-1;i++){
-        const curr1=sortedNow[i], curr2=sortedNow[i+1];
-        const prevIdx1=sortedPrev.findIndex(a=>a.id===curr1.id);
-        const prevIdx2=sortedPrev.findIndex(a=>a.id===curr2.id);
-        if(prevIdx1>prevIdx2&&prevIdx1>=0&&prevIdx2>=0){
-          const key=`flip_${curr1.id}_${curr2.id}_${Math.floor(now/3600000)}`;
-          addAnnouncement(
-            key, '🔄',
-            `$${curr1.sym} has overtaken $${curr2.sym} in portfolio value`,
-            `Rank flip detected in last refresh interval`,
-            'neutral'
-          );
-        }
-      }
     }
   }
 
-  // ── 3. FX move > 1.5% ──
-  if(PREV_FX!=null&&AUDRT!=null){
-    const fxChg=Math.abs((AUDRT-PREV_FX)/PREV_FX*100);
-    if(fxChg>=1.5){
-      const dir=AUDRT>PREV_FX;
-      const key=`fx_${Math.sign(AUDRT-PREV_FX)}_${Math.floor(now/3600000)}`;
-      addAnnouncement(
-        key, '💱',
-        `AUD ${dir?'strengthened':'weakened'} ${fxChg.toFixed(2)}%`,
-        `Rate: ${AUDRT.toFixed(4)} USD/AUD · Affects AUD portfolio value`,
-        dir?'pos':'neg'
-      );
-    }
-  }
-  if(AUDRT!=null) PREV_FX=AUDRT;
-
-  // ── 4. Milestone progress boundary ──
-  const audNow=totalValAUD();
-  if(audNow>0){
-    const activeIdx=MILESTONES_AUD.findIndex(ms=>audNow<ms);
-    if(activeIdx>0){
-      const prevMs=MILESTONES_AUD[activeIdx-1];
-      const nextMs=MILESTONES_AUD[activeIdx];
-      const pct=(audNow-prevMs)/(nextMs-prevMs)*100;
-      const boundary=Math.floor(pct/5)*5;
-      if(boundary>0&&boundary!==Math.floor(LAST_MS_PCT/5)*5){
-        const fmtMs=v=>v>=1000?'A$'+(v/1000).toFixed(0)+'K':'A$'+v;
-        const key=`ms_pct_${activeIdx}_${boundary}`;
-        addAnnouncement(
-          key, '🎯',
-          `${boundary}% of the way to ${fmtMs(nextMs)}`,
-          `Milestone progress update · ${(nextMs-audNow).toLocaleString('en-AU',{maximumFractionDigits:0})} AUD to go`,
-          pct>LAST_MS_PCT?'pos':'neg'
-        );
-        LAST_MS_PCT=pct;
-        try{localStorage.setItem('ptLastMsPct',String(pct));}catch(e){}
-      }
+  // ── 2. Worst performer today ──
+  if(live.length>1){
+    const worst=live.filter(a=>PX[a.id].ch24!=null).sort((a,b)=>PX[a.id].ch24-PX[b.id].ch24)[0];
+    if(worst&&PX[worst.id].ch24!=null&&PX[worst.id].ch24<0){
+      const ch=PX[worst.id].ch24;
+      cards.push({
+        tag:'neg', ico:'⚠️',
+        title:`${worst.sym} down ${Math.abs(ch).toFixed(1)}% today`,
+        body:`Weakest performer · Dragged by ${fmtAUD(Math.abs(assetVal(worst)*rate*(ch/100)))} in value`,
+      });
     }
   }
 
-  // ── Render ──
-  const shown=ANNOUNCEMENTS.slice(0,8);
-  const N=shown.length;
-  if(countEl) setEl('announceCount',N===0?'All clear':`${N} alert${N===1?'':'s'}`);
+  // ── 3. Portfolio leader (largest holding) ──
+  if(live.length){
+    const leader=live.sort((a,b)=>assetVal(b)-assetVal(a))[0];
+    const pct=(assetVal(leader)/total*100).toFixed(1);
+    const val=assetVal(leader)*rate;
+    cards.push({
+      tag:'info', ico:'🏆',
+      title:`${leader.sym} leads your portfolio`,
+      body:`${pct}% of total · ${fmtAUD(val)} · ${leader.name}`,
+    });
+  }
+
+  // ── 4. Concentration warning ──
+  if(live.length>1&&total>0){
+    const top=live.sort((a,b)=>assetVal(b)-assetVal(a))[0];
+    const topPct=assetVal(top)/total*100;
+    if(topPct>60){
+      cards.push({
+        tag:'warn', ico:'⚖️',
+        title:`${topPct.toFixed(0)}% concentrated in ${top.sym}`,
+        body:`High concentration — ${top.sym} dominates your portfolio. Consider diversifying.`,
+      });
+    }
+  }
+
+  // ── 5. Milestone progress ──
+  if(totalAUD>0){
+    const nextMs=MILESTONES_AUD.find(ms=>totalAUD<ms);
+    if(nextMs){
+      const prevMs=MILESTONES_AUD[MILESTONES_AUD.indexOf(nextMs)-1]||0;
+      const pct=(totalAUD-prevMs)/(nextMs-prevMs)*100;
+      const remaining=nextMs-totalAUD;
+      const fmtMs=v=>v>=1000?'A$'+(v/1000).toFixed(0)+'K':'A$'+v;
+      cards.push({
+        tag:pct>=75?'pos':'info', ico:'🎯',
+        title:`${pct.toFixed(0)}% to ${fmtMs(nextMs)}`,
+        body:`${fmtK(remaining)} to go · ${fmtMs(prevMs)} → ${fmtMs(nextMs)} milestone`,
+      });
+    } else if(totalAUD>=MILESTONES_AUD[MILESTONES_AUD.length-1]){
+      cards.push({
+        tag:'pos', ico:'🏅',
+        title:'All milestones reached!',
+        body:`Portfolio is above ${fmtK(MILESTONES_AUD[MILESTONES_AUD.length-1])} · Outstanding.`,
+      });
+    }
+  }
+
+  // ── 6. 24h portfolio change ──
+  if(total>0){
+    const ch24=change24();
+    const chAUD=ch24*(CCY==='AUD'?1:rate);
+    if(Math.abs(chAUD)>0.01){
+      const dir=chAUD>=0;
+      cards.push({
+        tag:dir?'pos':'neg', ico:dir?'📊':'📉',
+        title:`Portfolio ${dir?'gained':'lost'} ${fmtAUD(Math.abs(chAUD))} today`,
+        body:`24h change: ${dir?'+':''}${chAUD.toFixed(2)} AUD · Total: ${fmtAUD(totalAUD)}`,
+      });
+    }
+  }
+
+  // ── 7. FX rate impact ──
+  if(AUDRT&&CCY==='USD'&&total>0){
+    const audVal=total*AUDRT;
+    cards.push({
+      tag:'neutral', ico:'💱',
+      title:`Worth ${fmtAUD(audVal)} in Australian dollars`,
+      body:`Exchange rate: 1 USD = ${AUDRT.toFixed(4)} AUD · Rate updates live`,
+    });
+  }
+
+  // ── 8. XRP scenario insight ──
+  const xrp=P.assets.find(a=>a.id==='xrp');
+  const xrpPx=xrp&&PX['xrp']&&!PX['xrp'].failed?PX['xrp'].price:null;
+  if(xrp&&xrpPx&&xrp.qty>0){
+    const targets=[1,2,5,10,25,50,100,250,500,1000];
+    const next=targets.find(t=>t>xrpPx);
+    if(next){
+      const gain=(next-xrpPx)/xrpPx*100;
+      const portGain=(next-xrpPx)*xrp.qty*rate;
+      cards.push({
+        tag:'info', ico:'⚡',
+        title:`$XRP needs +${gain.toFixed(0)}% to reach $${next}`,
+        body:`At $${next}: portfolio gains ${fmtAUD(portGain)} from XRP alone`,
+      });
+    }
+  }
+
+  // ── 9. Asset diversity ──
+  const assetCount=live.length;
+  if(assetCount>0){
+    const tagMap={crypto:0,stock:0,evm_token:0};
+    live.forEach(a=>{ if(tagMap[a.type]!==undefined) tagMap[a.type]++; });
+    const types=Object.values(tagMap).filter(v=>v>0).length;
+    const label=types===1?'Single asset class':'Multi-class';
+    cards.push({
+      tag:types>=2?'pos':'neutral', ico:'🌐',
+      title:`${assetCount} assets across ${types} class${types===1?'':'es'}`,
+      body:`${label} portfolio · ${tagMap.crypto||0} crypto · ${tagMap.stock||0} stocks · ${tagMap.evm_token||0} DeFi tokens`,
+    });
+  }
+
+  // ── Render cards ──
+  const N=cards.length;
+  if(countEl) countEl.textContent=N?`${N} insight${N===1?'':'s'}`:'—';
 
   if(!N){
-    el.innerHTML=`<div class="announce-empty">No significant events detected — monitoring markets…</div>`;
+    grid.innerHTML=`<div class="insights-empty">Fetching market data — insights will appear shortly…</div>`;
     return;
   }
 
-  el.innerHTML=shown.map((a,i)=>{
-    const pfx=a.type==='pos'?'[ OK  ]':a.type==='neg'?'[ WARN ]':'[ INFO ]';
-    const isLast=i===shown.length-1;
-    return`<div class="announce-item announce-${a.type}">
-      <span class="announce-ts">${a.time}</span>
-      <span class="announce-prefix">${pfx}</span>
-      <span class="announce-msg">${a.title}</span>
-      ${a.sub?`<span class="announce-sep">·</span><span class="announce-detail">${a.sub}</span>`:''}
-      ${isLast?'<span class="announce-cursor"></span>':''}
-    </div>`;
-  }).join('');
+  grid.innerHTML=cards.map(c=>`
+    <div class="insight-card">
+      <div class="insight-tag-row">
+        <span class="insight-tag tag-${c.tag}">${c.tag==='pos'?'Opportunity':c.tag==='neg'?'Watch':c.tag==='warn'?'Warning':c.tag==='info'?'Insight':'Info'}</span>
+      </div>
+      <div class="insight-ico">${c.ico}</div>
+      <div class="insight-title">${c.title}</div>
+      <div class="insight-body">${c.body}</div>
+    </div>`).join('');
+
+  // Legacy compat — keep ANNOUNCEMENTS for milestone alerts etc.
+  if(AUDRT!=null) PREV_FX=AUDRT;
 }
 
 /* ═══════════════════════════════════════════════════
@@ -3277,7 +3318,7 @@ function renderAll(){
   renderAssetMiniCharts();
   renderStackedChart();
   renderHeroAltCurrency();
-  renderAnnouncements();
+  renderInsights();
   renderAssetChanges();
   renderProjection();
   renderTicker();
@@ -4263,10 +4304,6 @@ function buildSettings(){ buildSyncUI();
       </div>`;
     }).join('');
 
-  // ── Savings section ──
-  buildSavingsSettings();
-  // ── Hood Chain section ──
-  buildHoodSettings();
 }
 function buildSavingsSettings(){
   // Inject savings section after the divider that follows sAssets
@@ -4316,83 +4353,8 @@ function buildSavingsSettings(){
           :'Enable and enter a balance to track savings interest automatically.'}
       </div>
     </div>`;
-  // Insert before the divider that precedes "Add New Asset"
-  const divider=container.querySelector('.divider');
-  if(divider) container.insertBefore(block,divider);
-  else container.appendChild(block);
-}
-
-function buildHoodSettings(){
-  const container=document.getElementById('sBody');
-  if(!container) return;
-  const old=document.getElementById('hoodSettingsBlock');
-  if(old) old.remove();
-
-  const payoutAssets=P.assets.filter(a=>a.isHoodPayout&&a.qty>0);
-  const lastScan=HOOD_SCAN.lastScan
-    ?new Date(HOOD_SCAN.lastScan).toLocaleTimeString():'Never';
-  const idxA=P.assets.find(a=>a.id==='index-rh');
-  const idxQty=idxA?idxA.qty.toLocaleString('en-AU',{maximumFractionDigits:4}):'0';
-  const idxPx=idxA&&PX['index-rh']&&!PX['index-rh'].failed
-    ?PX['index-rh'].price*((CCY==='AUD'?AUDRT:1)||1):null;
-  const idxVal=idxPx&&idxA
-    ?`≈ ${CCY==='AUD'?'A$':'$'}${(idxA.qty*idxPx).toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})}`
-    :'';
-
-  const block=document.createElement('div');
-  block.id='hoodSettingsBlock';
-  block.innerHTML=`
-    <div class="divider"></div>
-    <div class="s-section-label" style="display:flex;justify-content:space-between;align-items:center">
-      <span>🔗 Hood Chain Wallet · INDEX Payouts</span>
-      <span id="hoodLastScan" style="font-size:10px;color:var(--ink-4);font-weight:400">Last scan: ${lastScan}</span>
-    </div>
-    <div class="s-row" style="padding:10px 0 6px;border:0">
-      <div style="font-size:10px;color:var(--ink-4);margin-bottom:10px;word-break:break-all;line-height:1.5">
-        📍 <strong style="color:var(--ink-3)">Wallet:</strong>
-        <span style="font-family:var(--mono);font-size:9px">${HOOD_WALLET}</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-        <label class="sav-toggle-label" style="font-size:12px">
-          <input type="checkbox" ${HOOD_SCAN.enabled?'checked':''}
-            onchange="HOOD_SCAN.enabled=this.checked;saveHoodScan();if(this.checked)startHoodScan()">
-          Auto-scan hourly
-        </label>
-        <button class="hood-scan-btn" onclick="scanHoodWallet()" style="font-size:11px">
-          ↻ Scan now
-        </button>
-      </div>
-    </div>
-    <div style="padding:6px 0 8px;border-bottom:1px solid var(--rule-s)">
-      <div class="sec-lbl" style="margin-bottom:5px">INDEX Balance</div>
-      <div style="font-size:13px;color:var(--ink-1);font-family:var(--mono)">
-        ${idxQty} INDEX
-        ${idxVal?`<span style="color:var(--ink-4);font-size:10px;font-family:var(--sans);margin-left:6px">${idxVal}</span>`:''}
-      </div>
-      <div style="font-size:9.5px;color:var(--ink-4);margin-top:2px">Synced from chain — updates every hour</div>
-    </div>
-    <div style="padding:8px 0 4px">
-      <div class="sec-lbl" style="margin-bottom:6px">Received Payouts (${payoutAssets.length} token${payoutAssets.length!==1?'s':''})</div>
-      ${payoutAssets.length?payoutAssets.map(a=>{
-        const px=PX[a.id];
-        const unitPx=px&&!px.failed?px.price*(CCY==='AUD'?AUDRT:1):null;
-        const val=unitPx?`${CCY==='AUD'?'A$':'$'}${(a.qty*unitPx).toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})}`:'';
-        return `<div style="display:flex;justify-content:space-between;align-items:center;
-          padding:7px 0;border-bottom:1px solid var(--rule-s);font-size:12px">
-          <div style="display:flex;align-items:center;gap:7px">
-            <div style="width:6px;height:6px;border-radius:50%;background:${a.color};flex-shrink:0"></div>
-            <span style="font-weight:600;color:var(--ink-1)">$${a.sym}</span>
-            <span style="color:var(--ink-4);font-size:10.5px">${a.name}</span>
-          </div>
-          <div style="text-align:right;font-family:var(--mono)">
-            <div style="color:var(--ink-2);font-size:11.5px">${a.qty.toLocaleString('en-AU',{maximumFractionDigits:4})}</div>
-            ${val?`<div style="color:var(--pos);font-size:10px">${val}</div>`:''}
-          </div>
-        </div>`;
-      }).join(''):'<div style="font-size:11px;color:var(--ink-4);padding:4px 0 6px">No payouts detected yet — click Scan now to check.</div>'}
-    </div>
-  `;
-  const divider=container.querySelector('.divider');
+  // Insert before the first DIRECT-CHILD divider (avoids mis-targeting dividers inside sibling blocks)
+  const divider=Array.from(container.children).find(el=>el.classList.contains('divider'));
   if(divider) container.insertBefore(block,divider);
   else container.appendChild(block);
 }
@@ -5176,11 +5138,52 @@ function superSparklineSVG(){
 /* ═══════════════════════════════════════════════════
    SUPERANNUATION
 ═══════════════════════════════════════════════════ */
-const SUPER_ASSETS=[
-  {id:'nxt', sym:'NXT', name:'NextDC',     qty:480,  cost:15.002, color:'#14794a'},
-  {id:'mp1', sym:'MP1', name:'Megaport',   qty:400,  cost:8.852,  color:'#8b5cf6'},
-  {id:'maq', sym:'MAQ', name:'Macquarie Telecom',qty:39, cost:77.012, color:'#c0392b'},
+const SUPER_ASSET_COLORS=['#14794a','#8b5cf6','#c0392b','#1d6fb8','#c0770e','#0e7a6e','#b83870','#5e38b8'];
+let _superColorIdx=0;
+function nextSuperColor(){ return SUPER_ASSET_COLORS[_superColorIdx++%SUPER_ASSET_COLORS.length]; }
+
+const SUPER_DEFAULTS=[
+  {id:'nxt', sym:'NXT', name:'NextDC',           qty:480, cost:15.002, color:'#14794a'},
+  {id:'mp1', sym:'MP1', name:'Megaport',          qty:400, cost:8.852,  color:'#8b5cf6'},
+  {id:'maq', sym:'MAQ', name:'Macquarie Telecom', qty:39,  cost:77.012, color:'#c0392b'},
 ];
+let SUPER_ASSETS=(()=>{
+  try{
+    const raw=localStorage.getItem('ptSuperAssets');
+    if(raw){ const parsed=JSON.parse(raw); if(Array.isArray(parsed)&&parsed.length) return parsed; }
+  }catch(e){}
+  return JSON.parse(JSON.stringify(SUPER_DEFAULTS)); // deep copy
+})();
+function saveSuperAssets(){
+  try{ localStorage.setItem('ptSuperAssets',JSON.stringify(SUPER_ASSETS)); }catch(e){}
+}
+function addSuperAsset(){
+  const sym=(document.getElementById('superNewSym')?.value||'').trim().toUpperCase();
+  const name=(document.getElementById('superNewName')?.value||'').trim();
+  const qty=parseFloat(document.getElementById('superNewQty')?.value)||0;
+  const cost=parseFloat(document.getElementById('superNewCost')?.value)||0;
+  if(!sym||qty<=0||cost<=0){ toast('Fill in all fields first','err'); return; }
+  const id='super_'+sym.toLowerCase()+'_'+Date.now();
+  SUPER_ASSETS.push({id, sym, name:name||sym, qty, cost, color:nextSuperColor()});
+  saveSuperAssets();
+  // Clear inputs
+  ['superNewSym','superNewName','superNewQty','superNewCost'].forEach(i=>{
+    const el=document.getElementById(i); if(el) el.value='';
+  });
+  renderSuper();
+  toast(`Added $${sym} to super`,'ok');
+}
+function removeSuperAsset(id){
+  if(!confirm('Remove this asset from super?')) return;
+  const a=SUPER_ASSETS.find(x=>x.id===id);
+  SUPER_ASSETS=SUPER_ASSETS.filter(x=>x.id!==id);
+  if(SUPER_MANUAL[id]) delete SUPER_MANUAL[id];
+  saveSuperAssets();
+  saveSuperPrices();
+  renderSuper();
+  if(a) toast(`Removed $${a.sym}`,'inf');
+}
+
 let SUPER_MANUAL={};  // {id: price}
 let SUPER_TS=0;       // timestamp of last price update
 let SUPER_OPEN=false;
@@ -5264,7 +5267,14 @@ function renderSuper(){
 
     const assetCell=`<td><div class="super-sym-cell">
       <div class="super-orb" style="color:${a.color};border-color:${a.color}33">${a.sym[0]}</div>
-      <div><div class="super-sym">$${a.sym}</div><div class="super-name">${a.name}</div><span class="super-tag">ASX</span></div>
+      <div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="super-sym">$${a.sym}</div>
+          <button class="super-del-btn" onclick="removeSuperAsset('${a.id}')" title="Remove">✕</button>
+        </div>
+        <div class="super-name">${a.name}</div>
+        <span class="super-tag">ASX</span>
+      </div>
     </div></td>`;
     const costCell=`<td class="r"><div class="super-price">A$${a.cost.toFixed(3)}</div><div class="super-cost">A$${cost.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})} total</div></td>`;
     const inputCell=`<td class="r"><input class="super-inp" type="number" step="0.001" min="0"
@@ -5416,37 +5426,6 @@ document.addEventListener('DOMContentLoaded',async ()=>{
       try{localStorage.setItem('ptXrpSplit',JSON.stringify(XRP_SPLIT));}catch(e){}
     }
   }
-  syncSavingsAsset(); // apply savings to P.assets + PX before first render
-
-  // ── Auto-add INDEX if not already in the portfolio ──
-  if(!P.assets.find(a=>a.id==='index-rh')){
-    P.assets.push({
-      id:'index-rh', name:'The Index', sym:'INDEX',
-      type:'evm_token', qty:0,
-      color:'#6366f1',
-      manual:null,
-      ca: INDEX_CA,
-      chain:'robinhood',
-      isHoodPayout:false,
-    });
-    saveP();
-  }
-
-  // ── Re-attach any saved payout tokens from HOOD_SCAN ──
-  // (Restores payout assets if localStorage has data but P.assets was cleared/migrated)
-  for(const [ca, known] of Object.entries(HOOD_SCAN.knownCAs||{})){
-    const assetId='payout:'+ca;
-    if(!P.assets.find(a=>a.id===assetId)){
-      P.assets.push({
-        id:assetId, name:'Payout Token', sym:'???',
-        type:'evm_token', qty:0,
-        color:nextHoodColor(),
-        manual:null, ca, chain:'robinhood',
-        isHoodPayout:true,
-      });
-    }
-  }
-
   renderAll();
   initPayCountdown();
   // Pull from Supabase on load — merges all data from other devices
@@ -5457,8 +5436,6 @@ document.addEventListener('DOMContentLoaded',async ()=>{
   renderSavingsProjection();
   renderAssetChanges(); // Show existing changelog immediately on load
   doRefresh();
-  // Start Hood wallet scanner (runs immediately + every hour)
-  startHoodScan();
   document.getElementById('overlay').addEventListener('keydown',e=>{
     if(e.key==='Escape') closeSettings();
   });
