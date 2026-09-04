@@ -1805,6 +1805,31 @@ function saveP(){
   try{ localStorage.setItem('ptv10',JSON.stringify(P)); }catch(e){}
 }
 
+/* Remove outlier history entries caused by bad price fetches.
+   Uses median × 20 as the cap — legitimate portfolio swings
+   stay well inside that; a bad fetch that 100×'s a price doesn't. */
+function cleanHistory(){
+  if(!P.history||P.history.length<3) return;
+  const totals=P.history.map(e=>{
+    if(!e.av||!e.qty) return 0;
+    return Object.keys(e.qty).reduce((s,id)=>s+(e.qty[id]??0)*(e.av[id]??0),0);
+  }).filter(t=>t>0);
+  if(totals.length<3) return;
+  const sorted=[...totals].sort((a,b)=>a-b);
+  const median=sorted[Math.floor(sorted.length/2)];
+  const cap=median*20;
+  const before=P.history.length;
+  P.history=P.history.filter(e=>{
+    if(!e.av||!e.qty) return true;
+    const tot=Object.keys(e.qty).reduce((s,id)=>s+(e.qty[id]??0)*(e.av[id]??0),0);
+    return tot<=cap;
+  });
+  if(P.history.length<before){
+    console.warn(`cleanHistory: removed ${before-P.history.length} outlier history point(s)`);
+    saveP();
+  }
+}
+
 /* ═══════════════════════════════════════════════════
    THEME — cycles: dark → light → aurora → dark
 ═══════════════════════════════════════════════════ */
@@ -3185,21 +3210,29 @@ function renderInsights(){
   const fmtK=v=>v>=1000000?'A$'+(v/1000000).toFixed(2)+'M':v>=1000?'A$'+(v/1000).toFixed(1)+'K':fmtAUD(v);
   const rate=AUDRT||1.57;
 
+  // Always-AUD asset value helper — avoids double-conversion bugs
+  const valAUD=a=>{
+    const px=PX[a.id];
+    if(!px||px.failed||px.price==null) return 0;
+    return a.qty*(px.priceAud!=null?px.priceAud:px.price*rate);
+  };
+
   // Assets with valid prices
   const live=P.assets.filter(a=>PX[a.id]&&!PX[a.id].failed&&a.id!=='savings');
   const total=totalVal();
-  const totalAUD=CCY==='AUD'?total:total*rate;
+  // Always compute totalAUD directly — avoids double-conversion when CCY='AUD'
+  const totalAUD=totalValAUD();
 
   // ── 1. Best performer today ──
   if(live.length){
     const best=live.filter(a=>PX[a.id].ch24!=null).sort((a,b)=>PX[b.id].ch24-PX[a.id].ch24)[0];
     if(best&&PX[best.id].ch24!=null){
       const ch=PX[best.id].ch24;
-      const val=assetVal(best)*rate;
+      const val=valAUD(best);
       cards.push({
         tag:ch>=0?'pos':'neg', ico:ch>=5?'🚀':ch>=0?'📈':'📉',
         title:`${best.sym} ${ch>=0?'up':'down'} ${Math.abs(ch).toFixed(1)}% today`,
-        body:`Best performer · Portfolio value: ${fmtAUD(val)} · Price: ${fmtP(dp(PX[best.id]),isConv(PX[best.id]))}`,
+        body:`Best performer · Holding value: ${fmtAUD(val)} · Price: ${fmtP(dp(PX[best.id]),isConv(PX[best.id]))}`,
       });
     }
   }
@@ -3212,7 +3245,7 @@ function renderInsights(){
       cards.push({
         tag:'neg', ico:'⚠️',
         title:`${worst.sym} down ${Math.abs(ch).toFixed(1)}% today`,
-        body:`Weakest performer · Dragged by ${fmtAUD(Math.abs(assetVal(worst)*rate*(ch/100)))} in value`,
+        body:`Weakest performer · Dragged by ${fmtAUD(Math.abs(valAUD(worst)*ch/100))} in value`,
       });
     }
   }
@@ -3221,7 +3254,7 @@ function renderInsights(){
   if(live.length){
     const leader=live.sort((a,b)=>assetVal(b)-assetVal(a))[0];
     const pct=(assetVal(leader)/total*100).toFixed(1);
-    const val=assetVal(leader)*rate;
+    const val=valAUD(leader);
     cards.push({
       tag:'info', ico:'🏆',
       title:`${leader.sym} leads your portfolio`,
@@ -3267,13 +3300,14 @@ function renderInsights(){
   // ── 6. 24h portfolio change ──
   if(total>0){
     const ch24=change24();
-    const chAUD=ch24*(CCY==='AUD'?1:rate);
+    // change24().$ is in current CCY — convert to AUD if currently USD
+    const chAUD=ch24.$*(CCY==='AUD'?1:rate);
     if(Math.abs(chAUD)>0.01){
       const dir=chAUD>=0;
       cards.push({
         tag:dir?'pos':'neg', ico:dir?'📊':'📉',
         title:`Portfolio ${dir?'gained':'lost'} ${fmtAUD(Math.abs(chAUD))} today`,
-        body:`24h change: ${dir?'+':''}${chAUD.toFixed(2)} AUD · Total: ${fmtAUD(totalAUD)}`,
+        body:`24h move: ${dir?'+':''}${ch24.pct.toFixed(2)}% · Total: ${fmtAUD(totalAUD)}`,
       });
     }
   }
@@ -4067,7 +4101,21 @@ function renderStackedChart(){
   const noH=document.getElementById('noStackHist');
   const ctx=document.getElementById('stackChart');
   const legWrap=document.getElementById('stackLegend');
-  const slice=hist.slice(-144);
+  // Compute current live USD total as the reference for outlier detection
+  const liveRef=P.assets.reduce((s,a)=>{
+    const px=PX[a.id];
+    if(!px||px.failed||px.price==null) return s;
+    return s+a.qty*px.price;
+  },0);
+  const outlierCap=liveRef>0?liveRef*10:Infinity;
+
+  // Take last 144 points then strip any entry whose total exceeds 10× live portfolio value
+  const rawSlice=hist.slice(-144);
+  const slice=rawSlice.filter(e=>{
+    if(!e.av||!e.qty) return true;
+    const tot=Object.keys(e.qty).reduce((s,id)=>s+(e.qty[id]??0)*(e.av[id]??0),0);
+    return tot<=outlierCap;
+  });
 
   if(slice.length<2){
     if(noH) noH.style.display='flex';
@@ -5552,6 +5600,7 @@ document.addEventListener('DOMContentLoaded',async ()=>{
   }catch(e){}
   // Sync status
   setSbStatus(sbReady()?'syncing':'off');
+  cleanHistory(); // strip any bad-fetch outliers from history before first render
   renderAll();
   initPayCountdown();
   // Pull from Supabase on load — merges all data from other devices
