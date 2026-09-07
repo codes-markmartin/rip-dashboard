@@ -1539,9 +1539,9 @@ body.aurora-mode footer{background:var(--surface);border-top-color:var(--rule-s)
           <span class="cb-chain-name">PONS</span>
         </div>
         <div class="cb-metrics" id="cbPonsMetrics">
-          <div class="cb-metric cb-loading"><span class="cb-mk">Price</span><span class="cb-mv">—</span></div>
+          <div class="cb-metric cb-loading"><span class="cb-mk">24h Fees</span><span class="cb-mv">—</span></div>
+          <div class="cb-metric cb-loading"><span class="cb-mk">24h Revenue</span><span class="cb-mv">—</span></div>
           <div class="cb-metric cb-loading"><span class="cb-mk">24h Volume</span><span class="cb-mv">—</span></div>
-          <div class="cb-metric cb-loading"><span class="cb-mk">Liquidity</span><span class="cb-mv">—</span></div>
           <div class="cb-metric cb-loading"><span class="cb-mk">24h Txns</span><span class="cb-mv">—</span></div>
         </div>
       </div>
@@ -2003,6 +2003,11 @@ function loadP(){
       // Update XRP qty if it hasn't been manually changed to the new amount
       const xrpA=d.assets.find(a=>a.id==='xrp');
       if(xrpA&&xrpA.qty===500) xrpA.qty=618.48;
+      // Ensure PONS is always present (migration: inject if missing from saved portfolio)
+      if(!d.assets.find(a=>a.id==='pons')){
+        const defPons=DEFAULTS.assets.find(a=>a.id==='pons');
+        if(defPons) d.assets.push(JSON.parse(JSON.stringify(defPons)));
+      }
       // Bump version
       d.v=10;
       return d;
@@ -6015,25 +6020,37 @@ async function fetchChainBattle(){
     }
   }catch(e){}
 
-  // ── 4. PONS data from DexScreener (already in PX) ──
-  const ponsPx=PX['pons'];
+  // ── 4. PONS protocol data from DeFiLlama ──
+  // Try common slugs; fall back to DexScreener if none found
+  const PONS_SLUGS=['pons','pons-launchpad','pons-dex','pons-finance'];
+  let ponsFees=null,ponsRev=null,ponsVol=null,ponsTxns=null;
+
+  for(const slug of PONS_SLUGS){
+    try{
+      const r=await fetch(`https://api.llama.fi/summary/dexs/${slug}`,{signal:AbortSignal.timeout(8000)});
+      if(r.ok){const d=await r.json();ponsVol=d.total24h??null;ponsTxns=d.transactions24h??null;break;}
+    }catch(e){}
+  }
+  for(const slug of PONS_SLUGS){
+    try{
+      const r=await fetch(`https://api.llama.fi/summary/fees/${slug}`,{signal:AbortSignal.timeout(8000)});
+      if(r.ok){const d=await r.json();ponsFees=d.total24h??null;ponsRev=d.revenue24h??d.dailyRevenue??null;break;}
+    }catch(e){}
+  }
+  // DexScreener fallback for volume if DeFiLlama has no PONS entry yet
+  if(ponsVol==null){const px=PX['pons'];if(px?.volume24h!=null)ponsVol=px.volume24h;}
 
   CB={
     rh:{fees:rhFees,rev:rhRev,tvl:rhTvl,vol:rhVol,name:rhName||'Robinhood Chain'},
     sol:{fees:solFees,rev:solRev,tvl:solTvl,vol:solVol},
-    pons:{
-      price:ponsPx?.price??null,
-      vol:ponsPx?.volume24h??null,
-      liq:ponsPx?.liquidity??null,
-      txns:ponsPx?.txns24h??null
-    },
+    pons:{fees:ponsFees,rev:ponsRev,vol:ponsVol,txns:ponsTxns},
     pump:{fees:pumpFees,rev:pumpRev,vol:pumpVol,txns:pumpTxns},
     ts:Date.now()
   };
 
   renderChainBattle();
   if(dot){
-    const anyData=rhFees!=null||solFees!=null||ponsPx?.price!=null||pumpFees!=null;
+    const anyData=rhFees!=null||solFees!=null||pumpFees!=null||ponsVol!=null;
     dot.className='cb-refresh-dot '+(anyData?'ok':'err');
   }
 }
@@ -6067,29 +6084,24 @@ function renderChainBattle(){
     row('24h DEX Vol', CB_FMT(sol.vol))
   );
 
-  // ── PONS ──
+  // ── PONS (parallel metrics to Pump.fun) ──
   const pons=CB.pons||{};
-  const ponsPrice=pons.price!=null
-    ?(pons.price<0.01?'$'+pons.price.toFixed(6):'$'+pons.price.toFixed(4))
-    :'—';
-  const ponsVol=pons.vol!=null?CB_FMT(pons.vol):'—';
-  const ponsLiq=pons.liq!=null?CB_FMT(pons.liq):'—';
-  const ponsTxns=pons.txns!=null?Number(pons.txns).toLocaleString('en-AU'):'—';
+  const ponsTxnsFmt=pons.txns!=null?Number(pons.txns).toLocaleString('en-AU'):'—';
   setEl('cbPonsMetrics',
-    row('Price', ponsPrice) +
-    row('24h Volume', ponsVol) +
-    row('Liquidity', ponsLiq) +
-    row('24h Txns', ponsTxns)
+    row('24h Fees', CB_FMT(pons.fees)) +
+    row('24h Revenue', CB_FMT(pons.rev)) +
+    row('24h Volume', CB_FMT(pons.vol)) +
+    row('24h Txns', ponsTxnsFmt)
   );
 
   // ── Pump.fun ──
   const pump=CB.pump||{};
-  const pumpTxns=pump.txns!=null?Number(pump.txns).toLocaleString('en-AU'):'—';
+  const pumpTxnsFmt=pump.txns!=null?Number(pump.txns).toLocaleString('en-AU'):'—';
   setEl('cbPumpMetrics',
     row('24h Fees', CB_FMT(pump.fees)) +
     row('24h Revenue', CB_FMT(pump.rev)) +
-    row('Total Volume', CB_FMT(pump.vol)) +
-    row('24h Txns', pumpTxns)
+    row('24h Volume', CB_FMT(pump.vol)) +
+    row('24h Txns', pumpTxnsFmt)
   );
 }
 
