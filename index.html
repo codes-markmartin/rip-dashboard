@@ -820,6 +820,76 @@ body.aurora-mode .pons-scen-sect{
 }
 
 /* ══════════════════════════════════════════════════════════════
+   CHAIN BATTLE CARD
+══════════════════════════════════════════════════════════════ */
+.cb-sect{overflow:hidden;}
+.cb-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 20px 12px;
+}
+.cb-title{
+  font-family:var(--serif);font-size:17px;font-weight:600;color:var(--ink);letter-spacing:-.01em;
+}
+.cb-subtitle{
+  font-family:var(--mono);font-size:10px;color:var(--ink-4);margin-top:2px;letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.cb-refresh-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--ink-4);
+  transition:background .4s;
+}
+.cb-refresh-dot.ok{background:var(--pos);}
+.cb-refresh-dot.err{background:var(--neg);}
+.cb-panel-label{
+  font-family:var(--mono);font-size:8.5px;font-weight:700;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--ink-4);padding:0 20px 8px;
+}
+.cb-panel{
+  display:grid;grid-template-columns:1fr auto 1fr;gap:0;
+  padding:0 16px 20px;align-items:start;
+}
+.cb-col{padding:0 8px;}
+.cb-col-head{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 0 10px;border-bottom:1px solid var(--rule-s);margin-bottom:10px;
+}
+.cb-chain-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.cb-chain-name{
+  font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.02em;color:var(--ink);
+}
+.cb-metrics{display:flex;flex-direction:column;gap:0;}
+.cb-metric{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:7px 0;border-bottom:1px solid var(--rule-s);gap:8px;
+}
+.cb-metric:last-child{border-bottom:none;}
+.cb-mk{
+  font-family:var(--mono);font-size:10px;color:var(--ink-4);letter-spacing:.02em;flex-shrink:0;
+}
+.cb-mv{
+  font-family:var(--mono);font-size:12px;font-weight:600;color:var(--ink);
+  text-align:right;
+}
+.cb-mv.pos{color:var(--pos);}
+.cb-mv.neg{color:var(--neg);}
+.cb-mv.neu{color:var(--ink-3);}
+.cb-loading .cb-mv{color:var(--ink-4);animation:cbPulse 1.4s ease-in-out infinite;}
+@keyframes cbPulse{0%,100%{opacity:.3}50%{opacity:.8}}
+.cb-vs{
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:9px;font-weight:800;letter-spacing:.15em;
+  color:var(--ink-4);padding:0 4px;margin-top:36px;
+  writing-mode:vertical-rl;text-orientation:mixed;
+}
+.cb-rule{
+  height:1px;background:var(--rule);margin:4px 20px 16px;opacity:.6;
+}
+.cb-err{
+  font-family:var(--mono);font-size:10px;color:var(--ink-4);
+  text-align:center;padding:14px 0;
+}
+
+/* ══════════════════════════════════════════════════════════════
    GROWTH PROJECTION
 ══════════════════════════════════════════════════════════════ */
 .proj-chart-wrap{margin-top:22px;height:220px;position:relative;}
@@ -1387,6 +1457,112 @@ body.aurora-mode footer{background:var(--surface);border-top-color:var(--rule-s)
   </div>
 
 
+  <!-- ── PONS Price Scenarios ── -->
+  <section class="sect pons-scen-sect" id="sectXms">
+    <div class="pons-scen-header">
+      <div class="pons-scen-coin">
+        <div class="pons-scen-dot"></div>
+        <div>
+          <div class="pons-scen-title">PONS Price Scenarios</div>
+          <div class="pons-scen-sub" id="xmsCurPx">Loading price…</div>
+        </div>
+      </div>
+      <div class="pons-scen-badge-live">If He Wills · James 4:15</div>
+    </div>
+    <div class="xms-wrap">
+      <table class="pons-scen-table">
+        <thead>
+          <tr>
+            <th class="xms-th-price">Target Price</th>
+            <th>USD Value</th>
+            <th>AUD Value</th>
+            <th>Multiplier</th>
+          </tr>
+        </thead>
+        <tbody id="xmsBody"><tr><td colspan="4" style="text-align:center;padding:18px;color:var(--ink-4);font-size:12px">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── Chain & Protocol Intelligence ── -->
+  <section class="sect cb-sect" id="sectChainBattle">
+    <div class="cb-header">
+      <div>
+        <div class="cb-title">Ecosystem Intelligence</div>
+        <div class="cb-subtitle">Live on-chain metrics · DeFiLlama</div>
+      </div>
+      <div class="cb-refresh-dot" id="cbDot" title="Data status"></div>
+    </div>
+
+    <!-- Panel 1: Chain Battle -->
+    <div class="cb-panel-label">Chain Performance</div>
+    <div class="cb-panel">
+      <!-- Robinhood Chain -->
+      <div class="cb-col cb-col-rh">
+        <div class="cb-col-head">
+          <div class="cb-chain-dot" style="background:#14b88a;box-shadow:0 0 10px #14b88a55"></div>
+          <span class="cb-chain-name">Robinhood Chain</span>
+        </div>
+        <div class="cb-metrics" id="cbRhMetrics">
+          <div class="cb-metric cb-loading"><span class="cb-mk">24h Fees</span><span class="cb-mv">—</span></div>
+          <div class="cb-metric cb-loading"><span class="cb-mk">24h Revenue</span><span class="cb-mv">—</span></div>
+          <div class="cb-metric cb-loading"><span class="cb-mk">TVL</span><span class="cb-mv">—</span></div>
+          <div class="cb-metric cb-loading"><span class="cb-mk">24h Volume</span><span class="cb-mv">—</span></div>
+        </div>
+      </div>
+      <!-- Divider -->
+      <div class="cb-vs">VS</div>
+      <!-- Solana -->
+      <div class="cb-col cb-col-sol">
+        <div class="cb-col-head">
+          <div class="cb-chain-dot" style="background:#9945ff;box-shadow:0 0 10px #9945ff55"></div>
+          <span class="cb-chain-name">Solana</span>
+        </div>
+        <div class="cb-metrics" id="cbSolMetrics">
+          <div class="cb-metric cb-loading"><span class="cb-mk">24h Fees</span><span class="cb-mv">—</span></div>
+          <div class="cb-metric cb-loading"><span class="cb-mk">24h Revenue</span><span class="cb-mv">—</span></div>
+          <div class="cb-metric cb-loading"><span class="cb-mk">TVL</span><span class="cb-mv">—</span></div>
+          <div class="cb-metric cb-loading"><span class="cb-mk">24h Volume</span><span class="cb-mv">—</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cb-rule"></div>
+
+    <!-- Panel 2: Protocol Battle -->
+    <div class="cb-panel-label">Protocol Performance</div>
+    <div class="cb-panel">
+      <!-- PONS -->
+      <div class="cb-col cb-col-pons">
+        <div class="cb-col-head">
+          <div class="cb-chain-dot" style="background:#e05c1a;box-shadow:0 0 10px #e05c1a55"></div>
+          <span class="cb-chain-name">PONS</span>
+        </div>
+        <div class="cb-metrics" id="cbPonsMetrics">
+          <div class="cb-metric cb-loading"><span class="cb-mk">Price</span><span class="cb-mv">—</span></div>
+          <div class="cb-metric cb-loading"><span class="cb-mk">24h Volume</span><span class="cb-mv">—</span></div>
+          <div class="cb-metric cb-loading"><span class="cb-mk">Liquidity</span><span class="cb-mv">—</span></div>
+          <div class="cb-metric cb-loading"><span class="cb-mk">24h Txns</span><span class="cb-mv">—</span></div>
+        </div>
+      </div>
+      <!-- Divider -->
+      <div class="cb-vs">VS</div>
+      <!-- Pump.fun -->
+      <div class="cb-col cb-col-pump">
+        <div class="cb-col-head">
+          <div class="cb-chain-dot" style="background:#00c2a8;box-shadow:0 0 10px #00c2a855"></div>
+          <span class="cb-chain-name">Pump.fun</span>
+        </div>
+        <div class="cb-metrics" id="cbPumpMetrics">
+          <div class="cb-metric cb-loading"><span class="cb-mk">24h Fees</span><span class="cb-mv">—</span></div>
+          <div class="cb-metric cb-loading"><span class="cb-mk">24h Revenue</span><span class="cb-mv">—</span></div>
+          <div class="cb-metric cb-loading"><span class="cb-mk">Total Volume</span><span class="cb-mv">—</span></div>
+          <div class="cb-metric cb-loading"><span class="cb-mk">24h Txns</span><span class="cb-mv">—</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ── I · Insights ── -->
   <section class="sect" id="sectInsights">
     <div class="sect-head">
@@ -1492,34 +1668,6 @@ body.aurora-mode footer{background:var(--surface);border-top-color:var(--rule-s)
     </div>
   </section>
 
-  <!-- ── VII · PONS Price Scenarios ── -->
-  <section class="sect pons-scen-sect" id="sectXms" style="display:none">
-    <!-- Accent bar + header -->
-    <div class="pons-scen-header">
-      <div class="pons-scen-coin">
-        <div class="pons-scen-dot"></div>
-        <div>
-          <div class="pons-scen-title">PONS Price Scenarios</div>
-          <div class="pons-scen-sub" id="xmsCurPx">—</div>
-        </div>
-      </div>
-      <div class="pons-scen-badge-live">If He Wills · James 4:15</div>
-    </div>
-    <!-- Scenario table -->
-    <div class="xms-wrap">
-      <table class="xms-table pons-scen-table">
-        <thead>
-          <tr>
-            <th class="xms-th-price">Target Price</th>
-            <th>USD Value</th>
-            <th>AUD Value</th>
-            <th>Multiplier</th>
-          </tr>
-        </thead>
-        <tbody id="xmsBody"></tbody>
-      </table>
-    </div>
-  </section>
 
 </main>
 
@@ -1713,7 +1861,7 @@ function applyPrefs(){
   if(scrR) scrR.textContent=PREFS.scriptureRef||PREF_DEFAULTS.scriptureRef;
   const nq=document.querySelector('.nsr-quote');
   if(nq) nq.textContent=PREFS.navQuote||PREF_DEFAULTS.navQuote;
-  ['sectInsights','sectMilestones','sectHoldings','sectGrowth','sectWhatIf','sectXms'].forEach(id=>{
+  ['sectInsights','sectMilestones','sectHoldings','sectGrowth','sectWhatIf','sectXms','sectChainBattle'].forEach(id=>{
     const el=document.getElementById(id);
     if(el){
       if(PREFS.hideSections[id]) el.style.display='none';
@@ -1765,6 +1913,7 @@ let ANNOUNCEMENTS = []; // {key, icon, title, sub, time, type}
 let PREV_FX = null; // previous AUD rate for FX move detection
 let LAST_MS_PCT = (()=>{ try{return parseFloat(localStorage.getItem('ptLastMsPct')||'0')||0;}catch(e){return 0;} })();
 let MARKET = {}; // {btc,eth,sol,xrp} → {price,ch24,mcap,logo,name}
+let CB = {}; // Chain Battle data: {rh:{}, sol:{}, pons:{}, pump:{}}
 let SUPER_HISTORY = []; // [{ts, total, prices:{nxt,mp1,maq}}] — persisted in localStorage
 let _superChart = null;
 let FEAR_GREED = null; // {value:int, classification:str, ts:int}
@@ -2432,6 +2581,7 @@ async function doRefresh(){
   startCountdown();
   await Promise.all([fetchAUDRate(),fetchAllPrices(),fetchMarketOverview(),fetchFearGreed()]);
   renderXRPScenarios();
+  fetchChainBattle(); // non-blocking — updates card independently
 }
 async function fetchAllPrices(){
   syncSavingsAsset(); // ensure savings is present/absent in P.assets before fetching
@@ -4458,7 +4608,7 @@ ${h('ms-sec','Milestone Targets (A$)')}
 
 <div class="divider"></div>
 ${h('vis-sec','Section Visibility')}
-${[['sectInsights','Insights'],['sectMilestones','Milestones'],['sectHoldings','Holdings'],['sectGrowth','Growth Projection'],['sectWhatIf','What-If Calculator'],['sectXms','PONS Price Scenarios']].map(([id,name])=>`
+${[['sectInsights','Insights'],['sectMilestones','Milestones'],['sectHoldings','Holdings'],['sectGrowth','Growth Projection'],['sectWhatIf','What-If Calculator'],['sectXms','PONS Price Scenarios'],['sectChainBattle','Ecosystem Intelligence']].map(([id,name])=>`
 <label class="pref-check-row">
   <input type="checkbox" ${!PREFS.hideSections[id]?'checked':''} onchange="PREFS.hideSections['${id}']=!this.checked;savePrefs();applyPrefs()"/>
   ${name}
@@ -5671,6 +5821,7 @@ document.addEventListener('DOMContentLoaded',async ()=>{
   if(sbReady()) await sbPull();
   fetchMarketOverview();
   fetchFearGreed();
+  fetchChainBattle();
   renderXRPScenarios();
   renderSavingsProjection();
   renderAssetChanges(); // Show existing changelog immediately on load
@@ -5690,9 +5841,17 @@ function renderXRPScenarios(){
   const sect=document.getElementById('sectXms');
   if(!sect) return;
 
-  const ponsAsset=P.assets.find(a=>a.id==='pons'&&a.qty>0);
-  if(!ponsAsset){sect.style.display='none'; return;}
-  sect.style.display='';
+  // Section is always visible — never hide it programmatically
+  // (visibility is controlled by Settings → Preferences)
+  const ponsAsset=P.assets.find(a=>a.id==='pons');
+  const tbody=document.getElementById('xmsBody');
+
+  if(!ponsAsset||ponsAsset.qty<=0){
+    const curEl=document.getElementById('xmsCurPx');
+    if(curEl) curEl.textContent='No PONS holding found';
+    if(tbody) tbody.innerHTML=`<tr><td colspan="4" style="text-align:center;padding:18px;color:var(--ink-4);font-size:12px">Add PONS to your portfolio to see price scenarios.</td></tr>`;
+    return;
+  }
 
   const curPx=PX['pons']?.price||null;
   const rate=AUDRT||1.57;
@@ -5704,7 +5863,6 @@ function renderXRPScenarios(){
     ?`Current: $${curPx<0.01?curPx.toFixed(6):curPx.toFixed(4)} · ${qty.toLocaleString('en-AU',{maximumFractionDigits:0})} PONS held`
     :'Price loading…';
 
-  const tbody=document.getElementById('xmsBody');
   if(!tbody) return;
 
   // Helper: format large value
@@ -5756,6 +5914,184 @@ function renderXRPScenarios(){
 
 async function fetchXRPInsights(){ /* retired */ }
 function renderXRPInsights(){ /* retired */ }
+
+/* ═══════════════════════════════════════════════════
+   CHAIN & PROTOCOL INTELLIGENCE (Chain Battle)
+═══════════════════════════════════════════════════ */
+const CB_FMT = v => {
+  if(v==null||v===undefined||isNaN(v)) return '—';
+  const n=Number(v);
+  if(n>=1e9) return '$'+(n/1e9).toFixed(2)+'B';
+  if(n>=1e6) return '$'+(n/1e6).toFixed(2)+'M';
+  if(n>=1e3) return '$'+(n/1e3).toFixed(1)+'K';
+  return '$'+n.toFixed(2);
+};
+
+async function fetchChainBattle(){
+  const dot=document.getElementById('cbDot');
+  // ── 1. Chain fees & revenue from DeFiLlama overview ──
+  // Try possible Robinhood Chain slugs (DeFiLlama uses chain display name)
+  const RH_SLUGS=['Robinhood Chain','Robinhood','robinhood-chain','Robin'];
+  let rhFees=null, rhRev=null, rhTvl=null, rhVol=null, rhName=null;
+  let solFees=null, solRev=null, solTvl=null, solVol=null;
+
+  try{
+    // TVL for all chains
+    const tvlR=await fetch('https://api.llama.fi/v2/chains',{signal:AbortSignal.timeout(12000)});
+    if(tvlR.ok){
+      const tvlD=await tvlR.json();
+      const solC=tvlD.find(c=>c.name==='Solana');
+      if(solC) solTvl=solC.tvl;
+      for(const slug of RH_SLUGS){
+        const rhC=tvlD.find(c=>c.name.toLowerCase()===slug.toLowerCase());
+        if(rhC){ rhTvl=rhC.tvl; rhName=rhC.name; break; }
+      }
+    }
+  }catch(e){}
+
+  try{
+    // Fees overview — returns summary per chain with dailyFees + dailyRevenue
+    const feesR=await fetch(
+      'https://api.llama.fi/overview/fees?excludeTotalDataChart=true&excludeTotalDataChartBreakdown=true',
+      {signal:AbortSignal.timeout(12000)}
+    );
+    if(feesR.ok){
+      const feesD=await feesR.json();
+      const chains=feesD.protocols||[];
+      const sol=chains.find(c=>c.name==='Solana'||c.displayName==='Solana');
+      if(sol){ solFees=sol.total24h; solRev=sol.revenue24h||sol.dailyRevenue; }
+      for(const slug of RH_SLUGS){
+        const rh=chains.find(c=>
+          c.name.toLowerCase()===slug.toLowerCase()||
+          (c.displayName||'').toLowerCase()===slug.toLowerCase()
+        );
+        if(rh){ rhFees=rh.total24h; rhRev=rh.revenue24h||rh.dailyRevenue; if(!rhName) rhName=rh.displayName||rh.name; break; }
+      }
+    }
+  }catch(e){}
+
+  try{
+    // DEX volume overview
+    const dexR=await fetch(
+      'https://api.llama.fi/overview/dexs?excludeTotalDataChart=true&excludeTotalDataChartBreakdown=true',
+      {signal:AbortSignal.timeout(12000)}
+    );
+    if(dexR.ok){
+      const dexD=await dexR.json();
+      const chains=dexD.protocols||[];
+      // Sum volume for Solana-chain DEXes
+      let solVolSum=0;
+      chains.filter(c=>(c.chains||[]).includes('Solana')).forEach(c=>{ solVolSum+=(c.total24h||0); });
+      if(solVolSum>0) solVol=solVolSum;
+      // Sum volume for RH chain DEXes
+      for(const slug of RH_SLUGS){
+        let rhVolSum=0;
+        chains.filter(c=>(c.chains||[]).includes(slug)).forEach(c=>{ rhVolSum+=(c.total24h||0); });
+        if(rhVolSum>0){ rhVol=rhVolSum; break; }
+      }
+    }
+  }catch(e){}
+
+  // ── 2. Pump.fun protocol data ──
+  let pumpFees=null, pumpRev=null, pumpVol=null, pumpTxns=null;
+  try{
+    const pumpR=await fetch('https://api.llama.fi/summary/fees/pump-fun',{signal:AbortSignal.timeout(12000)});
+    if(pumpR.ok){
+      const d=await pumpR.json();
+      pumpFees=d.total24h;
+      pumpRev=d.revenue24h||d.dailyRevenue;
+      // totalAllTime as a proxy for cumulative volume
+      pumpVol=d.totalAllTime;
+    }
+  }catch(e){}
+
+  // ── 3. Pump.fun DEX volume ──
+  try{
+    const pvR=await fetch('https://api.llama.fi/summary/dexs/pump-fun',{signal:AbortSignal.timeout(12000)});
+    if(pvR.ok){
+      const d=await pvR.json();
+      if(pumpVol==null) pumpVol=d.total24h;
+      pumpTxns=d.transactions24h||null;
+    }
+  }catch(e){}
+
+  // ── 4. PONS data from DexScreener (already in PX) ──
+  const ponsPx=PX['pons'];
+
+  CB={
+    rh:{fees:rhFees,rev:rhRev,tvl:rhTvl,vol:rhVol,name:rhName||'Robinhood Chain'},
+    sol:{fees:solFees,rev:solRev,tvl:solTvl,vol:solVol},
+    pons:{
+      price:ponsPx?.price??null,
+      vol:ponsPx?.volume24h??null,
+      liq:ponsPx?.liquidity??null,
+      txns:ponsPx?.txns24h??null
+    },
+    pump:{fees:pumpFees,rev:pumpRev,vol:pumpVol,txns:pumpTxns},
+    ts:Date.now()
+  };
+
+  renderChainBattle();
+  if(dot){
+    const anyData=rhFees!=null||solFees!=null||ponsPx?.price!=null||pumpFees!=null;
+    dot.className='cb-refresh-dot '+(anyData?'ok':'err');
+  }
+}
+
+function renderChainBattle(){
+  // ── helpers ──
+  const setEl=(id,html)=>{ const e=document.getElementById(id); if(e) e.innerHTML=html; };
+  const row=(label,val,cls='')=>`<div class="cb-metric">
+    <span class="cb-mk">${label}</span>
+    <span class="cb-mv${cls?' '+cls:''}">${val||'—'}</span>
+  </div>`;
+
+  // ── Robinhood Chain ──
+  const rh=CB.rh||{};
+  const rhName=rh.name||'Robinhood Chain';
+  // Update chain name in DOM
+  document.querySelectorAll('.cb-col-rh .cb-chain-name').forEach(e=>e.textContent=rhName);
+  setEl('cbRhMetrics',
+    row('24h Fees', CB_FMT(rh.fees)) +
+    row('24h Revenue', CB_FMT(rh.rev)) +
+    row('TVL', CB_FMT(rh.tvl)) +
+    row('24h DEX Vol', CB_FMT(rh.vol))
+  );
+
+  // ── Solana ──
+  const sol=CB.sol||{};
+  setEl('cbSolMetrics',
+    row('24h Fees', CB_FMT(sol.fees)) +
+    row('24h Revenue', CB_FMT(sol.rev)) +
+    row('TVL', CB_FMT(sol.tvl)) +
+    row('24h DEX Vol', CB_FMT(sol.vol))
+  );
+
+  // ── PONS ──
+  const pons=CB.pons||{};
+  const ponsPrice=pons.price!=null
+    ?(pons.price<0.01?'$'+pons.price.toFixed(6):'$'+pons.price.toFixed(4))
+    :'—';
+  const ponsVol=pons.vol!=null?CB_FMT(pons.vol):'—';
+  const ponsLiq=pons.liq!=null?CB_FMT(pons.liq):'—';
+  const ponsTxns=pons.txns!=null?Number(pons.txns).toLocaleString('en-AU'):'—';
+  setEl('cbPonsMetrics',
+    row('Price', ponsPrice) +
+    row('24h Volume', ponsVol) +
+    row('Liquidity', ponsLiq) +
+    row('24h Txns', ponsTxns)
+  );
+
+  // ── Pump.fun ──
+  const pump=CB.pump||{};
+  const pumpTxns=pump.txns!=null?Number(pump.txns).toLocaleString('en-AU'):'—';
+  setEl('cbPumpMetrics',
+    row('24h Fees', CB_FMT(pump.fees)) +
+    row('24h Revenue', CB_FMT(pump.rev)) +
+    row('Total Volume', CB_FMT(pump.vol)) +
+    row('24h Txns', pumpTxns)
+  );
+}
 
 /* ═══════════════════════════════════════════════════
    SAVINGS GROWTH PROJECTION
