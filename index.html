@@ -750,28 +750,73 @@ body.aurora-mode{--xrp:oklch(0.780 0.148 68);--xrp-dim:oklch(0.780 0.148 68/0.14
 /* ══════════════════════════════════════════════════════════════
    PONS PRICE SCENARIOS
 ══════════════════════════════════════════════════════════════ */
-.xms-cur{font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:.02em;}
-.xms-wrap{overflow-x:auto;margin-top:2px;}
-.xms-table{width:100%;border-collapse:collapse;font-family:var(--mono);}
-.xms-table thead tr{border-bottom:2px solid var(--rule);}
-.xms-table th{font-size:8px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-4);padding:8px 16px 8px 0;text-align:right;}
-.xms-th-price{text-align:left!important;padding-left:4px!important;}
-.xms-table td{padding:10px 16px 10px 0;text-align:right;font-size:12.5px;border-bottom:1px solid var(--rule-s);vertical-align:middle;}
-.xms-table td:first-child{text-align:left;padding-left:4px;}
-.xms-row-cur{background:var(--accent-bg);}
-.xms-row-cur .xms-price{color:var(--accent);font-weight:700;}
+/* ── PONS Price Scenarios card ── */
+.pons-scen-sect{
+  border-top:3px solid #e05c1a;
+  position:relative;
+  overflow:hidden;
+}
+body.aurora-mode .pons-scen-sect{
+  background:linear-gradient(160deg,oklch(0.118 0.036 38/0.55) 0%,var(--surface) 60%);
+}
+.pons-scen-sect::before{
+  content:'';position:absolute;top:0;right:0;width:220px;height:220px;
+  background:radial-gradient(circle at 100% 0%,#e05c1a18 0%,transparent 65%);
+  pointer-events:none;
+}
+.pons-scen-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 20px 14px;gap:12px;flex-wrap:wrap;
+}
+.pons-scen-coin{display:flex;align-items:center;gap:12px;}
+.pons-scen-dot{
+  width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  background:radial-gradient(circle at 35% 35%,#f07840,#e05c1a 50%,#a03800);
+  box-shadow:0 0 18px #e05c1a44, 0 2px 6px #0006;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:9px;font-weight:700;color:#fff;letter-spacing:-.01em;
+}
+.pons-scen-dot::after{content:'PONS';}
+.pons-scen-title{
+  font-family:var(--serif);font-size:17px;font-weight:600;letter-spacing:-.01em;
+  color:var(--ink);line-height:1.2;
+}
+.pons-scen-sub{
+  font-family:var(--mono);font-size:10.5px;color:var(--ink-3);margin-top:2px;letter-spacing:.02em;
+}
+.pons-scen-badge-live{
+  font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:#e05c1a;background:#e05c1a14;border:1px solid #e05c1a33;
+  border-radius:20px;padding:4px 12px;white-space:nowrap;
+}
+.xms-wrap{overflow-x:auto;padding:0 20px 20px;}
+.pons-scen-table{width:100%;border-collapse:collapse;font-family:var(--mono);}
+.pons-scen-table thead tr{border-bottom:1px solid var(--rule);}
+.pons-scen-table th{
+  font-size:8px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-4);padding:8px 16px 8px 0;text-align:right;
+}
+.xms-th-price{text-align:left!important;padding-left:0!important;}
+.pons-scen-table td{
+  padding:9px 16px 9px 0;text-align:right;font-size:12.5px;
+  border-bottom:1px solid var(--rule-s);vertical-align:middle;
+}
+.pons-scen-table td:first-child{text-align:left;padding-left:0;}
+.xms-row-cur{background:linear-gradient(90deg,#e05c1a0d,transparent 80%);}
+.xms-row-cur .xms-price{color:#e05c1a;font-weight:700;}
 .xms-row-above .xms-price{color:var(--ink);}
-.xms-row-below{opacity:0.50;}
+.xms-row-below{opacity:0.45;}
 .xms-row-below .xms-price{color:var(--ink-4);}
 .xms-price{font-weight:600;font-size:13px;letter-spacing:-.01em;}
 .xms-usd{color:var(--ink-2);}
 .xms-aud{color:var(--ink-3);font-size:12px;}
 .xms-mult{font-weight:700;font-size:12.5px;}
-.xms-mult.pos{color:var(--pos);}.xms-mult.neg{color:var(--neg);}.xms-mult.flat{color:var(--accent);}
+.xms-mult.pos{color:var(--pos);}.xms-mult.neg{color:var(--neg);}.xms-mult.flat{color:#e05c1a;}
 .xms-badge{
-  display:inline-block;font-size:7.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
-  background:var(--accent-bg);color:var(--accent);border:1px solid var(--card-border-sub);
-  border-radius:3px;padding:1px 5px;margin-left:6px;vertical-align:middle;font-family:var(--sans);
+  display:inline-block;font-size:7px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  background:#e05c1a14;color:#e05c1a;border:1px solid #e05c1a30;
+  border-radius:3px;padding:1px 5px;margin-left:7px;vertical-align:middle;font-family:var(--sans);
+  white-space:nowrap;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -1341,29 +1386,6 @@ body.aurora-mode footer{background:var(--surface);border-top-color:var(--rule-s)
     <div class="asset-mini-charts" id="assetMiniCharts"></div>
   </div>
 
-  <!-- ── VII · XRP Price Scenarios ── -->
-  <section class="sect xms-sect" id="sectXms" style="display:none">
-    <div class="sect-head">
-      <div class="sect-title">
-        <span class="sect-num">VII</span>
-        PONS Price Scenarios
-      </div>
-      <span class="xms-cur" id="xmsCurPx">—</span>
-    </div>
-    <div class="xms-wrap">
-      <table class="xms-table">
-        <thead>
-          <tr>
-            <th class="xms-th-price">Target Price</th>
-            <th>Portfolio (USD)</th>
-            <th>Portfolio (AUD)</th>
-            <th>Multiplier</th>
-          </tr>
-        </thead>
-        <tbody id="xmsBody"></tbody>
-      </table>
-    </div>
-  </section>
 
   <!-- ── I · Insights ── -->
   <section class="sect" id="sectInsights">
@@ -1467,6 +1489,35 @@ body.aurora-mode footer{background:var(--surface);border-top-color:var(--rule-s)
         </div>
         <div class="wif-breakdown" id="wifBreakdown"></div>
       </div>
+    </div>
+  </section>
+
+  <!-- ── VII · PONS Price Scenarios ── -->
+  <section class="sect pons-scen-sect" id="sectXms" style="display:none">
+    <!-- Accent bar + header -->
+    <div class="pons-scen-header">
+      <div class="pons-scen-coin">
+        <div class="pons-scen-dot"></div>
+        <div>
+          <div class="pons-scen-title">PONS Price Scenarios</div>
+          <div class="pons-scen-sub" id="xmsCurPx">—</div>
+        </div>
+      </div>
+      <div class="pons-scen-badge-live">If He Wills · James 4:15</div>
+    </div>
+    <!-- Scenario table -->
+    <div class="xms-wrap">
+      <table class="xms-table pons-scen-table">
+        <thead>
+          <tr>
+            <th class="xms-th-price">Target Price</th>
+            <th>USD Value</th>
+            <th>AUD Value</th>
+            <th>Multiplier</th>
+          </tr>
+        </thead>
+        <tbody id="xmsBody"></tbody>
+      </table>
     </div>
   </section>
 
@@ -1718,8 +1769,17 @@ let SUPER_HISTORY = []; // [{ts, total, prices:{nxt,mp1,maq}}] — persisted in 
 let _superChart = null;
 let FEAR_GREED = null; // {value:int, classification:str, ts:int}
 // PONS price scenario targets (100,000 PONS held)
-const XMS_PRICES = [0.001, 0.005, 0.01, 0.05, 0.10, 0.25, 0.50, 1.00, 5.00, 10.00];
-const XMS_BADGES = {0.10:'Five Figures AUD', 1.00:'Six Figures AUD', 5.00:'Half Mil USD', 10.00:'Seven Figures AUD'};
+const XMS_PRICES = [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05, 0.10, 0.25, 0.50, 0.75, 1.00, 1.25, 1.50, 2.00, 3.00, 5.00, 10.00];
+const XMS_BADGES = {
+  0.50:'→ A$125k range',
+  0.75:'→ A$125k–A$150k',
+  1.00:'→ A$150k+ MS',
+  1.25:'→ A$175k–A$200k',
+  1.50:'→ A$250k MS',
+  2.00:'→ A$300k range',
+  5.00:'→ A$500k MS',
+  10.00:'→ A$1M MS 🎯'
+};
 
 // ── Savings account state ──
 let SAVINGS = (()=>{
@@ -3743,7 +3803,6 @@ function renderMilestoneChart(){
   if(!wrap||!ctx) return;
   const hist=P.history;
   const rate=AUDRT||1.57;
-  const MAJOR=100000;
 
   if(hist.length<2){wrap.style.display='none';return;}
   wrap.style.display='block';
@@ -3754,6 +3813,11 @@ function renderMilestoneChart(){
            d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
   });
   const values=hist.map(e=>+(e.usd*(rate)).toFixed(2));
+
+  // Y-axis: always show up to the current active milestone (plus 8% headroom)
+  const audNow=values[values.length-1]||0;
+  const nextMs=MILESTONES_AUD.find(ms=>audNow<ms)||MILESTONES_AUD[MILESTONES_AUD.length-1];
+  const yMax=Math.ceil(nextMs*1.08/10000)*10000; // round up to nearest 10k above milestone+8%
 
   // Milestone line colors (very faint)
   const msColors=['#c8920a','#14794a','#235fa0','#5e38b8','#be2030','#e17055','#00a550'];
@@ -3831,7 +3895,7 @@ function renderMilestoneChart(){
         x:{display:false,grid:{display:false}},
         y:{
           min:0,
-          max:MAJOR,
+          max:yMax,
           grid:{color:DARK?'rgba(255,255,255,.04)':'rgba(0,0,0,.05)',drawBorder:false},
           ticks:{
             maxTicksLimit:6,
@@ -4394,7 +4458,7 @@ ${h('ms-sec','Milestone Targets (A$)')}
 
 <div class="divider"></div>
 ${h('vis-sec','Section Visibility')}
-${[['sectInsights','Insights'],['sectMilestones','Milestones'],['sectHoldings','Holdings'],['sectGrowth','Growth Projection'],['sectWhatIf','What-If Calculator']].map(([id,name])=>`
+${[['sectInsights','Insights'],['sectMilestones','Milestones'],['sectHoldings','Holdings'],['sectGrowth','Growth Projection'],['sectWhatIf','What-If Calculator'],['sectXms','PONS Price Scenarios']].map(([id,name])=>`
 <label class="pref-check-row">
   <input type="checkbox" ${!PREFS.hideSections[id]?'checked':''} onchange="PREFS.hideSections['${id}']=!this.checked;savePrefs();applyPrefs()"/>
   ${name}
