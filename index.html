@@ -890,6 +890,95 @@ body.aurora-mode .pons-scen-sect{
 }
 
 /* ══════════════════════════════════════════════════════════════
+   LEVERAGED POSITIONS
+══════════════════════════════════════════════════════════════ */
+.lev-empty{font-family:var(--mono);font-size:11px;color:var(--ink-4);padding:14px 0 8px;text-align:center;}
+.lev-card{
+  display:grid;grid-template-columns:1fr auto;gap:0;
+  background:var(--bg-2);border:1px solid var(--card-border-sub);
+  border-radius:calc(var(--r) - 2px);padding:14px 16px;margin-bottom:10px;
+  position:relative;overflow:hidden;
+}
+.lev-card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--lev-accent,var(--accent));
+}
+.lev-card.lev-long{--lev-accent:var(--pos);}
+.lev-card.lev-short{--lev-accent:var(--neg);}
+.lev-card.lev-liquidated{opacity:.45;--lev-accent:var(--ink-4);}
+.lev-card.lev-liq-warn{--lev-accent:oklch(65% 0.20 55);}
+.lev-warn-badge{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.08em;padding:2px 7px;border-radius:99px;background:oklch(40% 0.18 25/30%);color:var(--neg);border:1px solid oklch(55% 0.22 25/40%);}
+.lev-liq-badge{background:oklch(30% 0.12 25/40%);color:var(--ink-4);border-color:transparent;}
+.lev-top{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.lev-dir-pill{
+  font-family:var(--mono);font-size:8px;font-weight:800;letter-spacing:.16em;
+  padding:2px 7px;border-radius:3px;
+}
+.lev-long .lev-dir-pill{background:var(--pos-bg,oklch(0.15 0.06 148));color:var(--pos);}
+.lev-short .lev-dir-pill{background:oklch(0.15 0.06 25);color:var(--neg);}
+.lev-sym{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink);}
+.lev-mult-pill{
+  font-family:var(--mono);font-size:10px;font-weight:700;
+  background:var(--accent-bg);color:var(--accent);
+  border:1px solid var(--card-border-sub);border-radius:4px;padding:1px 6px;
+}
+.lev-note{font-family:var(--mono);font-size:10px;color:var(--ink-4);margin-left:auto;}
+.lev-metrics{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:6px 4px;
+  font-family:var(--mono);
+}
+.lev-metric{display:flex;flex-direction:column;gap:2px;}
+.lev-mk{font-size:8.5px;color:var(--ink-4);letter-spacing:.06em;text-transform:uppercase;}
+.lev-mv{font-size:12px;font-weight:600;color:var(--ink);}
+.lev-mv.pos{color:var(--pos);}.lev-mv.neg{color:var(--neg);}
+.lev-close-btn{
+  background:none;border:none;cursor:pointer;color:var(--ink-4);
+  font-size:16px;padding:0 0 0 12px;align-self:start;line-height:1;
+  transition:color .15s;
+}
+.lev-close-btn:hover{color:var(--neg);}
+.lev-form{
+  background:var(--bg-2);border-top:1px solid var(--rule-s);
+  border-bottom:1px solid var(--rule-s);padding:18px 14px 14px;
+  margin:0 0 4px;
+}
+.lev-form-title{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:14px;}
+.lev-form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px 14px;}
+.lev-fg{display:flex;flex-direction:column;gap:4px;}
+.lev-fg label{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-4);}
+.lev-inp{
+  background:var(--bg);border:1px solid var(--rule);border-radius:5px;
+  color:var(--ink);font-family:var(--mono);font-size:12px;
+  padding:6px 10px;width:100%;box-sizing:border-box;
+}
+.lev-inp:focus{outline:none;border-color:var(--accent);}
+.lev-inp-unit{font-family:var(--mono);font-size:12px;color:var(--ink-4);}
+.lev-dir-toggle{display:flex;gap:4px;}
+.lev-dir-btn{
+  flex:1;padding:6px 8px;border:1px solid var(--rule);border-radius:5px;
+  background:var(--bg);color:var(--ink-3);font-family:var(--mono);font-size:11px;
+  font-weight:700;cursor:pointer;transition:all .15s;
+}
+.lev-dir-btn.active.long-active{background:oklch(0.15 0.06 148);color:var(--pos);border-color:var(--pos);}
+.lev-dir-btn.active.short-active{background:oklch(0.15 0.06 25);color:var(--neg);border-color:var(--neg);}
+.lev-save-btn{
+  padding:8px 20px;background:var(--accent);color:oklch(0.10 0.02 280);
+  border:none;border-radius:6px;font-family:var(--mono);font-size:11px;
+  font-weight:700;cursor:pointer;letter-spacing:.04em;
+}
+.lev-cancel-btn{
+  padding:8px 16px;background:none;border:1px solid var(--rule);border-radius:6px;
+  color:var(--ink-3);font-family:var(--mono);font-size:11px;cursor:pointer;
+}
+.lev-add-btn{
+  width:100%;padding:10px;background:none;border:1px dashed var(--rule);
+  border-radius:6px;color:var(--ink-4);font-family:var(--mono);font-size:11px;
+  cursor:pointer;transition:all .15s;letter-spacing:.04em;
+}
+.lev-add-btn:hover{border-color:var(--accent);color:var(--accent);}
+@media(max-width:520px){.lev-metrics{grid-template-columns:repeat(2,1fr);}}
+
+/* ══════════════════════════════════════════════════════════════
    GROWTH PROJECTION
 ══════════════════════════════════════════════════════════════ */
 .proj-chart-wrap{margin-top:22px;height:220px;position:relative;}
@@ -1624,6 +1713,71 @@ body.aurora-mode footer{background:var(--surface);border-top-color:var(--rule-s)
   </section>
 
 
+  <!-- ── IV · Leveraged Positions ── -->
+  <section class="sect lev-sect" id="sectLeveraged">
+    <div class="sect-head">
+      <div class="sect-title"><span class="sect-num">IV</span>Leveraged Positions</div>
+      <div class="sect-meta">
+        <span class="sect-meta-lbl">Unrealised P&amp;L</span>
+        <span class="sect-meta-val" id="levTotalPnl">—</span>
+      </div>
+    </div>
+    <div id="levPositions" style="padding:0 14px 4px"></div>
+    <!-- Add position form (hidden by default) -->
+    <div id="levAddForm" class="lev-form" style="display:none">
+      <div class="lev-form-title">New Leveraged Position</div>
+      <div class="lev-form-grid">
+        <div class="lev-fg">
+          <label>Asset</label>
+          <select id="levFAsset"></select>
+        </div>
+        <div class="lev-fg">
+          <label>Direction</label>
+          <div class="lev-dir-toggle">
+            <button class="lev-dir-btn active" id="levDirLong" onclick="setLevDir('long')">LONG ↑</button>
+            <button class="lev-dir-btn" id="levDirShort" onclick="setLevDir('short')">SHORT ↓</button>
+          </div>
+        </div>
+        <div class="lev-fg">
+          <label>Leverage</label>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="number" id="levFLev" min="1" max="100" step="0.5" value="4" class="lev-inp" style="width:70px"/>
+            <span class="lev-inp-unit">×</span>
+          </div>
+        </div>
+        <div class="lev-fg">
+          <label>Entry Price (USD)</label>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span class="lev-inp-unit">$</span>
+            <input type="number" id="levFEntry" min="0" step="any" placeholder="0.00" class="lev-inp"/>
+          </div>
+        </div>
+        <div class="lev-fg">
+          <label>Total Tokens</label>
+          <input type="number" id="levFQty" min="0" step="any" placeholder="50000" class="lev-inp" style="width:100%"/>
+        </div>
+        <div class="lev-fg">
+          <label>Liquidation Price (USD)</label>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span class="lev-inp-unit">$</span>
+            <input type="number" id="levFLiq" min="0" step="any" placeholder="0.00" class="lev-inp"/>
+          </div>
+        </div>
+        <div class="lev-fg">
+          <label>Note (optional)</label>
+          <input type="text" id="levFNote" placeholder="e.g. PONS 4× long" class="lev-inp" style="width:100%"/>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="lev-save-btn" onclick="saveLevPosition()">Add Position</button>
+        <button class="lev-cancel-btn" onclick="closeLevForm()">Cancel</button>
+      </div>
+    </div>
+    <div style="padding:10px 14px 14px">
+      <button class="lev-add-btn" id="levAddBtn" onclick="openLevForm()">＋ Add Leveraged Position</button>
+    </div>
+  </section>
+
   <!-- ── V · Growth Projection ── -->
   <section class="sect" id="sectGrowth">
     <div class="sect-head">
@@ -1861,7 +2015,7 @@ function applyPrefs(){
   if(scrR) scrR.textContent=PREFS.scriptureRef||PREF_DEFAULTS.scriptureRef;
   const nq=document.querySelector('.nsr-quote');
   if(nq) nq.textContent=PREFS.navQuote||PREF_DEFAULTS.navQuote;
-  ['sectInsights','sectMilestones','sectHoldings','sectGrowth','sectWhatIf','sectXms','sectChainBattle'].forEach(id=>{
+  ['sectInsights','sectMilestones','sectHoldings','sectLeveraged','sectGrowth','sectWhatIf','sectXms','sectChainBattle'].forEach(id=>{
     const el=document.getElementById(id);
     if(el){
       if(PREFS.hideSections[id]) el.style.display='none';
@@ -1886,6 +2040,7 @@ const SIGNAL_GAP       = 3;
 const DEFAULTS = {
   v:10,
   retiredAssets:{}, // id → {sym,name,color} — kept after removal so charts can label history
+  leveraged:[], // [{id,assetId,sym,dir,lev,entryUSD,collUSD,openedAt,note}]
   assets:[
     {id:'pons',  name:'PONS',             sym:'PONS',  type:'evm_token',   ca:'0x39dbed3a2bd333467115de45665cc57f813c4571',qty:100000,  manual:null,color:'#e05c1a'},
     {id:'pigeon',name:'Pigeon',          sym:'PIGEON',type:'solana_token',ca:'4fSWEw2wbYEUCcMtitzmeGUfqinoafXxkhqZrA9Gpump',qty:989934,    manual:null,color:'#5e38b8'},
@@ -2003,6 +2158,18 @@ function loadP(){
       // Update XRP qty if it hasn't been manually changed to the new amount
       const xrpA=d.assets.find(a=>a.id==='xrp');
       if(xrpA&&xrpA.qty===500) xrpA.qty=618.48;
+      // Seed leveraged array if missing (new feature)
+      if(!d.leveraged) d.leveraged=[];
+      // Migration: collUSD-based positions → qty + liqPrice model
+      d.leveraged=d.leveraged.map(pos=>{
+        if(pos.collUSD!=null&&pos.qty==null){
+          // Derive implied token count from collateral × leverage / entryPrice
+          pos.qty=pos.entryUSD>0?(pos.collUSD*pos.lev)/pos.entryUSD:0;
+          pos.liqPrice=null; // unknown — user can re-enter if needed
+          delete pos.collUSD;
+        }
+        return pos;
+      });
       // Ensure PONS is always present (migration: inject if missing from saved portfolio)
       if(!d.assets.find(a=>a.id==='pons')){
         const defPons=DEFAULTS.assets.find(a=>a.id==='pons');
@@ -2208,14 +2375,60 @@ function dp(px){
 }
 function isConv(px){return CCY==='AUD'&&(px?.priceAud==null);}
 function assetVal(a){const px=PX[a.id],p=dp(px);return p!=null?a.qty*p:0;}
-function totalVal(){return P.assets.reduce((s,a)=>s+assetVal(a),0);}
+
+/* ── Leveraged position helpers ── */
+function levPnL(pos){
+  const px=PX[pos.assetId];
+  const cur=px&&!px.failed&&px.price!=null?px.price:null;
+  if(cur==null) return null;
+  const qty=pos.qty||0;
+  const entry=pos.entryUSD||0;
+  const lev=pos.lev||1;
+  const liqPrice=pos.liqPrice??null;
+  const rate=AUDRT||1.57;
+  // Implied collateral = total position notional / leverage
+  const collUSD=entry>0?qty*entry/lev:0;
+  // Check if liquidated (price crossed liq threshold)
+  const liquidated=liqPrice!=null&&(pos.dir==='long'?cur<=liqPrice:cur>=liqPrice);
+  if(liquidated){
+    return{pnlUSD:-collUSD,pnlPct:-100,netUSD:0,netAUD:0,cur,liquidated:true,liqWarning:false,collUSD};
+  }
+  // P&L = tokens × price_move (leverage already embedded in position size)
+  const move=pos.dir==='long'?cur-entry:entry-cur;
+  const pnlUSD=qty*move;
+  const netUSD=Math.max(0,collUSD+pnlUSD);
+  const pnlPct=collUSD>0?pnlUSD/collUSD*100:0;
+  // Liq warning: within 15% of liq price
+  const liqWarning=!liquidated&&liqPrice!=null&&(pos.dir==='long'?cur<liqPrice*1.15:cur>liqPrice*0.85);
+  return{pnlUSD,pnlPct,netUSD,netAUD:netUSD*rate,cur,liquidated:false,liqWarning,collUSD};
+}
+function levTotalUSD(){
+  if(!P.leveraged||!P.leveraged.length) return 0;
+  return P.leveraged.reduce((s,pos)=>{
+    const r=levPnL(pos);
+    const fallback=(pos.qty||0)*(pos.entryUSD||0)/(pos.lev||1);
+    return s+(r!=null?r.netUSD:fallback);
+  },0);
+}
+function levTotalAUD(){
+  const rate=AUDRT||1.57;
+  if(!P.leveraged||!P.leveraged.length) return 0;
+  return P.leveraged.reduce((s,pos)=>{
+    const r=levPnL(pos);
+    const fallback=(pos.qty||0)*(pos.entryUSD||0)/(pos.lev||1);
+    return s+(r!=null?r.netAUD:fallback*rate);
+  },0);
+}
+
+function totalVal(){return P.assets.reduce((s,a)=>s+assetVal(a),0)+levTotalUSD();}
 function totalValAUD(){
-  return P.assets.reduce((s,a)=>{
+  const spot=P.assets.reduce((s,a)=>{
     const px=PX[a.id];
     if(!px||px.failed||px.price===null) return s;
     const ap=px.priceAud!=null?px.priceAud:px.price*(AUDRT||1.57);
     return s+a.qty*ap;
   },0);
+  return spot+levTotalAUD();
 }
 function superTotalAUD(){
   return SUPER_ASSETS.reduce((s,a)=>{
@@ -2914,10 +3127,11 @@ function recordHistory(){
   });
   if(!allPriced||!requiredAssets.length) return;
 
-  const usdTotal=P.assets.reduce((s,a)=>{
+  const spotUSD=P.assets.reduce((s,a)=>{
     const px=PX[a.id];
     return s+(px&&!px.failed&&px.price!=null?a.qty*px.price:0);
   },0);
+  const usdTotal=spotUSD+levTotalUSD();
   if(usdTotal<=0) return;
 
   // Snapshot per-asset prices AND quantities for accurate historical replay
@@ -3343,6 +3557,175 @@ function renderProjChart(){
 /* ═══════════════════════════════════════════════════
    WHAT-IF
 ═══════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════
+   LEVERAGED POSITIONS
+═══════════════════════════════════════════════════ */
+let _levDir='long'; // current form direction
+
+function setLevDir(dir){
+  _levDir=dir;
+  const lb=document.getElementById('levDirLong');
+  const sb=document.getElementById('levDirShort');
+  if(lb){lb.className='lev-dir-btn'+(dir==='long'?' active long-active':'');}
+  if(sb){sb.className='lev-dir-btn'+(dir==='short'?' active short-active':'');}
+}
+
+function openLevForm(){
+  const form=document.getElementById('levAddForm');
+  const btn=document.getElementById('levAddBtn');
+  if(!form) return;
+  // Populate asset selector with current portfolio assets
+  const sel=document.getElementById('levFAsset');
+  if(sel){
+    sel.innerHTML=P.assets.map(a=>`<option value="${a.id}">${a.sym}</option>`).join('');
+    // Pre-select PONS if present
+    const ponsOpt=[...sel.options].find(o=>o.value==='pons');
+    if(ponsOpt) sel.value='pons';
+    // Pre-fill entry price with current live price
+    sel.onchange=()=>prefillLevEntry();
+    prefillLevEntry();
+  }
+  setLevDir('long');
+  form.style.display='block';
+  if(btn) btn.style.display='none';
+}
+
+function prefillLevEntry(){
+  const sel=document.getElementById('levFAsset');
+  const entryInp=document.getElementById('levFEntry');
+  if(!sel||!entryInp) return;
+  const px=PX[sel.value];
+  if(px&&!px.failed&&px.price!=null) entryInp.value=px.price;
+}
+
+function closeLevForm(){
+  const form=document.getElementById('levAddForm');
+  const btn=document.getElementById('levAddBtn');
+  if(form) form.style.display='none';
+  if(btn) btn.style.display='';
+}
+
+function saveLevPosition(){
+  const assetId=document.getElementById('levFAsset')?.value;
+  const lev=parseFloat(document.getElementById('levFLev')?.value)||1;
+  const entryUSD=parseFloat(document.getElementById('levFEntry')?.value)||0;
+  const qty=parseFloat(document.getElementById('levFQty')?.value)||0;
+  const liqPrice=parseFloat(document.getElementById('levFLiq')?.value)||null;
+  const note=document.getElementById('levFNote')?.value?.trim()||'';
+
+  if(!assetId||entryUSD<=0||qty<=0){
+    alert('Please fill in Asset, Entry Price, and Total Tokens.');
+    return;
+  }
+  const asset=P.assets.find(a=>a.id===assetId);
+  if(!P.leveraged) P.leveraged=[];
+  P.leveraged.push({
+    id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+    assetId,
+    sym:asset?.sym||assetId.toUpperCase(),
+    dir:_levDir,
+    lev,
+    qty,
+    entryUSD,
+    liqPrice:liqPrice&&liqPrice>0?liqPrice:null,
+    openedAt:Date.now(),
+    note
+  });
+  saveP();
+  closeLevForm();
+  renderLeveraged();
+  renderMetrics(); // update hero total
+  renderMilestones(); // update milestone progress
+}
+
+function removeLevPosition(id){
+  if(!confirm('Close this position?')) return;
+  P.leveraged=(P.leveraged||[]).filter(p=>p.id!==id);
+  saveP();
+  renderLeveraged();
+  renderMetrics();
+  renderMilestones();
+}
+
+function renderLeveraged(){
+  const wrap=document.getElementById('levPositions');
+  const pnlEl=document.getElementById('levTotalPnl');
+  if(!wrap) return;
+
+  if(!P.leveraged||!P.leveraged.length){
+    wrap.innerHTML=`<div class="lev-empty">No positions — add one below to track leveraged gains &amp; losses.</div>`;
+    if(pnlEl) pnlEl.textContent='—';
+    return;
+  }
+
+  const rate=AUDRT||1.57;
+  let totalPnl=0;
+
+  wrap.innerHTML=P.leveraged.map(pos=>{
+    const r=levPnL(pos);
+    const pnlUSD=r?.pnlUSD??null;
+    const pnlPct=r?.pnlPct??null;
+    const fallback=(pos.qty||0)*(pos.entryUSD||0)/(pos.lev||1);
+    const netUSD=r?.netUSD??fallback;
+    const cur=r?.cur??null;
+    const liq=r?.liquidated??false;
+    const liqWarning=r?.liqWarning??false;
+    const collUSD=r?.collUSD??fallback;
+
+    if(pnlUSD!=null) totalPnl+=pnlUSD;
+
+    const fmtP=v=>v==null?'—':v>=1000?'$'+Math.round(v).toLocaleString('en-AU'):v>=0.01?'$'+v.toFixed(4):'$'+v.toFixed(6);
+    const fmtV=v=>{const abs=Math.abs(v);const s=v>=0?'+':'-';return s+'$'+(abs>=1e6?(abs/1e6).toFixed(3)+'M':abs>=1e3?(abs/1e3).toFixed(2)+'K':abs.toFixed(2));}
+    const fmtTok=v=>v>=1e9?(v/1e9).toFixed(2)+'B':v>=1e6?(v/1e6).toFixed(2)+'M':v>=1e3?(v/1e3).toFixed(1)+'K':v.toLocaleString('en-AU');
+    const pnlCls=pnlUSD==null?'neu':pnlUSD>=0?'pos':'neg';
+    const cardCls=(liq?'lev-liquidated':pos.dir==='long'?'lev-long':'lev-short')+(liqWarning?' lev-liq-warn':'');
+    const dirLabel=pos.dir==='long'?'LONG ↑':'SHORT ↓';
+    const netAUD=netUSD*rate;
+    const pctStr=pnlPct!=null?(pnlPct>=0?'+':'')+pnlPct.toFixed(1)+'%':'—';
+    const pnlStr=pnlUSD!=null?fmtV(pnlUSD):'—';
+    const netStr='$'+Math.round(netUSD).toLocaleString('en-AU');
+    const netAUDStr='A$'+Math.round(netAUD).toLocaleString('en-AU');
+    const curStr=fmtP(cur);
+    const entStr=fmtP(pos.entryUSD);
+    const liqStr=fmtP(pos.liqPrice);
+    const tokStr=fmtTok(pos.qty||0);
+    const collStr='$'+collUSD.toFixed(2);
+    const openDate=new Date(pos.openedAt).toLocaleDateString('en-AU',{day:'numeric',month:'short'});
+
+    return`<div class="lev-card ${cardCls}">
+  <div>
+    <div class="lev-top">
+      <span class="lev-dir-pill">${dirLabel}</span>
+      <span class="lev-sym">$${pos.sym}</span>
+      <span class="lev-mult-pill">${pos.lev}×</span>
+      ${liqWarning?`<span class="lev-warn-badge">⚠ Near Liq</span>`:''}
+      ${liq?`<span class="lev-warn-badge lev-liq-badge">LIQUIDATED</span>`:''}
+      ${pos.note?`<span class="lev-note">${pos.note}</span>`:''}
+      <span class="lev-note" style="margin-left:auto">${openDate}</span>
+    </div>
+    <div class="lev-metrics">
+      <div class="lev-metric"><span class="lev-mk">Tokens</span><span class="lev-mv">${tokStr}</span></div>
+      <div class="lev-metric"><span class="lev-mk">Entry</span><span class="lev-mv">${entStr}</span></div>
+      <div class="lev-metric"><span class="lev-mk">Current</span><span class="lev-mv">${curStr}</span></div>
+      <div class="lev-metric"><span class="lev-mk">Liq Price</span><span class="lev-mv ${liqWarning?'neg':''}">${liqStr}</span></div>
+      <div class="lev-metric"><span class="lev-mk">P&amp;L</span><span class="lev-mv ${pnlCls}">${pnlStr}</span></div>
+      <div class="lev-metric"><span class="lev-mk">Return</span><span class="lev-mv ${pnlCls}">${pctStr}</span></div>
+      <div class="lev-metric"><span class="lev-mk">Margin</span><span class="lev-mv">${collStr}</span></div>
+      <div class="lev-metric"><span class="lev-mk">Net (AUD)</span><span class="lev-mv ${pnlCls}">${netAUDStr}</span></div>
+    </div>
+  </div>
+  <button class="lev-close-btn" onclick="removeLevPosition('${pos.id}')" title="Close position">×</button>
+</div>`;
+  }).join('');
+
+  // Summary P&L in header
+  if(pnlEl){
+    const sign=totalPnl>=0?'+':'';
+    pnlEl.textContent=`${sign}$${Math.abs(totalPnl)>=1000?(Math.abs(totalPnl)/1000).toFixed(1)+'K':Math.abs(totalPnl).toFixed(2)} USD`;
+    pnlEl.style.color=totalPnl>=0?'var(--pos)':'var(--neg)';
+  }
+}
+
 function buildWifGrid(){
   const el=document.getElementById('wifGrid');
   if(!el) return;
@@ -3620,6 +4003,7 @@ function renderAll(){
   renderFearGreed();
   renderXRPMetric();
   renderXRPScenarios();
+  renderLeveraged();
   renderSavingsProjection();
   const ts='Updated '+new Date().toLocaleTimeString();
   setEl('lastUpd',ts);
@@ -4613,7 +4997,7 @@ ${h('ms-sec','Milestone Targets (A$)')}
 
 <div class="divider"></div>
 ${h('vis-sec','Section Visibility')}
-${[['sectInsights','Insights'],['sectMilestones','Milestones'],['sectHoldings','Holdings'],['sectGrowth','Growth Projection'],['sectWhatIf','What-If Calculator'],['sectXms','PONS Price Scenarios'],['sectChainBattle','Ecosystem Intelligence']].map(([id,name])=>`
+${[['sectInsights','Insights'],['sectMilestones','Milestones'],['sectHoldings','Holdings'],['sectLeveraged','Leveraged Positions'],['sectGrowth','Growth Projection'],['sectWhatIf','What-If Calculator'],['sectXms','PONS Price Scenarios'],['sectChainBattle','Ecosystem Intelligence']].map(([id,name])=>`
 <label class="pref-check-row">
   <input type="checkbox" ${!PREFS.hideSections[id]?'checked':''} onchange="PREFS.hideSections['${id}']=!this.checked;savePrefs();applyPrefs()"/>
   ${name}
