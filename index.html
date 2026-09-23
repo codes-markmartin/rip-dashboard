@@ -69,7 +69,7 @@ body.aurora-mode{background:#07070c;}
 ::-webkit-scrollbar-thumb{background:var(--s3);border-radius:3px}
 
 /* ── TICKER ── */
-.ticker{background:var(--s2);border-bottom:1px solid var(--br);height:28px;display:flex;align-items:center;overflow:hidden;font:500 10px/1 var(--mono);color:var(--t2)}
+.ticker{background:var(--s2);border-bottom:1px solid var(--br);height:28px;display:flex;align-items:center;overflow:hidden;font:500 10px/1 var(--mono);color:var(--t2);position:relative;z-index:1}
 .ticker-lbl{padding:0 14px 0 16px;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;flex-shrink:0;border-right:1px solid var(--br);height:100%;display:flex;align-items:center}
 .ticker-track{display:flex;gap:24px;align-items:center;animation:tkScroll 48s linear infinite;white-space:nowrap;padding-left:24px}
 @keyframes tkScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
@@ -77,7 +77,7 @@ body.aurora-mode{background:#07070c;}
 .ticker-sym{color:var(--t1)}
 
 /* ── NAV ── */
-nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:10px;padding:0 20px;height:52px;background:rgba(9,9,12,0.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--br)}
+nav{position:sticky;top:0;z-index:101;display:flex;align-items:center;gap:10px;padding:0 20px;height:52px;background:rgba(9,9,12,0.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--br)}
 .brand{display:flex;align-items:center;gap:9px;flex-shrink:0;text-decoration:none}
 .brand-mark{color:var(--gold);display:flex;align-items:center}
 .brand-name{font:700 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--t1)}
@@ -108,7 +108,7 @@ nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:10px;p
 .cd-bar{height:100%;background:linear-gradient(90deg,transparent,var(--gold),transparent);width:100%;transition:width 1s linear}
 
 /* ── MAIN ── */
-main{max-width:1340px;margin:0 auto;padding:20px 20px 48px;display:flex;flex-direction:column;gap:12px}
+main{max-width:1340px;margin:0 auto;padding:20px 20px 48px;display:flex;flex-direction:column;gap:12px;position:relative;z-index:1}
 
 /* ── HERO GRID ── */
 .hero-grid{display:grid;grid-template-columns:1.25fr .85fr .9fr;gap:12px}
@@ -236,12 +236,16 @@ body.aurora-mode .hero-val-card::before{background:linear-gradient(90deg,transpa
 .sect-meta-val{color:var(--t2)}
 
 /* ── MILESTONES ── */
-.ms-track-wrap{padding:14px 22px 8px}
+.ms-track-wrap{padding:14px 22px 26px}
 .ms-track{height:3px;background:var(--s3);position:relative;margin:6px 0 10px;border-radius:2px}
 .ms-track-fill{height:100%;background:linear-gradient(90deg,rgba(201,168,76,.5),var(--gold));border-radius:2px;transition:width .5s ease}
 .ms-track-dot{position:absolute;top:50%;transform:translate(-50%,-50%);width:9px;height:9px;border-radius:50%;background:var(--s3);border:1.5px solid var(--t3);transition:all .3s}
 .ms-track-dot.reached{background:var(--pos);border-color:var(--bg)}
 .ms-track-dot.active-d{background:var(--gold);border-color:var(--bg);box-shadow:0 0 8px rgba(201,168,76,.5)}
+.ms-labels{position:relative;height:18px}
+.ms-label{position:absolute;transform:translateX(-50%);font:500 8.5px/1 var(--mono);color:var(--t3);white-space:nowrap;top:0}
+.ms-label.reached{color:var(--pos)}
+.ms-label.active-l{color:var(--gold)}
 .ms-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:0;border-top:1px solid var(--br)}
 .ms-card{padding:14px 18px;border-right:1px solid var(--br);border-bottom:1px solid var(--br)}
 .ms-card:last-child{border-right:none}
@@ -264,6 +268,10 @@ body.aurora-mode .hero-val-card::before{background:linear-gradient(90deg,transpa
 .ms-card-pct{font:600 10px/1 var(--mono);color:var(--gold);letter-spacing:.04em;margin-top:3px}
 .ms-card-mult{font:400 9px/1 var(--mono);color:var(--t3);margin-top:2px}
 .ms-card.ms-active .ms-card-mult{color:var(--t2)}
+.ms-card.ms-locked{opacity:.6}
+.ms-card.ms-locked-major{opacity:.7}
+.ms-card.ms-near{animation:throb 1.2s infinite}
+.ms-card.ms-near .ms-card-status{color:var(--gold)}
 .ms-sub-throb{animation:throb 1.2s infinite}
 @keyframes throb{0%,100%{opacity:1}50%{opacity:.5}}
 .ms-chart-wrap{padding:0 22px 18px;height:150px;position:relative}
@@ -348,7 +356,7 @@ body.aurora-mode .hero-val-card::before{background:linear-gradient(90deg,transpa
 .lev-btn-row{padding:12px 22px 14px}
 
 /* ── FOOTER ── */
-footer{max-width:1340px;margin:0 auto;padding:16px 20px 24px;display:flex;justify-content:space-between;align-items:center;font:400 9.5px/1 var(--mono);color:var(--t3);border-top:1px solid var(--br)}
+footer{max-width:1340px;margin:0 auto;padding:16px 20px 24px;display:flex;justify-content:space-between;align-items:center;font:400 9.5px/1 var(--mono);color:var(--t3);border-top:1px solid var(--br);position:relative;z-index:1}
 footer a{color:var(--t3);text-decoration:none}
 footer a:hover{color:var(--gold)}
 
@@ -452,6 +460,9 @@ footer a:hover{color:var(--gold)}
 .toast.err{border-color:rgba(244,96,96,.4)}
 .toast.show{}
 @keyframes slideUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── BACKGROUND CANVAS (JS inserts as body first-child) ── */
+#bgCanvas{position:fixed!important;inset:0;width:100%!important;height:100%!important;pointer-events:none;z-index:0}
 
 /* ── HERO MOOD CLASSES (set by JS on .hero-figure) ── */
 .hero-figure.mood-pos{color:var(--t1)}
@@ -756,7 +767,6 @@ footer a:hover{color:var(--gold)}
   <div class="sect-head">
     <div class="sect-title"><span class="sect-num">02</span>Holdings</div>
     <div class="sect-meta">
-      <span class="sect-meta-lbl">Updated</span>
       <span class="sect-meta-val" id="lastUpdHoldings">—</span>
     </div>
   </div>
