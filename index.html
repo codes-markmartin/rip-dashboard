@@ -171,9 +171,18 @@ body.aurora-mode .hero-val-card::before{background:linear-gradient(90deg,transpa
 .fg-extreme .fg-val{color:var(--gold)}
 .market-panel{flex:1;overflow-y:auto;padding:12px 18px}
 .market-panel-head{font:600 8.5px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--t3);margin-bottom:9px}
-.mkt-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--br);font:500 10.5px/1 var(--mono)}
+.mkt-row{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--br);font:500 10.5px/1 var(--mono)}
 .mkt-row:last-child{border-bottom:none}
-.mkt-sym{color:var(--t1)}
+.mkt-logo{width:28px;height:28px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:50%;overflow:hidden;background:var(--s3)}
+.mkt-logo img{width:24px;height:24px;object-fit:contain;display:block}
+.mkt-logo-fb{font:700 11px/1 var(--mono);color:var(--t2)}
+.mkt-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.mkt-sym{font:600 11px/1 var(--mono);color:var(--t1)}
+.mkt-cap{font:400 9px/1 var(--mono);color:var(--t3)}
+.mkt-price{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0}
+.mkt-px{font:600 11px/1 var(--mono);color:var(--t1)}
+.mkt-ch{font:500 9.5px/1 var(--mono)}
+.mkt-flow{font:400 8.5px/1 var(--mono);color:var(--t3)}
 .mkt-val{color:var(--t2)}
 .mkt-chg{font-size:10px}
 .mkt-loading{font:400 11px/1 var(--mono);color:var(--t3);padding:8px 0}
@@ -444,6 +453,72 @@ footer a:hover{color:var(--gold)}
 .toast.show{}
 @keyframes slideUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
+/* ── HERO MOOD CLASSES (set by JS on .hero-figure) ── */
+.hero-figure.mood-pos{color:var(--t1)}
+.hero-figure.mood-exp{color:var(--gold)}
+
+/* ── SETTINGS ASSET ROWS ── */
+.s-row{padding:10px 0;border-bottom:1px solid var(--br)}
+.s-row:last-child{border-bottom:none}
+.s-row-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.s-row-name{font:600 11.5px/1 var(--mono);color:var(--t2)}
+.s-del{background:transparent;border:none;color:var(--t3);font:600 9.5px/1 var(--mono);cursor:pointer;padding:3px 6px;border-radius:var(--r-xs);transition:color .14s}
+.s-del:hover{color:var(--neg)}
+.sav-rate-badge{font:600 8px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;padding:2px 7px;border-radius:99px;background:rgba(201,168,76,.12);color:var(--gold);border:1px solid rgba(201,168,76,.3)}
+
+/* ── PREFS MILESTONE ROW ── */
+.pref-ms-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.pref-ms-row input{background:var(--s2);border:1px solid var(--br-m);border-radius:var(--r-xs);color:var(--t1);font:500 12px/1 var(--mono);padding:5px 8px;width:110px;outline:none}
+.pref-ms-row input:focus{border-color:var(--gold)}
+
+/* ── SUPER DELETE BUTTON ── */
+.super-del-btn{background:transparent;border:1px solid var(--br-m);border-radius:var(--r-xs);color:var(--t3);font:600 10px/1 var(--mono);padding:3px 8px;cursor:pointer;transition:all .14s;flex-shrink:0}
+.super-del-btn:hover{border-color:var(--neg);color:var(--neg)}
+
+/* ── ASSET MINI CHART CARDS (renderAssetMiniCharts) ── */
+.amc-card{background:var(--s2);border:1px solid var(--br);border-radius:var(--r-sm);padding:10px 12px;display:flex;flex-direction:column;gap:5px;overflow:hidden}
+.amc-top{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.amc-sym{font:700 10.5px/1 var(--mono);color:var(--t1)}
+.amc-logo{width:14px;height:14px;object-fit:contain;border-radius:50%}
+.amc-ch{font:500 9.5px/1 var(--mono)}
+.amc-val{font:500 11px/1 var(--mono);color:var(--t2)}
+.amc-px{font:400 9.5px/1 var(--mono);color:var(--t3)}
+.amc-svg{width:100%;display:block}
+
+/* ── SYNC DOT STATES ── */
+.sync-dot.synced{background:var(--pos)}
+.sync-dot.syncing{background:var(--gold);animation:pulse .8s infinite}
+.sync-dot.err{background:var(--neg)}
+.sync-dot.off{background:var(--t3)}
+
+/* ── HERO DELTA CHIP ── */
+.hero-d-chip{font:700 10px/1 var(--mono);letter-spacing:.07em;padding:3px 9px;border-radius:99px;display:inline-block}
+.hero-d-chip.pos{background:var(--pos-bg);color:var(--pos)}
+.hero-d-chip.neg{background:var(--neg-bg);color:var(--neg)}
+
+/* ── TICKER ITEM PARTS ── */
+.t-sym{font:700 10.5px/1 var(--mono);color:var(--t1)}
+.t-px{font:500 10.5px/1 var(--mono);color:var(--t2)}
+.t-ch{font:500 10px/1 var(--mono);color:var(--t2)}
+.t-ch.pos{color:var(--pos)}.t-ch.neg{color:var(--neg)}
+
+/* ── TABLE WEIGHT CELL ── */
+.weight-cell{text-align:right}
+
+/* ── SUPER OVERLAY TABLE CELLS ── */
+.super-sym-cell{display:flex;align-items:center;gap:9px}
+.super-orb{width:30px;height:30px;border-radius:8px;border:1.5px solid;display:flex;align-items:center;justify-content:center;font:700 11px/1 var(--mono);flex-shrink:0}
+.super-sym{font:600 12px/1 var(--mono);color:var(--t1)}
+.super-name{font:400 9.5px/1 var(--mono);color:var(--t3);margin-top:1px}
+.super-tag{font:500 7.5px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;padding:2px 5px;border:1px solid var(--br);border-radius:3px;color:var(--t3)}
+.super-price{font:600 11.5px/1 var(--mono);color:var(--t1)}
+.super-cost{font:400 9.5px/1 var(--mono);color:var(--t3);margin-top:2px}
+.super-inp{background:var(--s3);border:1px solid var(--br-m);border-radius:var(--r-xs);color:var(--t1);font:500 12px/1 var(--mono);padding:5px 8px;width:86px;text-align:right;outline:none;transition:border-color .14s}
+.super-inp:focus{border-color:var(--gold)}
+.super-val{font:600 12px/1 var(--mono);color:var(--t1)}
+.super-pl{font:600 11px/1 var(--mono);margin-top:2px}
+.super-total{font:700 14px/1 var(--mono);color:var(--gold)}
+
 /* ── MISC ── */
 .insights-grid{display:none}.asset-log{display:none}
 .announce-col-hd{display:none}.insight-card{display:none}
@@ -576,7 +651,7 @@ footer a:hover{color:var(--gold)}
   <!-- Allocation donut -->
   <div class="hero-pie-card">
     <div class="hero-section-lbl">Allocation</div>
-    <div class="donut-wrap" style="width:148px;height:148px;margin:0 auto">
+    <div class="donut-wrap" style="width:200px;height:200px;margin:0 auto">
       <canvas id="pieChart"></canvas>
     </div>
     <div class="hero-pie-legend" id="donutLegend"></div>
