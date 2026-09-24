@@ -560,6 +560,43 @@ footer a:hover{color:var(--gold)}
   footer{flex-direction:column;gap:8px;text-align:center}
 }
 
+/* ══════════════════════════════
+   DAY MODE — warm cream palette
+══════════════════════════════ */
+body.day-mode{
+  --bg:       #f7f4ee;
+  --s1:       #ffffff;
+  --s2:       #f0ece3;
+  --s3:       #e6e0d4;
+  --br:       rgba(0,0,0,0.08);
+  --br-m:     rgba(0,0,0,0.15);
+  --br-g:     rgba(168,128,32,0.28);
+  --br-gb:    rgba(168,128,32,0.55);
+  --t1:       #1c1814;
+  --t2:       #6b6355;
+  --t3:       #9c9285;
+  --gold:     #b8922e;
+  --gold-b:   #c9a84c;
+  --gold-d:   rgba(184,146,46,0.13);
+  --pos:      #1a9e6e;
+  --pos-bg:   rgba(26,158,110,0.10);
+  --neg:      #d94444;
+  --neg-bg:   rgba(217,68,68,0.10);
+}
+body.day-mode nav{background:rgba(247,244,238,0.96)!important;border-bottom-color:rgba(0,0,0,0.09)}
+body.day-mode .hero-val-card{box-shadow:0 1px 4px rgba(0,0,0,0.07),0 6px 20px rgba(0,0,0,0.05)}
+body.day-mode .hero-val-card::before{opacity:.35}
+body.day-mode #bgCanvas{opacity:.07!important}
+body.day-mode .sect{box-shadow:0 1px 4px rgba(0,0,0,0.05)}
+body.day-mode .card{box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+body.day-mode .overlay-box,body.day-mode .modal-box{background:#fff!important;box-shadow:0 8px 48px rgba(0,0,0,0.16)!important}
+body.day-mode input,body.day-mode select,body.day-mode textarea{background:var(--s2)!important;color:var(--t1)!important;border-color:var(--br-m)!important}
+body.day-mode .ms-track{background:var(--s3)!important}
+body.day-mode .aurora-mode .hero-val-card{background:var(--s1)}
+
+/* Pie legend section header */
+.hero-pie-section-lbl{font:700 8px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--t3);margin:6px 0 3px;padding-bottom:2px;border-bottom:1px solid var(--br)}
+
 </style>
 </head>
 <body>
@@ -1178,16 +1215,16 @@ function cleanHistory(){
 /* ═══════════════════════════════════════════════════
    THEME — cycles: dark → light → aurora → dark
 ═══════════════════════════════════════════════════ */
-const THEME_ICONS  = {light:'☀️', aurora:'🌌'};
-const THEME_TITLES = {light:'Light', aurora:'Aurora'};
+const THEME_ICONS  = {light:'🌙', aurora:'🌌', day:'☀️'};
+const THEME_TITLES = {light:'Vault', aurora:'Aurora', day:'Day'};
 
 function applyTheme(t){
-  if(t !== 'light' && t !== 'aurora') t = 'light'; // guard against legacy 'dark'
+  if(t !== 'light' && t !== 'aurora' && t !== 'day') t = 'light'; // guard
   THEME = t;
   DARK  = (t === 'aurora');
-  // Only aurora-mode class is needed — light is the default (:root)
-  document.body.classList.remove('light-mode','aurora-mode');
+  document.body.classList.remove('light-mode','aurora-mode','day-mode');
   if(t === 'aurora') document.body.classList.add('aurora-mode');
+  if(t === 'day')    document.body.classList.add('day-mode');
   const btn = document.getElementById('darkBtn');
   if(btn){ btn.textContent = THEME_ICONS[t]; btn.title = `Theme: ${THEME_TITLES[t]} — click to toggle`; }
   try{ localStorage.setItem('ptTheme', t); }catch(e){}
@@ -1220,9 +1257,9 @@ function initBgCanvas(){
 
   const ctx=cv.getContext('2d');
   // Theme-aware: amber in dark, aurora green in aurora, near-invisible in light
-  const isLight  = THEME === 'light';
+  const isDay    = THEME === 'day';
   const isAurora = THEME === 'aurora';
-  cv.style.opacity = isLight ? 0.14 : isAurora ? 0.26 : 0.20;
+  cv.style.opacity = isDay ? 0.08 : isAurora ? 0.26 : 0.20;
 
   let W=0,H=0,lastNow=0,drift=0;
 
@@ -1241,7 +1278,7 @@ function initBgCanvas(){
 
     ctx.clearRect(0,0,W,H);
     // Stroke colour: amber for dark, aurora-green for aurora, slate for light
-    ctx.strokeStyle = isAurora ? '#34d399' : isLight ? '#64748b' : '#c4780a';
+    ctx.strokeStyle = isAurora ? '#34d399' : isDay ? '#b0946a' : '#c4780a';
     ctx.lineWidth = isAurora ? 0.9 : 1.0;
 
     const spacing=52;
@@ -1280,7 +1317,8 @@ function initBgCanvas(){
   _bgRaf=requestAnimationFrame(draw);
 }
 function toggleDark(){
-  applyTheme(THEME === 'aurora' ? 'light' : 'aurora');
+  const cycle={light:'aurora',aurora:'day',day:'light'};
+  applyTheme(cycle[THEME]||'light');
 }
 function cc(l,dk,aurora){
   if(THEME==='aurora'&&aurora!==undefined) return aurora;
@@ -3467,41 +3505,96 @@ function renderTable(){
 }
 
 function renderPie(){
-  const total=totalVal();
-  const labels=[],data=[],colors=[];
+  // ── Spot holdings (outer ring) ──
+  const spotTotal=totalVal();
+  const spotLabels=[],spotData=[],spotColors=[];
   P.assets.forEach(a=>{
     const v=assetVal(a);if(v<=0) return;
-    labels.push(a.sym);data.push(+v.toFixed(2));colors.push(a.color);
+    spotLabels.push(a.sym);spotData.push(+v.toFixed(2));spotColors.push(a.color||'#c9a84c');
   });
-  setH('donutVal',total>0?fmtV(total,false):'—');
+
+  // ── Leveraged positions (inner ring, by net equity) ──
+  const levLabels=[],levData=[],levColors=[];
+  let levTotal=0;
+  (P.leveraged||[]).forEach(pos=>{
+    const r=levPnL(pos);if(!r||r.netUSD<=0) return;
+    const net=+r.netUSD.toFixed(2);
+    // Match asset color from spot holdings if same symbol
+    const assetCol=(P.assets||[]).find(a=>a.sym===pos.sym||a.sym===pos.assetId)?.color;
+    const col=assetCol||'#c9a84c';
+    const lbl=pos.sym+(pos.lev>1?' ×'+pos.lev:'');
+    levLabels.push(lbl);levData.push(net);levColors.push(col);
+    levTotal+=net;
+  });
+
+  const grandTotal=spotTotal+levTotal;
+  setH('donutVal',grandTotal>0?fmtV(grandTotal,false):'—');
   const ctx=document.getElementById('pieChart');
   if(CHARTS.pie){CHARTS.pie.destroy();CHARTS.pie=null;}
-  if(!data.length) return;
+  if(!spotData.length&&!levData.length) return;
+
+  const datasets=[];
+  if(spotData.length){
+    datasets.push({
+      label:'Spot',
+      data:spotData,
+      backgroundColor:spotColors.map(c=>c+'33'),
+      borderColor:spotColors,
+      borderWidth:1.5,hoverBorderWidth:2,
+      weight:levData.length?2.2:1
+    });
+  }
+  if(levData.length){
+    datasets.push({
+      label:'Leveraged',
+      data:levData,
+      backgroundColor:levColors.map(c=>c+'55'),
+      borderColor:levColors,
+      borderWidth:1,hoverBorderWidth:1.5,
+      weight:1
+    });
+  }
+
   CHARTS.pie=new Chart(ctx,{
-    type:'pie',
-    data:{labels,datasets:[{data,
-      backgroundColor:colors.map(c=>c+'33'),
-      borderColor:colors,
-      borderWidth:1.5,hoverBorderWidth:2}]},
+    type:'doughnut',
+    data:{labels:[...spotLabels,...levLabels],datasets},
     options:{
       responsive:true,maintainAspectRatio:false,
-      layout:{padding:54},
-      _externalLabels:true,
+      cutout:'60%',
       plugins:{
         legend:{display:false},
-        tooltip:{callbacks:{label:c=>` ${c.label}: ${fmtV(c.parsed,false)} (${(c.parsed/total*100).toFixed(1)}%)`}}
+        tooltip:{callbacks:{label:c=>{
+          const isLev=datasets[c.datasetIndex]?.label==='Leveraged';
+          const tot=isLev?levTotal:spotTotal;
+          return ` ${c.label}: ${fmtV(c.parsed,false)} (${tot>0?(c.parsed/tot*100).toFixed(1):'—'}%)`;
+        }}}
       }
     }
   });
-  // Hero compact legend
+
+  // Legend — with spot/leveraged sections when both present
   const legEl=document.getElementById('donutLegend');
   if(legEl){
-    legEl.innerHTML=labels.map((lbl,i)=>`
-      <div class="hero-pie-leg-row">
-        <div class="hero-pie-swatch" style="background:${colors[i]}"></div>
-        <span class="hero-pie-sym">${lbl}</span>
-        <span class="hero-pie-pct">${total>0?(data[i]/total*100).toFixed(1):'—'}%</span>
-      </div>`).join('');
+    let html='';
+    if(spotData.length){
+      if(levData.length) html+=`<div class="hero-pie-section-lbl">Spot</div>`;
+      html+=spotLabels.map((lbl,i)=>`
+        <div class="hero-pie-leg-row">
+          <div class="hero-pie-swatch" style="background:${spotColors[i]}"></div>
+          <span class="hero-pie-sym">${lbl}</span>
+          <span class="hero-pie-pct">${spotTotal>0?(spotData[i]/spotTotal*100).toFixed(1):'—'}%</span>
+        </div>`).join('');
+    }
+    if(levData.length){
+      html+=`<div class="hero-pie-section-lbl">Leveraged</div>`;
+      html+=levLabels.map((lbl,i)=>`
+        <div class="hero-pie-leg-row">
+          <div class="hero-pie-swatch" style="background:${levColors[i]};opacity:.7"></div>
+          <span class="hero-pie-sym">${lbl}</span>
+          <span class="hero-pie-pct">${levTotal>0?(levData[i]/levTotal*100).toFixed(1):'—'}%</span>
+        </div>`).join('');
+    }
+    legEl.innerHTML=html;
   }
 }
 
