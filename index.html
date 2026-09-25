@@ -949,9 +949,9 @@ body.day-mode .aurora-mode .hero-val-card{background:var(--s1)}
       <div class="lock-ico">🔐</div>
       <p>Enter your PIN to access settings.</p>
       <div class="pw-wrap">
-        <input class="pw" id="pwIn" type="password" inputmode="numeric" maxlength="8" placeholder="••••" onkeydown="if(event.key==='Enter')tryPw()"/>
+        <input class="pw" id="pwIn" type="password" inputmode="numeric" maxlength="8" placeholder="••••" onkeydown="if(event.key==='Enter')checkPw()"/>
         <div class="pw-err" id="pwErr"></div>
-        <button class="btn primary" onclick="tryPw()">Unlock</button>
+        <button class="btn primary" onclick="checkPw()">Unlock</button>
       </div>
     </div>
   </div>
