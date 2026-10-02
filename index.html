@@ -961,8 +961,8 @@ body.day-mode .aurora-mode .hero-val-card{background:var(--s1)}
       <button class="xbtn" onclick="closeSettings()">✕</button>
     </div>
     <div class="modal-tabs" id="modalTabs">
-      <button class="modal-tab active" id="tabPortfolio" onclick="switchTab('portfolio')">Portfolio</button>
-      <button class="modal-tab" id="tabPrefs" onclick="switchTab('prefs')">Preferences</button>
+      <button class="modal-tab active" id="tabPortfolio" onclick="switchSettingsTab('portfolio')">Portfolio</button>
+      <button class="modal-tab" id="tabPrefs" onclick="switchSettingsTab('prefs')">Preferences</button>
     </div>
     <div id="sAssets"></div>
     <div id="sPrefs" style="display:none"></div>
@@ -4147,6 +4147,34 @@ function buildSettings(){ buildSyncUI();
       </div>`;
     }).join('');
 
+  // Append add-asset form
+  document.getElementById('sAssets').insertAdjacentHTML('beforeend',`
+    <div class="add-block" style="margin-top:14px">
+      <h4>Add Asset</h4>
+      <div class="two" style="margin-bottom:8px">
+        <div class="fg" style="margin:0"><label>Symbol</label>
+          <input id="n-sym" placeholder="BTC" style="width:100%"/></div>
+        <div class="fg" style="margin:0"><label>Name</label>
+          <input id="n-name" placeholder="Bitcoin" style="width:100%"/></div>
+      </div>
+      <div class="fg" style="margin-bottom:8px"><label>Type</label>
+        <select id="n-type" onchange="toggleNF()" style="width:100%">
+          <option value="crypto">Crypto (CoinGecko)</option>
+          <option value="solana_token">Solana Token (CA)</option>
+          <option value="evm_token">EVM Token (CA)</option>
+          <option value="stock">Stock / ETF</option>
+        </select>
+      </div>
+      <div id="n-ca-w" style="display:none;margin-bottom:8px"><div class="fg" style="margin:0"><label>Contract Address</label>
+        <input id="n-ca" placeholder="0x… or pump address" style="width:100%"/></div></div>
+      <div id="n-cg-w" style="display:none;margin-bottom:8px"><div class="fg" style="margin:0"><label>CoinGecko ID</label>
+        <input id="n-cgid" placeholder="e.g. solana" style="width:100%"/></div></div>
+      <div id="n-tk-w" style="display:none;margin-bottom:8px"><div class="fg" style="margin:0"><label>Ticker</label>
+        <input id="n-ticker" placeholder="e.g. AAPL" style="width:100%"/></div></div>
+      <div class="fg" style="margin-bottom:10px"><label>Quantity</label>
+        <input id="n-qty" type="number" step="any" placeholder="0" style="width:100%"/></div>
+      <button class="btn primary" onclick="addAsset()" style="width:100%">＋ Add Asset</button>
+    </div>`);
 }
 function buildSavingsSettings(){
   // Inject savings section after the divider that follows sAssets
