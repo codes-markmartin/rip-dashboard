@@ -120,6 +120,20 @@ main{max-width:1340px;margin:0 auto;padding:20px 20px 48px;display:flex;flex-dir
 .hero-val-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold) 40%,var(--gold-b) 60%,transparent);opacity:.55}
 body.aurora-mode .hero-val-card{background:linear-gradient(135deg,#0e0e17 0%,#0b0b16 100%);border-color:rgba(130,70,220,.25)}
 body.aurora-mode .hero-val-card::before{background:linear-gradient(90deg,transparent,rgba(130,70,220,.5),var(--gold),transparent)}
+
+/* ── PONS Gauge ── */
+#ponsGaugeRow{margin-top:12px;padding-top:10px;border-top:1px solid var(--br)}
+.pons-gauge-head{display:flex;align-items:baseline;gap:5px;margin-bottom:7px;flex-wrap:wrap}
+.pons-gauge-lbl{font:600 7.5px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--t3);flex-shrink:0}
+#ponsEquivVal{font:700 15px/1 var(--mono);color:var(--gold)}
+.pons-goal-hint{font:400 8.5px/1 var(--mono);color:var(--t3);flex:1}
+.pons-track-wrap{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.pons-track{flex:1;height:4px;border-radius:2px;background:var(--s3);overflow:visible;position:relative}
+.pons-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,rgba(201,168,76,.4),var(--gold));transition:width .9s cubic-bezier(.4,0,.2,1);position:relative;max-width:100%}
+.pons-fill::after{content:'';position:absolute;right:-4px;top:50%;transform:translateY(-50%);width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px rgba(201,168,76,.55)}
+#ponsPct{font:700 11px/1 var(--mono);color:var(--gold);flex-shrink:0;min-width:40px;text-align:right}
+#ponsGapLbl{font:400 9px/1.4 var(--mono);color:var(--t3)}
+#ponsGapLbl .gap-need{color:var(--t2);font-weight:600}
 .hero-label{font:600 8.5px/1 var(--mono);letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
 .hero-meta{display:flex;align-items:baseline;gap:8px;margin-bottom:6px}
 .hero-lbl{font:600 8.5px/1 var(--mono);letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
@@ -677,6 +691,18 @@ body.day-mode .aurora-mode .hero-val-card{background:var(--s1)}
       <div class="hero-delta-row">
         <div class="hero-d-num" id="mv-hero-chg">—</div>
         <div id="mv-hero-chip"></div>
+      </div>
+      <!-- PONS Equivalent Gauge -->
+      <div id="ponsGaugeRow" style="display:none">
+        <div class="pons-gauge-head">
+          <span class="pons-gauge-lbl">PONS Equiv</span>
+          <span id="ponsEquivVal">—</span>
+          <span class="pons-goal-hint">PONS &nbsp;·&nbsp; <span id="ponsPct">0%</span> of 100K goal</span>
+        </div>
+        <div class="pons-track-wrap">
+          <div class="pons-track"><div class="pons-fill" id="ponsFill" style="width:0%"></div></div>
+        </div>
+        <div id="ponsGapLbl">—</div>
       </div>
     </div>
     <div class="hero-sub-row">
@@ -3076,6 +3102,55 @@ function renderMetrics(){
     setH('mv-chg-s',(ch.pct>=0?'▲ +':'▼ ')+fmtPct(Math.abs(ch.pct))+' today');
     setC('mv-chg','kpi-figure',ch.$>=0?'pos':'neg');
   }else{setH('mv-chg','—');setH('mv-chg-s','Awaiting data');setC('mv-chg','kpi-figure','');}
+
+  // ── PONS Equivalent Gauge ──
+  const ponsGaugeRow=document.getElementById('ponsGaugeRow');
+  if(ponsGaugeRow){
+    const ponsPxObj=PX['pons'];
+    const ponsPxUSD=ponsPxObj&&!ponsPxObj.failed&&ponsPxObj.price?ponsPxObj.price:null;
+    const totalUSD=totalVal(); // totalVal() returns USD
+    if(ponsPxUSD&&ponsPxUSD>0&&totalUSD>0){
+      ponsGaugeRow.style.display='block';
+      const PONS_GOAL=100000;
+      const equiv=totalUSD/ponsPxUSD;
+      const pct=Math.min(100,equiv/PONS_GOAL*100);
+      const gap=Math.max(0,PONS_GOAL-equiv);
+      const gapUSD=gap*ponsPxUSD;
+      const rate=AUDRT||1.57;
+      // Format equiv number
+      const equivFmt=equiv>=1000
+        ?Math.round(equiv).toLocaleString('en-AU')
+        :equiv.toFixed(1);
+      setH('ponsEquivVal',equivFmt);
+      const fillEl=document.getElementById('ponsFill');
+      if(fillEl) fillEl.style.width=Math.min(100,pct).toFixed(2)+'%';
+      setH('ponsPct',pct.toFixed(1)+'%');
+      if(gap>0.5){
+        const gapPonsFmt=Math.round(gap).toLocaleString('en-AU');
+        const gapAUD=gapUSD*rate;
+        // Gap value: show in selected CCY
+        const gapValFmt=CCY==='AUD'
+          ?'A$'+Math.round(gapAUD).toLocaleString('en-AU')
+          :'$'+Math.round(gapUSD).toLocaleString('en-US');
+        // For the mcap bridge: other (non-PONS) holdings need to increase by gapUSD
+        const otherUSD=totalUSD-((P.assets.find(a=>a.id==='pons')||{qty:0}).qty*(ponsPxUSD));
+        const otherValFmt=CCY==='AUD'
+          ?'A$'+Math.round(otherUSD*rate).toLocaleString('en-AU')
+          :'$'+Math.round(otherUSD).toLocaleString('en-US');
+        const needMcapFmt=CCY==='AUD'
+          ?'A$'+Math.round((otherUSD+gapUSD)*rate).toLocaleString('en-AU')
+          :'$'+Math.round(otherUSD+gapUSD).toLocaleString('en-US');
+        setH('ponsGapLbl',
+          `${gapPonsFmt} PONS to go &nbsp;·&nbsp; <span class="gap-need">${gapValFmt}</span> needed from other holdings`+
+          `<br><span style="color:var(--t3)">Other holdings need to reach ${needMcapFmt} combined to close gap</span>`
+        );
+      } else {
+        setH('ponsGapLbl','<span style="color:var(--pos)">🎯 Goal reached — portfolio equivalent to 100K+ PONS</span>');
+      }
+    } else {
+      ponsGaugeRow.style.display='none';
+    }
+  }
 
   renderHeroAltCurrency();
   renderMomentumCard();
