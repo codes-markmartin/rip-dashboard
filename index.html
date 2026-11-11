@@ -3108,7 +3108,12 @@ function renderMetrics(){
   if(ponsGaugeRow){
     const ponsPxObj=PX['pons'];
     const ponsPxUSD=ponsPxObj&&!ponsPxObj.failed&&ponsPxObj.price?ponsPxObj.price:null;
-    const totalUSD=totalVal(); // totalVal() returns USD
+    // Always use raw USD prices — independent of CCY display setting
+    const totalUSD=P.assets.reduce((s,a)=>{
+      const px=PX[a.id];
+      const p=px&&!px.failed&&px.price!=null?px.price:0;
+      return s+p*a.qty;
+    },0)+levTotalUSD();
     if(ponsPxUSD&&ponsPxUSD>0&&totalUSD>0){
       ponsGaugeRow.style.display='block';
       const PONS_GOAL=100000;
@@ -3117,32 +3122,34 @@ function renderMetrics(){
       const gap=Math.max(0,PONS_GOAL-equiv);
       const gapUSD=gap*ponsPxUSD;
       const rate=AUDRT||1.57;
-      // Format equiv number
-      const equivFmt=equiv>=1000
-        ?Math.round(equiv).toLocaleString('en-AU')
-        :equiv.toFixed(1);
+      const useAUD=CCY==='AUD';
+      // Helper: format a USD amount in the selected display currency
+      const fv=usd=>useAUD?'A$'+Math.round(usd*rate).toLocaleString('en-AU'):'$'+Math.round(usd).toLocaleString('en-US');
+      // Format equiv token count
+      const equivFmt=equiv>=1000?Math.round(equiv).toLocaleString('en-AU'):equiv.toFixed(1);
       setH('ponsEquivVal',equivFmt);
       const fillEl=document.getElementById('ponsFill');
       if(fillEl) fillEl.style.width=Math.min(100,pct).toFixed(2)+'%';
       setH('ponsPct',pct.toFixed(1)+'%');
       if(gap>0.5){
         const gapPonsFmt=Math.round(gap).toLocaleString('en-AU');
-        const gapAUD=gapUSD*rate;
-        // Gap value: show in selected CCY
-        const gapValFmt=CCY==='AUD'
-          ?'A$'+Math.round(gapAUD).toLocaleString('en-AU')
-          :'$'+Math.round(gapUSD).toLocaleString('en-US');
-        // For the mcap bridge: other (non-PONS) holdings need to increase by gapUSD
-        const otherUSD=totalUSD-((P.assets.find(a=>a.id==='pons')||{qty:0}).qty*(ponsPxUSD));
-        const otherValFmt=CCY==='AUD'
-          ?'A$'+Math.round(otherUSD*rate).toLocaleString('en-AU')
-          :'$'+Math.round(otherUSD).toLocaleString('en-US');
-        const needMcapFmt=CCY==='AUD'
-          ?'A$'+Math.round((otherUSD+gapUSD)*rate).toLocaleString('en-AU')
-          :'$'+Math.round(otherUSD+gapUSD).toLocaleString('en-US');
+        // Per-asset breakdown: for each non-PONS asset, show current value and what
+        // it alone would need to reach to close the full gap
+        const otherAssets=P.assets.filter(a=>a.id!=='pons');
+        const perAssetLines=otherAssets.map(a=>{
+          const px=PX[a.id];
+          const pUSD=px&&!px.failed&&px.price!=null?px.price:0;
+          const curUSD=pUSD*a.qty;
+          if(curUSD<=0) return null;
+          const targetUSD=curUSD+gapUSD;
+          return `<span style="color:var(--t2);font-weight:600">${a.sym}</span>`+
+            `<span style="color:var(--t3)"> ${fv(curUSD)} now → needs </span>`+
+            `<span class="gap-need">${fv(targetUSD)}</span>`+
+            `<span style="color:var(--t3)"> to close gap alone</span>`;
+        }).filter(Boolean).join('<br>');
         setH('ponsGapLbl',
-          `${gapPonsFmt} PONS to go &nbsp;·&nbsp; <span class="gap-need">${gapValFmt}</span> needed from other holdings`+
-          `<br><span style="color:var(--t3)">Other holdings need to reach ${needMcapFmt} combined to close gap</span>`
+          `<span style="color:var(--t2)">${gapPonsFmt} PONS to go &nbsp;·&nbsp; <span class="gap-need">${fv(gapUSD)}</span> total needed</span>`+
+          (perAssetLines?`<br>${perAssetLines}`:'')
         );
       } else {
         setH('ponsGapLbl','<span style="color:var(--pos)">🎯 Goal reached — portfolio equivalent to 100K+ PONS</span>');
