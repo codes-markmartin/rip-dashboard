@@ -122,16 +122,17 @@ body.aurora-mode .hero-val-card{background:linear-gradient(135deg,#0e0e17 0%,#0b
 body.aurora-mode .hero-val-card::before{background:linear-gradient(90deg,transparent,rgba(130,70,220,.5),var(--gold),transparent)}
 
 /* ── PONS Gauge ── */
-#ponsGaugeRow{margin-top:12px;padding-top:10px;border-top:1px solid var(--br)}
+/* ponsGaugeRow is now the sh-pons-card standalone — no internal margin/border-top needed */
+#ponsGaugeRow{margin-top:0;padding-top:0;border-top:none}
 .pons-gauge-head{display:flex;align-items:baseline;gap:5px;margin-bottom:7px;flex-wrap:wrap}
 .pons-gauge-lbl{font:600 7.5px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--t3);flex-shrink:0}
-#ponsEquivVal{font:700 15px/1 var(--mono);color:var(--gold)}
+/* #ponsEquivVal uses .sh-pons-equiv class now for the big serif */
 .pons-goal-hint{font:400 8.5px/1 var(--mono);color:var(--t3);flex:1}
 .pons-track-wrap{display:flex;align-items:center;gap:8px;margin-bottom:5px}
 .pons-track{flex:1;height:4px;border-radius:2px;background:var(--s3);overflow:visible;position:relative}
 .pons-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,rgba(201,168,76,.4),var(--gold));transition:width .9s cubic-bezier(.4,0,.2,1);position:relative;max-width:100%}
 .pons-fill::after{content:'';position:absolute;right:-4px;top:50%;transform:translateY(-50%);width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px rgba(201,168,76,.55)}
-#ponsPct{font:700 11px/1 var(--mono);color:var(--gold);flex-shrink:0;min-width:40px;text-align:right}
+/* #ponsPct uses .sh-pons-pct class now for the big serif */
 #ponsGapLbl{font:400 9px/1.4 var(--mono);color:var(--t3)}
 #ponsGapLbl .gap-need{color:var(--t2);font-weight:600}
 .hero-label{font:600 8.5px/1 var(--mono);letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
@@ -611,6 +612,387 @@ body.day-mode .aurora-mode .hero-val-card{background:var(--s1)}
 /* Pie legend section header */
 .hero-pie-section-lbl{font:700 8px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--t3);margin:6px 0 3px;padding-bottom:2px;border-bottom:1px solid var(--br)}
 
+/* ════════════════════════════════════════════════
+   STOREHOUSE — SIMPLIFIED LAYOUT
+════════════════════════════════════════════════ */
+
+/* Reset main to clean column */
+main{max-width:1240px;margin:0 auto;padding:32px 24px 64px;display:flex;flex-direction:column;gap:20px;position:relative;z-index:1}
+
+/* ── Hero ── */
+.sh-hero{text-align:center;padding:52px 24px 20px;display:flex;flex-direction:column;align-items:center;gap:0}
+.sh-hero-lbl{font:600 8.5px/1 var(--mono);letter-spacing:.24em;text-transform:uppercase;color:var(--t3);margin-bottom:16px}
+.sh-hero-val{font:300 80px/1 var(--serif);color:var(--t1);letter-spacing:-.025em;margin-bottom:10px}
+.sh-hero-val .ccy{font-size:32px;vertical-align:.18em;margin-right:2px;opacity:.7}
+.sh-hero-val .cents{font-size:38px;vertical-align:.12em;opacity:.8}
+.sh-hero-delta{display:flex;align-items:center;gap:10px;margin-top:4px}
+.sh-hero-chg{font:400 17px/1 var(--serif)}
+.sh-hero-chip{font:600 11px/1 var(--mono);padding:3px 10px;border-radius:99px}
+.sh-hero-chip.pos{background:var(--pos-bg);color:var(--pos)}
+.sh-hero-chip.neg{background:var(--neg-bg);color:var(--neg)}
+.sh-hero-alt{font:400 12px/1 var(--mono);color:var(--t3);margin-top:6px}
+
+/* ── Charts row ── */
+.sh-charts-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:768px){.sh-charts-row{grid-template-columns:1fr}}
+
+/* ── Generic card ── */
+.sh-card{background:var(--s1);border:1px solid var(--br);border-radius:var(--r);overflow:hidden}
+.sh-card-head{display:flex;align-items:center;gap:10px;padding:18px 22px 0;flex-wrap:wrap}
+.sh-card-lbl{font:600 9px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--t3);flex:1}
+.sh-card-meta{font:400 10px/1 var(--mono);color:var(--t3)}
+.sh-chart-body{padding:14px 20px 20px;position:relative;height:220px}
+
+/* Legend row for overlay chart */
+.sh-legend{display:flex;flex-wrap:wrap;gap:4px 12px;padding:0 20px 14px}
+.sh-leg-item{display:flex;align-items:center;gap:5px;font:500 9.5px/1 var(--mono);color:var(--t2)}
+.sh-leg-dash{width:16px;height:2px;border-radius:1px;flex-shrink:0}
+
+/* ── PONS card ── */
+.sh-pons-card{background:var(--s1);border:1px solid var(--br-g);border-radius:var(--r);padding:30px 32px;position:relative;overflow:hidden}
+.sh-pons-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold) 40%,var(--gold-b) 60%,transparent);opacity:.5}
+body.aurora-mode .sh-pons-card{border-color:rgba(130,70,220,.28)}
+body.day-mode .sh-pons-card{box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.sh-pons-top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.sh-pons-lbl{font:600 8.5px/1 var(--mono);letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+.sh-pons-equiv{font:300 56px/1 var(--serif);color:var(--t1);letter-spacing:-.02em}
+.sh-pons-unit{font:400 11px/1 var(--mono);color:var(--t3);display:block;margin-top:4px}
+.sh-pons-pct-block{text-align:right;flex-shrink:0}
+.sh-pons-pct{font:400 40px/1 var(--serif);color:var(--gold)}
+.sh-pons-pct-lbl{font:400 9.5px/1 var(--mono);color:var(--t3);display:block;margin-top:3px}
+.sh-pons-track-wrap{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.sh-pons-track{flex:1;height:5px;border-radius:3px;background:var(--s3);overflow:visible;position:relative}
+.sh-pons-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,rgba(201,168,76,.35),var(--gold));transition:width 1s cubic-bezier(.4,0,.2,1);position:relative;max-width:100%}
+.sh-pons-fill::after{content:'';position:absolute;right:-5px;top:50%;transform:translateY(-50%);width:11px;height:11px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px rgba(201,168,76,.55)}
+.sh-pons-goal-lbl{font:500 9px/1 var(--mono);color:var(--t3);flex-shrink:0}
+.sh-pons-gap{font:400 10px/1.6 var(--mono);color:var(--t3)}
+.sh-pons-gap .gap-need{color:var(--t1);font-weight:600}
+
+/* ── Table card ── */
+.sh-tbl-card{background:var(--s1);border:1px solid var(--br);border-radius:var(--r);overflow:hidden}
+.sh-tbl-head{display:flex;align-items:center;gap:10px;padding:18px 22px 14px;border-bottom:1px solid var(--br)}
+
+/* ── Range toggle (reused) ── */
+.sh-range{display:flex;background:var(--s2);border:1px solid var(--br);border-radius:99px;padding:2px;gap:2px;margin-left:auto}
+.sh-range button{font:600 9.5px/1 var(--mono);letter-spacing:.08em;color:var(--t3);padding:4px 11px;border-radius:99px;background:transparent;border:none;cursor:pointer;transition:all .12s}
+.sh-range button.active{background:var(--gold);color:#000}
+.sh-range button:not(.active):hover{color:var(--t1)}
+
+@media(max-width:640px){
+  .sh-hero-val{font-size:52px}
+  .sh-pons-equiv{font-size:36px}
+  .sh-pons-pct{font-size:28px}
+  main{padding:20px 14px 48px}
+}
+
+
+/* ══════════════════════════════════════════════════
+   VISUAL REVOLUTION · OBSIDIAN VAULT · v2
+   Complete override — deeper, richer, single-page
+══════════════════════════════════════════════════ */
+
+/* ── Root: deeper palette ── */
+:root {
+  --bg:       #06060a;
+  --s1:       #0c0c12;
+  --s2:       #101017;
+  --s3:       #18181f;
+  --br:       rgba(255,255,255,0.055);
+  --br-m:     rgba(255,255,255,0.095);
+  --r:        12px;
+}
+body { background: var(--bg); }
+
+/* ── Nav: thinner, sharper glass ── */
+nav {
+  height: 44px !important;
+  background: rgba(6,6,10,0.92) !important;
+  backdrop-filter: blur(28px) !important;
+  -webkit-backdrop-filter: blur(28px) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.045) !important;
+}
+
+/* ── Ticker: even more subtle ── */
+.ticker {
+  background: rgba(10,10,16,0.9) !important;
+  border-bottom-color: rgba(255,255,255,0.03) !important;
+  font-size: 9.5px !important;
+}
+
+/* ── Main: tighter single-page rhythm ── */
+main {
+  max-width: 1300px !important;
+  padding: 0 22px 28px !important;
+  gap: 10px !important;
+}
+
+/* ── Hero: cinematic, gallery-quality ── */
+.sh-hero {
+  padding: 46px 20px 18px !important;
+  gap: 0 !important;
+}
+.sh-hero-lbl {
+  font: 500 7.5px/1 var(--mono) !important;
+  letter-spacing: .36em !important;
+  color: rgba(244,240,232,0.25) !important;
+  margin-bottom: 18px !important;
+}
+.sh-hero-val {
+  font: 200 92px/0.92 var(--serif) !important;
+  font-style: italic !important;
+  letter-spacing: -.035em !important;
+  color: var(--t1) !important;
+}
+.sh-hero-val .ccy {
+  font-size: 36px !important;
+  font-style: italic !important;
+  vertical-align: .2em !important;
+  opacity: .6 !important;
+  letter-spacing: -.01em !important;
+}
+.sh-hero-val .cents {
+  font-size: 44px !important;
+  font-style: italic !important;
+  vertical-align: .14em !important;
+  opacity: .7 !important;
+}
+.sh-hero-delta {
+  margin-top: 16px !important;
+  gap: 10px !important;
+}
+.sh-hero-chg {
+  font: 300 16px/1 var(--serif) !important;
+  font-style: italic !important;
+  letter-spacing: .01em !important;
+}
+.sh-hero-alt {
+  font: 400 11px/1 var(--mono) !important;
+  color: rgba(244,240,232,0.22) !important;
+  margin-top: 10px !important;
+  letter-spacing: .06em !important;
+}
+
+/* ── Charts row ── */
+.sh-charts-row { gap: 10px !important; }
+
+.sh-card {
+  background: linear-gradient(150deg, var(--s1) 0%, rgba(8,8,13,0.98) 100%) !important;
+  border: 1px solid rgba(255,255,255,0.052) !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset !important;
+}
+
+.sh-card-head {
+  padding: 16px 20px 8px !important;
+}
+.sh-card-lbl {
+  font: 600 8px/1 var(--mono) !important;
+  letter-spacing: .24em !important;
+  color: rgba(244,240,232,0.25) !important;
+}
+.sh-card-meta {
+  font-size: 9px !important;
+  color: rgba(244,240,232,0.2) !important;
+}
+
+.sh-chart-body {
+  height: 195px !important;
+  padding: 10px 16px 16px !important;
+}
+
+.sh-legend { padding: 0 18px 12px !important; gap: 2px 10px !important; }
+.sh-leg-item { font-size: 8.5px !important; color: rgba(244,240,232,0.38) !important; }
+
+/* range buttons */
+.sh-range { background: rgba(255,255,255,0.03) !important; border-color: rgba(255,255,255,0.045) !important; }
+.sh-range button { font-size: 8.5px !important; padding: 3.5px 10px !important; color: rgba(244,240,232,0.38) !important; }
+.sh-range button.active { background: var(--gold) !important; color: #000 !important; }
+
+/* ── PONS card: featured centerpiece ── */
+.sh-pons-card {
+  background: linear-gradient(135deg, #0e0d14 0%, #09090e 55%, #0c0b08 100%) !important;
+  border: 1px solid rgba(201,168,76,0.18) !important;
+  border-radius: 12px !important;
+  padding: 26px 32px 24px !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+.sh-pons-card::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important; left: 0 !important; right: 0 !important;
+  height: 1px !important;
+  background: linear-gradient(90deg, transparent 0%, rgba(201,168,76,.5) 40%, rgba(201,168,76,.7) 50%, rgba(201,168,76,.5) 60%, transparent 100%) !important;
+}
+
+.sh-pons-top {
+  margin-bottom: 20px !important;
+  align-items: flex-end !important;
+}
+.sh-pons-lbl {
+  font: 600 7.5px/1 var(--mono) !important;
+  letter-spacing: .3em !important;
+  color: rgba(201,168,76,0.55) !important;
+  margin-bottom: 12px !important;
+}
+.sh-pons-equiv {
+  font: 200 62px/0.92 var(--serif) !important;
+  font-style: italic !important;
+  color: var(--t1) !important;
+  letter-spacing: -.025em !important;
+}
+.sh-pons-unit {
+  font: 400 9.5px/1 var(--mono) !important;
+  color: rgba(244,240,232,0.25) !important;
+  letter-spacing: .06em !important;
+  margin-top: 7px !important;
+}
+.sh-pons-pct {
+  font: 200 46px/0.92 var(--serif) !important;
+  font-style: italic !important;
+  color: var(--gold) !important;
+  letter-spacing: -.025em !important;
+}
+.sh-pons-pct-lbl {
+  font: 400 8.5px/1 var(--mono) !important;
+  color: rgba(201,168,76,0.4) !important;
+  letter-spacing: .08em !important;
+  margin-top: 5px !important;
+}
+
+/* thinner progress rail */
+.sh-pons-track {
+  height: 2px !important;
+  border-radius: 1px !important;
+  background: rgba(255,255,255,0.065) !important;
+  overflow: visible !important;
+}
+.sh-pons-fill {
+  height: 100% !important;
+  border-radius: 1px !important;
+  background: linear-gradient(90deg, rgba(201,168,76,.2) 0%, var(--gold) 100%) !important;
+}
+.sh-pons-fill::after {
+  width: 9px !important; height: 9px !important;
+  right: -4.5px !important;
+  box-shadow: 0 0 8px rgba(201,168,76,.7), 0 0 20px rgba(201,168,76,.2) !important;
+}
+.sh-pons-goal-lbl {
+  font-size: 8px !important;
+  color: rgba(244,240,232,0.25) !important;
+  letter-spacing: .06em !important;
+}
+.sh-pons-track-wrap { margin-bottom: 14px !important; }
+
+.sh-pons-gap {
+  font: 400 9.5px/1.75 var(--mono) !important;
+  color: rgba(244,240,232,0.3) !important;
+}
+.sh-pons-gap .gap-need { color: rgba(244,240,232,0.72) !important; font-weight: 600 !important; }
+#ponsGapLbl .gap-need { color: rgba(244,240,232,0.72) !important; font-weight: 600 !important; }
+
+/* ── Holdings table ── */
+.sh-tbl-card {
+  background: linear-gradient(180deg, var(--s1) 0%, rgba(7,7,11,0.98) 100%) !important;
+  border: 1px solid rgba(255,255,255,0.052) !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+}
+.sh-tbl-head {
+  padding: 15px 22px 12px !important;
+  border-bottom: 1px solid rgba(255,255,255,0.038) !important;
+}
+
+.htbl thead th {
+  font: 600 7.5px/1 var(--mono) !important;
+  letter-spacing: .2em !important;
+  color: rgba(244,240,232,0.22) !important;
+  padding: 9px 20px !important;
+  border-bottom: 1px solid rgba(255,255,255,0.038) !important;
+  background: transparent !important;
+}
+.htbl tbody tr { border-bottom: 1px solid rgba(255,255,255,0.028) !important; }
+.htbl tbody tr:hover { background: rgba(255,255,255,0.022) !important; }
+.htbl tbody tr:last-child { border-bottom: none !important; }
+.htbl td {
+  padding: 9px 20px !important;
+  font: 500 11.5px/1 var(--mono) !important;
+  color: rgba(244,240,232,0.6) !important;
+}
+.a-sym { font-size: 12px !important; font-weight: 700 !important; color: var(--t1) !important; }
+.a-name-row { font-size: 9px !important; color: rgba(244,240,232,0.3) !important; }
+.a-orb { width: 28px !important; height: 28px !important; font-size: 11px !important; }
+.val-cell { font-weight: 600 !important; color: var(--t1) !important; }
+.tbl-note {
+  font-size: 9px !important;
+  padding: 8px 20px !important;
+  color: rgba(244,240,232,0.2) !important;
+  border-top-color: rgba(255,255,255,0.028) !important;
+}
+
+/* ── Footer: minimal ── */
+footer {
+  padding: 12px 22px 20px !important;
+  border-top-color: rgba(255,255,255,0.03) !important;
+}
+
+/* ── Aurora mode overrides ── */
+body.aurora-mode .sh-card {
+  background: linear-gradient(150deg, #0d0d1a 0%, #09090f 100%) !important;
+  border-color: rgba(255,255,255,0.048) !important;
+}
+body.aurora-mode .sh-pons-card {
+  background: linear-gradient(135deg, #0e0d1a 0%, #09090f 55%, #0c0b14 100%) !important;
+}
+body.aurora-mode .sh-tbl-card {
+  background: linear-gradient(180deg, #0d0d1a 0%, #07070c 100%) !important;
+  border-color: rgba(255,255,255,0.048) !important;
+}
+
+/* ── Day mode overrides ── */
+body.day-mode .sh-card {
+  background: #ffffff !important;
+  border-color: rgba(0,0,0,0.065) !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.03) !important;
+}
+body.day-mode .sh-pons-card {
+  background: linear-gradient(135deg, #fdfbf6 0%, #fff9ec 100%) !important;
+  border-color: rgba(201,168,76,.22) !important;
+}
+body.day-mode .sh-tbl-card {
+  background: #ffffff !important;
+  border-color: rgba(0,0,0,0.065) !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,.04) !important;
+}
+body.day-mode .sh-card-lbl,
+body.day-mode .sh-hero-lbl { color: rgba(28,24,20,0.3) !important; }
+body.day-mode .sh-hero-alt { color: rgba(28,24,20,0.3) !important; }
+body.day-mode .sh-pons-lbl { color: rgba(130,100,20,0.6) !important; }
+body.day-mode .sh-pons-unit,
+body.day-mode .sh-pons-pct-lbl,
+body.day-mode .sh-pons-gap,
+body.day-mode .sh-pons-goal-lbl { color: rgba(28,24,20,0.3) !important; }
+body.day-mode .sh-pons-gap .gap-need,
+body.day-mode #ponsGapLbl .gap-need { color: rgba(28,24,20,0.75) !important; }
+body.day-mode .sh-tbl-head { border-bottom-color: rgba(0,0,0,0.055) !important; }
+body.day-mode .htbl thead th { color: rgba(28,24,20,0.3) !important; border-bottom-color: rgba(0,0,0,0.055) !important; background: transparent !important; }
+body.day-mode .htbl tbody tr { border-bottom-color: rgba(0,0,0,0.038) !important; }
+body.day-mode .htbl tbody tr:hover { background: rgba(0,0,0,0.018) !important; }
+body.day-mode .htbl td { color: rgba(28,24,20,0.6) !important; }
+body.day-mode .a-sym { color: rgba(28,24,20,0.9) !important; }
+body.day-mode .val-cell { color: rgba(28,24,20,0.9) !important; }
+body.day-mode .sh-pons-track { background: rgba(0,0,0,0.08) !important; }
+body.day-mode .sh-range { background: rgba(0,0,0,0.04) !important; border-color: rgba(0,0,0,0.08) !important; }
+body.day-mode .sh-range button { color: rgba(28,24,20,0.4) !important; }
+body.day-mode .sh-leg-item { color: rgba(28,24,20,0.45) !important; }
+body.day-mode nav { background: rgba(248,245,239,0.95) !important; }
+body.day-mode .ticker { background: rgba(243,239,232,0.95) !important; }
+body.day-mode .sh-card-meta { color: rgba(28,24,20,0.3) !important; }
+body.day-mode footer { border-top-color: rgba(0,0,0,0.045) !important; }
+
+/* ═══ END VISUAL REVOLUTION ═══ */
+
 </style>
 </head>
 <body>
@@ -674,164 +1056,77 @@ body.day-mode .aurora-mode .hero-val-card{background:var(--s1)}
 <main>
 
 <!-- ── HERO ── -->
-<div class="hero-grid">
-
-  <!-- Value card -->
-  <div class="hero-val-card">
-    <div>
-      <div class="hero-meta">
-        <span class="hero-lbl">Total Portfolio</span>
-        <span class="hero-asof" id="heroAsOf"></span>
-      </div>
-      <div class="hero-figure" id="mv-total">—</div>
-      <div class="hero-ccy-secondary" id="heroCcyAlt"></div>
-      <div id="superTotalRow" style="margin-top:4px;display:none">
-        <span id="superTotalLbl"></span>
-      </div>
-      <div class="hero-delta-row">
-        <div class="hero-d-num" id="mv-hero-chg">—</div>
-        <div id="mv-hero-chip"></div>
-      </div>
-      <!-- PONS Equivalent Gauge -->
-      <div id="ponsGaugeRow" style="display:none">
-        <div class="pons-gauge-head">
-          <span class="pons-gauge-lbl">PONS Equiv</span>
-          <span id="ponsEquivVal">—</span>
-          <span class="pons-goal-hint">PONS &nbsp;·&nbsp; <span id="ponsPct">0%</span> of 100K goal</span>
-        </div>
-        <div class="pons-track-wrap">
-          <div class="pons-track"><div class="pons-fill" id="ponsFill" style="width:0%"></div></div>
-        </div>
-        <div id="ponsGapLbl">—</div>
-      </div>
-    </div>
-    <div class="hero-sub-row">
-      <div class="xrp-target" id="xrpTargetRow" style="display:none">
-        <span id="xrpTargetLbl" style="font:500 9px/1 var(--mono);color:var(--t3);flex:1">Target</span>
-        <span id="xrpTargetPx" style="font:600 12px/1 var(--mono);color:var(--gold)">—</span>
-        <span id="xrpTargetMult" style="font:500 9px/1 var(--mono);color:var(--t3)"></span>
-      </div>
-      <div class="pay-cdown" id="payCdown" style="display:none">
-        <span style="font-size:15px;flex-shrink:0">💰</span>
-        <div class="pay-cdown-inner">
-          <span class="pay-cdown-lbl">Next Capital</span>
-          <span id="payCdownDate">—</span>
-        </div>
-        <span id="payCdownTimer" style="font:600 13px/1 var(--mono);color:var(--gold);flex-shrink:0">—</span>
-      </div>
-    </div>
+<div class="sh-hero">
+  <div class="sh-hero-lbl">Total Portfolio</div>
+  <div class="sh-hero-val" id="mv-total">—</div>
+  <div class="sh-hero-alt" id="heroCcyAlt"></div>
+  <div class="sh-hero-delta">
+    <div class="sh-hero-chg" id="mv-hero-chg"></div>
+    <div id="mv-hero-chip"></div>
   </div>
-
-  <!-- Allocation donut -->
-  <div class="hero-pie-card">
-    <div class="hero-section-lbl">Allocation</div>
-    <div class="donut-wrap" style="width:200px;height:200px;margin:0 auto">
-      <canvas id="pieChart"></canvas>
-    </div>
-    <div class="hero-pie-legend" id="donutLegend"></div>
-    <div id="donutVal" style="display:none">—</div>
-  </div>
-
-  <!-- Fear & Greed + Market -->
-  <div class="hero-right-card">
-    <div class="fg-gauge" id="fgGauge" style="display:none">
-      <div class="fg-gauge-head">Market Sentiment</div>
-      <div class="fg-gauge-wrap">
-        <svg id="fgSvg" width="180" height="96" viewBox="0 0 190 106" style="display:block;overflow:visible"></svg>
-        <div class="fg-val-overlay">
-          <div class="fg-val" id="fgVal">—</div>
-          <div class="fg-class" id="fgClass">—</div>
-        </div>
-      </div>
-    </div>
-    <div class="market-panel" id="marketPanel">
-      <div class="market-panel-head">Markets</div>
-      <div id="marketRows"><div class="mkt-loading">Fetching…</div></div>
-    </div>
-  </div>
-
-</div><!-- /hero-grid -->
-
-<!-- ── KPI STRIP ── -->
-<div class="kpi-row">
-
-  <div class="kpi">
-    <div class="kpi-lbl">24h Change</div>
-    <div class="kpi-val"><div class="kpi-figure" id="mv-chg">—</div></div>
-    <div class="kpi-sub" id="mv-chg-s">Awaiting data</div>
-    <div class="kpi-daily-bars-wrap">
-      <div class="kpi-daily-bars-lbl">Daily blocks · AEST</div>
-      <svg id="dailyBarsSvg" class="kpi-daily-bars" viewBox="0 0 160 48" preserveAspectRatio="none"></svg>
-    </div>
-  </div>
-
-  <div class="kpi" id="mv-mom-card">
-    <div class="kpi-lbl">Momentum</div>
-    <div class="kpi-val"><div class="kpi-figure" id="mv-mom-val" style="font-size:20px">—</div></div>
-    <div class="kpi-sub" id="mv-mom-sub">Awaiting prices</div>
-    <div class="mom-bars" id="mv-mom-bars"></div>
-    <div id="mv-mom-split" style="font:400 9.5px/1.3 var(--mono);color:var(--t3);margin-top:5px"></div>
-  </div>
-
-  <div class="kpi">
-    <div class="kpi-lbl">Concentration Risk</div>
-    <div class="kpi-val"><div class="kpi-figure" id="mv-risk" style="font-size:20px">—</div></div>
-    <div class="kpi-sub" id="mv-risk-s">—</div>
-    <div class="risk-track-wrap" id="riskTrackWrap" style="display:none">
-      <div class="risk-track">
-        <div class="risk-zones"><span></span><span></span><span></span></div>
-        <div class="risk-pip" id="riskPip" style="left:50%"></div>
-      </div>
-      <span class="risk-reading" id="riskReading"></span>
-    </div>
-  </div>
-
-</div><!-- /kpi-row -->
-
-<!-- ── CHART ── -->
-<div class="chart-card">
-  <div class="chart-head">
-    <div style="display:flex;align-items:center;gap:10px">
-      <span class="chart-head-lbl">Asset Composition</span>
-      <span id="lastUpd"></span>
-    </div>
-    <div class="chart-range-btns">
-      <button class="cr-btn active" id="crBtn7d" onclick="setChartRange('7d')">7D</button>
-      <button class="cr-btn" id="crBtnAll" onclick="setChartRange('all')">All</button>
-    </div>
-  </div>
-  <div class="hero-chart-canvas">
-    <canvas id="stackChart" style="display:none"></canvas>
-    <div class="no-hist" id="noStackHist">
-      History builds automatically — a data point is recorded every 5 minutes.
-    </div>
-  </div>
-  <div class="chart-legend" id="stackLegend" style="display:none"></div>
-  <div class="asset-mini-charts" id="assetMiniCharts"></div>
+  <div style="display:none" id="heroAsOf"></div>
+  <div style="display:none" id="superTotalRow"><span id="superTotalLbl"></span></div>
 </div>
 
-<!-- ── MILESTONES ── -->
-<section class="sect" id="sectMilestones">
-  <div class="sect-head">
-    <div class="sect-title"><span class="sect-num">01</span>Milestones</div>
-    <div class="sect-meta">
-      <span class="sect-meta-lbl">Denominated in</span>
-      <span class="sect-meta-val">AUD</span>
-    </div>
-  </div>
-  <div id="milestoneGrid"></div>
-  <div class="ms-chart-wrap" id="msChartWrap" style="display:none">
-    <canvas id="msLineChart"></canvas>
-  </div>
-</section>
+<!-- ── CHARTS ── -->
+<div class="sh-charts-row">
 
-<!-- ── HOLDINGS ── -->
-<section class="sect" id="sectHoldings">
-  <div class="sect-head">
-    <div class="sect-title"><span class="sect-num">02</span>Holdings</div>
-    <div class="sect-meta">
-      <span class="sect-meta-val" id="lastUpdHoldings">—</span>
+  <!-- Combined portfolio history -->
+  <div class="sh-card">
+    <div class="sh-card-head">
+      <span class="sh-card-lbl">Portfolio History</span>
+      <span class="sh-card-meta" id="lastUpd"></span>
+      <div class="sh-range">
+        <button class="active" id="crBtn7d" onclick="setChartRange('7d')">7D</button>
+        <button id="crBtnAll" onclick="setChartRange('all')">All</button>
+      </div>
     </div>
+    <div class="sh-chart-body">
+      <canvas id="lineChart"></canvas>
+      <div class="no-hist" id="noHist" style="display:none">History builds automatically every 5 min.</div>
+    </div>
+  </div>
+
+  <!-- Per-asset overlay -->
+  <div class="sh-card">
+    <div class="sh-card-head">
+      <span class="sh-card-lbl">Asset Performance</span>
+      <span class="sh-card-meta" style="color:var(--t3);font-size:9px">% change from period start</span>
+    </div>
+    <div class="sh-chart-body">
+      <canvas id="overlayChart"></canvas>
+      <div class="no-hist" id="noOverlayHist" style="display:none">Awaiting history…</div>
+    </div>
+    <div class="sh-legend" id="overlayLegend"></div>
+  </div>
+
+</div>
+
+<!-- ── PONS TRAJECTORY ── -->
+<div class="sh-pons-card" id="ponsGaugeRow" style="display:none">
+  <div class="sh-pons-top">
+    <div>
+      <div class="sh-pons-lbl">Journey to 100,000 PONS</div>
+      <div class="sh-pons-equiv" id="ponsEquivVal">—</div>
+      <span class="sh-pons-unit">PONS equivalent of total portfolio</span>
+    </div>
+    <div class="sh-pons-pct-block">
+      <div class="sh-pons-pct" id="ponsPct">0%</div>
+      <span class="sh-pons-pct-lbl">of 100K goal</span>
+    </div>
+  </div>
+  <div class="sh-pons-track-wrap">
+    <div class="sh-pons-track"><div class="sh-pons-fill" id="ponsFill" style="width:0%"></div></div>
+    <span class="sh-pons-goal-lbl">100K</span>
+  </div>
+  <div class="sh-pons-gap" id="ponsGapLbl">—</div>
+</div>
+
+<!-- ── HOLDINGS TABLE ── -->
+<div class="sh-tbl-card">
+  <div class="sh-tbl-head">
+    <span class="sh-card-lbl">Holdings</span>
+    <span class="sh-card-meta" id="lastUpdHoldings">—</span>
   </div>
   <div class="tbl-wrap">
     <table class="htbl">
@@ -846,75 +1141,53 @@ body.day-mode .aurora-mode .hero-val-card{background:var(--s1)}
       </tr></thead>
       <tbody id="tbody"></tbody>
     </table>
-    <div class="tbl-note" id="tblNote" style="display:none">
-      ~ Price converted from USD using live exchange rate · XRP shows native AUD market price via CoinGecko
-    </div>
+    <div class="tbl-note" id="tblNote" style="display:none">~ Price converted from USD using live exchange rate</div>
   </div>
-</section>
+</div>
 
-<!-- ── LEVERAGED POSITIONS ── -->
-<section class="sect lev-sect" id="sectLeveraged">
-  <div class="sect-head">
-    <div class="sect-title"><span class="sect-num">03</span>Leveraged Positions</div>
-    <div class="sect-meta">
-      <span class="sect-meta-lbl">Unrealised P&amp;L</span>
-      <span class="sect-meta-val" id="levTotalPnl">—</span>
-    </div>
-  </div>
+<!-- ── HIDDEN ELEMENTS (required by JS) ── -->
+<div style="display:none" aria-hidden="true">
+  <span id="lineTitle"></span>
+  <div id="chartLegend"></div>
+  <canvas id="stackChart"></canvas>
+  <div id="noStackHist"></div>
+  <div id="stackLegend"></div>
+  <div id="assetMiniCharts"></div>
+  <div id="milestoneGrid"></div>
+  <canvas id="msLineChart"></canvas>
+  <div id="msChartWrap"></div>
+  <canvas id="pieChart"></canvas>
+  <div id="donutLegend"></div>
+  <div id="donutVal"></div>
+  <div id="mv-chg"></div>
+  <div id="mv-chg-s"></div>
+  <div id="mv-total-s"></div>
+  <div id="mv-mom-card"><div id="mv-mom-val"></div><div id="mv-mom-sub"></div><div id="mv-mom-bars"></div><div id="mv-mom-split"></div></div>
+  <div id="mv-risk"></div><div id="mv-risk-s"></div>
+  <div id="riskTrackWrap"><div class="risk-track"><div class="risk-zones"><span></span><span></span><span></span></div><div class="risk-pip" id="riskPip" style="left:50%"></div></div><span class="risk-reading" id="riskReading"></span></div>
+  <div id="fgGauge"><svg id="fgSvg" viewBox="0 0 190 106"></svg><div id="fgVal"></div><div id="fgClass"></div></div>
+  <div id="marketPanel"><div id="marketRows"></div></div>
   <div id="levPositions"></div>
-  <div id="levAddForm" class="lev-form" style="display:none">
-    <div class="lev-form-title">New Position</div>
-    <div class="lev-form-grid">
-      <div class="lev-fg">
-        <label>Asset</label>
-        <select id="levFAsset" class="lev-inp"></select>
-      </div>
-      <div class="lev-fg">
-        <label>Direction</label>
-        <div class="lev-dir-toggle">
-          <button class="lev-dir-btn active" id="levDirLong" onclick="setLevDir('long')">LONG ↑</button>
-          <button class="lev-dir-btn" id="levDirShort" onclick="setLevDir('short')">SHORT ↓</button>
-        </div>
-      </div>
-      <div class="lev-fg">
-        <label>Leverage</label>
-        <div style="display:flex;align-items:center;gap:6px">
-          <input type="number" id="levFLev" min="1" max="100" step="0.5" value="4" class="lev-inp" style="width:70px"/>
-          <span class="lev-inp-unit">×</span>
-        </div>
-      </div>
-      <div class="lev-fg">
-        <label>Entry Price (USD)</label>
-        <div style="display:flex;align-items:center;gap:6px">
-          <span class="lev-inp-unit">$</span>
-          <input type="number" id="levFEntry" min="0" step="any" placeholder="0.00000" class="lev-inp"/>
-        </div>
-      </div>
-      <div class="lev-fg">
-        <label>Total Tokens</label>
-        <input type="number" id="levFQty" min="0" step="any" placeholder="50000" class="lev-inp" style="width:100%"/>
-      </div>
-      <div class="lev-fg">
-        <label>Liquidation Price (USD)</label>
-        <div style="display:flex;align-items:center;gap:6px">
-          <span class="lev-inp-unit">$</span>
-          <input type="number" id="levFLiq" min="0" step="any" placeholder="0.00000" class="lev-inp"/>
-        </div>
-      </div>
-      <div class="lev-fg">
-        <label>Note (optional)</label>
-        <input type="text" id="levFNote" placeholder="e.g. PONS 4× long" class="lev-inp"/>
-      </div>
-    </div>
-    <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
-      <button class="lev-save-btn" onclick="saveLevPosition()">Add Position</button>
-      <button class="lev-cancel-btn" onclick="closeLevForm()">Cancel</button>
-    </div>
+  <div id="levTotalPnl"></div>
+  <div id="levAddForm">
+    <select id="levFAsset"></select>
+    <button id="levDirLong"></button><button id="levDirShort"></button>
+    <input id="levFLev" type="number"/><input id="levFEntry" type="number"/>
+    <input id="levFQty" type="number"/><input id="levFLiq" type="number"/><input id="levFNote"/>
   </div>
-  <div class="lev-btn-row">
-    <button class="lev-add-btn" id="levAddBtn" onclick="openLevForm()">＋ Add Leveraged Position</button>
-  </div>
-</section>
+  <button id="levAddBtn"></button>
+  <div id="projChartWrap"><canvas id="projChart"></canvas></div>
+  <div id="xrpTargetRow"><span id="xrpTargetLbl"></span><span id="xrpTargetPx"></span><span id="xrpTargetMult"></span></div>
+  <div id="payCdown"><span id="payCdownDate"></span><span id="payCdownTimer"></span></div>
+  <div id="xrpScenarios"></div>
+  <div id="insightsGrid"></div>
+  <svg id="dailyBarsSvg" viewBox="0 0 160 48"></svg>
+  <div id="allocBars"></div>
+  <div id="savGrowSect"><div id="savGrowMeta"></div><div id="savGrowTiles"></div><canvas id="savGrowChart"></canvas></div>
+  <span id="xrpTotalDisplay"></span>
+  <div id="savMeta"></div>
+  <span id="ftCcy"></span>
+</div>
 
 </main>
 
@@ -1166,7 +1439,7 @@ function checkMilestoneAlerts(){
 function loadNotifiedMs(){
   try{NOTIFIED_MS=new Set(JSON.parse(localStorage.getItem('notifiedMs')||'[]'));}catch(e){}
 }
-let CHARTS = {pie:null,line:null,alloc:null,stacked:null,msLine:null};
+let CHARTS = {pie:null,line:null,alloc:null,stacked:null,msLine:null,overlay:null};
 let RT     = null;
 let CD_IV  = null;
 let CD_LEFT= REFRESH_SECS;
@@ -3023,11 +3296,13 @@ function renderInsights(){
 ═══════════════════════════════════════════════════ */
 function renderAll(){
   renderMetrics();
-  renderMilestones();
   renderTable();
-  renderPie();
+  renderLine();
+  renderOverlayChart();
+  renderPie();          // updates hidden canvas
+  renderStackedChart(); // updates hidden canvas
   renderAssetMiniCharts();
-  renderStackedChart();
+  renderMilestones();
   renderHeroAltCurrency();
   renderTicker();
   renderMarketPanel();
@@ -3038,10 +3313,8 @@ function renderAll(){
   setEl('lastUpd',ts);
   setEl('lastUpdHoldings',ts);
   document.getElementById('tblNote').style.display=CCY==='AUD'?'block':'none';
-  // Tab title
   const tv=totalVal();
   if(tv>0) document.title=`Storehouse — ${sym()}${Math.round(tv).toLocaleString('en-AU')}`;
-  // Milestone alerts
   checkMilestoneAlerts();
 }
 
@@ -3778,6 +4051,87 @@ function renderAssetMiniCharts(){
       <div class="amc-px">${fmtPx(priceDisp)}</div>
     </div>`;
   }).join('');
+}
+
+function renderOverlayChart(){
+  const ctx=document.getElementById('overlayChart');
+  if(!ctx) return;
+  const noH=document.getElementById('noOverlayHist');
+  const legEl=document.getElementById('overlayLegend');
+  const cutoff=CHART_RANGE==='7d'?Date.now()-7*24*3600000:0;
+  const slice=P.history.filter(e=>e.ts>=cutoff);
+  if(slice.length<2){
+    if(noH){noH.style.display='flex';noH.textContent='History builds automatically every 5 min.';}
+    ctx.style.display='none';
+    if(CHARTS.overlay){CHARTS.overlay.destroy();CHARTS.overlay=null;}
+    return;
+  }
+  if(noH) noH.style.display='none';
+  ctx.style.display='block';
+  const labels=slice.map(e=>{
+    const d=new Date(e.ts);
+    return d.toLocaleDateString('en-AU',{month:'short',day:'numeric'})+' '+d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  });
+  const rate=CCY==='AUD'?(AUDRT||1.57):1;
+  const datasets=P.assets.map(a=>{
+    const vals=slice.map(e=>{
+      const hQty=e.qty?.[a.id];
+      if(hQty==null||hQty===0) return null;
+      const p=e.av?.[a.id];
+      return p!=null?+(hQty*p*rate).toFixed(4):null;
+    });
+    const firstVal=vals.find(v=>v!=null&&v>0);
+    if(!firstVal) return null;
+    const normalized=vals.map(v=>v!=null?+((v/firstVal-1)*100).toFixed(2):null);
+    if(normalized.filter(v=>v!=null).length<2) return null;
+    return{
+      label:'$'+a.sym,
+      data:normalized,
+      borderColor:a.color,
+      backgroundColor:'transparent',
+      fill:false,
+      tension:0.3,
+      pointRadius:0,
+      pointHoverRadius:5,
+      borderWidth:1.5,
+      spanGaps:true
+    };
+  }).filter(Boolean);
+  if(!datasets.length){
+    if(noH){noH.style.display='flex';noH.textContent='Awaiting price history…';}
+    ctx.style.display='none';
+    return;
+  }
+  const tc=cc('#7d93a8','#6e7681');
+  const gc=DARK?'rgba(255,255,255,.04)':'rgba(0,0,0,.04)';
+  if(CHARTS.overlay) CHARTS.overlay.destroy();
+  CHARTS.overlay=new Chart(ctx,{
+    type:'line',
+    data:{labels,datasets},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:c=>{const v=c.parsed.y;return v!=null?` ${c.dataset.label}: ${v>=0?'+':''}${v.toFixed(2)}%`:null;}}}
+      },
+      scales:{
+        x:{display:false,grid:{color:gc}},
+        y:{
+          ticks:{color:tc,callback:v=>(v>=0?'+':'')+v+'%',font:{size:10}},
+          grid:{color:gc},
+          border:{dash:[3,3]}
+        }
+      }
+    }
+  });
+  if(legEl){
+    legEl.innerHTML=P.assets.map(a=>`
+      <span class="sh-leg-item">
+        <span class="sh-leg-dash" style="background:${a.color}"></span>
+        ${a.sym}
+      </span>`).join('');
+  }
 }
 
 function renderLine(){
